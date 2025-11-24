@@ -24,7 +24,9 @@ export const DashboardCard = ({
     <Card className="bg-dashboard-card gap-0 rounded-sm shadow-none">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="font-mono text-sm">{title}</CardTitle>
+          <CardTitle className="font-mono text-sm font-normal">
+            {title}
+          </CardTitle>
           <Icon className="text-muted-foreground size-4" />
         </div>
       </CardHeader>

@@ -96,6 +96,17 @@ export default function Dashboard() {
           <DashboardTasks tasks={dashboardTasks} />
           <DashboardCalendar />
         </div>
+        <div className="grid grid-cols-4 gap-4">
+          <div className="bg-dashboard-card col-span-2 flex h-80 items-center justify-center rounded-sm border font-mono text-sm">
+            Placeholder graph card
+          </div>
+          <div className="bg-dashboard-card flex items-center justify-center rounded-sm border font-mono text-sm">
+            Placeholder graph card
+          </div>
+          <div className="bg-dashboard-card flex items-center justify-center rounded-sm border font-mono text-sm">
+            Placeholder graph card
+          </div>
+        </div>
       </div>
     </div>
   );

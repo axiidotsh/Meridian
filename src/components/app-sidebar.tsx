@@ -27,6 +27,7 @@ import {
   CalendarIcon,
   ChartColumnIncreasingIcon,
   CheckCircle2Icon,
+  ClockPlusIcon,
   LayoutDashboardIcon,
   LogOutIcon,
   MonitorIcon,
@@ -47,6 +48,11 @@ const navItems = [
     title: 'Chat',
     url: '/chat',
     icon: BrainIcon,
+  },
+  {
+    title: 'Focus',
+    url: '/focus',
+    icon: ClockPlusIcon,
   },
   {
     title: 'Tasks',

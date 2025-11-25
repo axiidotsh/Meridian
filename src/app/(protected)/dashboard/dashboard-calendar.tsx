@@ -23,7 +23,7 @@ export const DashboardCalendar = () => {
           value={view}
           onValueChange={(value) => setView(value as View)}
         >
-          <SelectTrigger className="hover:bg-accent h-6! rounded-sm border-none bg-none px-2 shadow-none">
+          <SelectTrigger className="hover:bg-accent! h-6! rounded-sm border-none bg-transparent! px-2 shadow-none transition-all duration-300">
             <SelectValue placeholder="View" />
           </SelectTrigger>
           <SelectContent align="end">

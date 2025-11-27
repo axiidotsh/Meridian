@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatDueDate, getDueDateUrgency } from '@/lib/date';
-import { cn } from '@/lib/utils';
+import { formatDueDate, getDueDateUrgency } from '@/utils/date';
+import { cn } from '@/utils/utils';
 import { PlusIcon } from 'lucide-react';
 import { DashboardCard } from './card';
 

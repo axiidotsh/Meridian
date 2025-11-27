@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { getDaysFromNowAt, getTodayAt } from '@/lib/date';
+import { getDaysFromNowAt, getTodayAt } from '@/utils/date';
 import {
   ChartColumnIncreasingIcon,
   CheckCircleIcon,
@@ -8,10 +8,10 @@ import {
   TrophyIcon,
 } from 'lucide-react';
 import { DashboardCalendar } from './components/calendar';
-import { FocusTimeAreaChart } from './components/focus-time-area-chart';
-import { HabitCompletionBarChart } from './components/habit-completion-bar-chart';
+import { FocusTimeAreaChart } from './components/charts/focus-time';
+import { HabitCompletionAreaChart } from './components/charts/habit-completion';
+import { TaskCompletionAreaChart } from './components/charts/task-completion';
 import { DashboardMetricCard } from './components/metric-card';
-import { TaskCompletionBarChart } from './components/task-completion-bar-chart';
 import { DashboardTasks } from './components/tasks';
 
 const dashboardMetrics = [
@@ -90,19 +90,25 @@ export default function Dashboard() {
         </Button>
       </div>
       <div className="mt-4 space-y-4">
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {dashboardMetrics.map((metric) => (
             <DashboardMetricCard key={metric.title} {...metric} />
           ))}
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 lg:grid-cols-2">
           <DashboardTasks tasks={dashboardTasks} />
           <DashboardCalendar />
         </div>
-        <div className="grid grid-cols-4 gap-4">
-          <FocusTimeAreaChart />
-          <TaskCompletionBarChart />
-          <HabitCompletionBarChart />
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="min-w-0">
+            <FocusTimeAreaChart />
+          </div>
+          <div className="min-w-0">
+            <TaskCompletionAreaChart />
+          </div>
+          <div className="min-w-0">
+            <HabitCompletionAreaChart />
+          </div>
         </div>
         <div className="bg-dashboard-card flex h-80 items-center justify-center rounded-sm border font-mono text-sm">
           Productivity heatmap - focus sessions + tasks done + habits done

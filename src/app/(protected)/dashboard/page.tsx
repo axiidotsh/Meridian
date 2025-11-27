@@ -13,6 +13,7 @@ import { HabitCompletionAreaChart } from './components/charts/habit-completion';
 import { TaskCompletionAreaChart } from './components/charts/task-completion';
 import { DashboardHabits } from './components/habits';
 import { DashboardMetricCard } from './components/metric-card';
+import { ProductivityHeatmap } from './components/productivity-heatmap';
 import { DashboardTasks } from './components/tasks';
 
 const dashboardMetrics = [
@@ -156,8 +157,8 @@ export default function Dashboard() {
             <HabitCompletionAreaChart />
           </div>
         </div>
-        <div className="bg-dashboard-card flex h-80 items-center justify-center rounded-sm border font-mono text-sm">
-          Productivity heatmap - focus sessions + tasks done + habits done
+        <div className="grid grid-cols-1">
+          <ProductivityHeatmap />
         </div>
       </div>
     </div>

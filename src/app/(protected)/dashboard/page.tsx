@@ -115,7 +115,7 @@ const dashboardHabits = [
   },
 ];
 
-export default function Dashboard() {
+export default function DashboardPage() {
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between gap-2">

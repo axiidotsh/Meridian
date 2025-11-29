@@ -20,10 +20,12 @@ import {
   FlameIcon,
   PlayIcon,
   RotateCcwIcon,
+  Settings2Icon,
   TimerIcon,
   TrophyIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { ContentCard } from '../components/content-card';
 import { MetricCard } from '../components/metric-card';
 import { SessionDurationChart } from './components/session-duration-chart';
@@ -64,11 +66,23 @@ const MOCK_SESSIONS: FocusSession[] = [
 ];
 
 export default function FocusPage() {
+  const searchParams = useSearchParams();
+  const taskId = searchParams.get('taskId');
+
   const [selectedMinutes, setSelectedMinutes] = useState(45);
   const [customMinutes, setCustomMinutes] = useState('');
   const [sessionTask, setSessionTask] = useState('');
   const [sessions] = useState<FocusSession[]>(MOCK_SESSIONS);
   const [selectValue, setSelectValue] = useState('45');
+
+  // Pre-fill task from URL param
+  useEffect(() => {
+    if (taskId) {
+      // In a real app, fetch task details by ID
+      // For now, just indicate it's from tasks page
+      setSessionTask(`Task #${taskId}`);
+    }
+  }, [taskId]);
 
   const formatTimePreview = (minutes: number) => {
     const mins = minutes % 60;
@@ -176,7 +190,16 @@ export default function FocusPage() {
 
   return (
     <div className="flex flex-col">
-      <PageHeading>Focus</PageHeading>
+      <div className="flex items-center justify-between gap-2">
+        <PageHeading>Focus</PageHeading>
+        <Button
+          size="icon-sm"
+          variant="ghost"
+          tooltip="Configure dashboard cards"
+        >
+          <Settings2Icon />
+        </Button>
+      </div>
       <div className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard

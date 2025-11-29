@@ -54,3 +54,89 @@ export const getDueDateUrgency = (date: Date): 'today' | 'soon' | 'later' => {
   if (daysDiff > 0 && daysDiff <= 3) return 'soon';
   return 'later';
 };
+
+// Task-specific utilities
+export type Priority = 1 | 2 | 3 | 4;
+
+export interface Project {
+  id: string;
+  name: string;
+  color?: string;
+  createdAt: Date;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: Priority;
+  projectId?: string;
+  dueDate?: Date;
+  createdAt: Date;
+  completedAt?: Date;
+  focusSessionId?: string;
+}
+
+export const sortTasksByPriority = (tasks: Task[]) => {
+  return [...tasks].sort((a, b) => {
+    // Priority first (1 is highest)
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    // Then by creation date (newest first)
+    return b.createdAt.getTime() - a.createdAt.getTime();
+  });
+};
+
+export interface GroupedTasks {
+  overdue: Task[];
+  today: Task[];
+  tomorrow: Task[];
+  thisWeek: Task[];
+  later: Task[];
+}
+
+export const groupTasksByDate = (tasks: Task[]): GroupedTasks => {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const dayAfterTomorrow = new Date(today);
+  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+  const weekFromNow = new Date(today);
+  weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+  const grouped: GroupedTasks = {
+    overdue: [],
+    today: [],
+    tomorrow: [],
+    thisWeek: [],
+    later: [],
+  };
+
+  tasks.forEach((task) => {
+    if (!task.dueDate) {
+      grouped.later.push(task);
+      return;
+    }
+
+    const taskDate = new Date(
+      task.dueDate.getFullYear(),
+      task.dueDate.getMonth(),
+      task.dueDate.getDate()
+    );
+
+    if (taskDate < today) {
+      grouped.overdue.push(task);
+    } else if (taskDate.getTime() === today.getTime()) {
+      grouped.today.push(task);
+    } else if (taskDate.getTime() === tomorrow.getTime()) {
+      grouped.tomorrow.push(task);
+    } else if (taskDate >= dayAfterTomorrow && taskDate <= weekFromNow) {
+      grouped.thisWeek.push(task);
+    } else {
+      grouped.later.push(task);
+    }
+  });
+
+  return grouped;
+};

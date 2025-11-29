@@ -17,7 +17,7 @@ import { SELECT_TRIGGER_STYLES } from '@/utils/chart';
 import { cn } from '@/utils/utils';
 import { useState } from 'react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
-import { DashboardCard } from '../card';
+import { ContentCard } from './content-card';
 
 type TimePeriod = '7' | '30' | '60' | '90';
 
@@ -65,7 +65,7 @@ export const GenericAreaChart = <TData extends Record<string, unknown>>({
   const yKey = String(yAxisKey);
 
   return (
-    <DashboardCard
+    <ContentCard
       title={title}
       action={
         <Select
@@ -147,6 +147,6 @@ export const GenericAreaChart = <TData extends Record<string, unknown>>({
           />
         </AreaChart>
       </ChartContainer>
-    </DashboardCard>
+    </ContentCard>
   );
 };

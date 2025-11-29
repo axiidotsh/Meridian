@@ -1,8 +1,8 @@
 'use client';
 
+import { GenericAreaChart } from '@/app/(protected)/components/generic-area-chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { chartFormatters, createGradientId } from '@/utils/chart';
-import { GenericAreaChart } from './generic-area-chart';
 
 const chartData = [
   { date: 'Mon', minutes: 120 },

@@ -24,8 +24,8 @@ import {
   TrophyIcon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { DashboardCard } from '../dashboard/components/card';
-import { DashboardMetricCard } from '../dashboard/components/metric-card';
+import { ContentCard } from '../components/content-card';
+import { MetricCard } from '../components/metric-card';
 import { SessionDurationChart } from './components/session-duration-chart';
 
 const PRESET_TIMES = [
@@ -179,32 +179,32 @@ export default function FocusPage() {
       <PageHeading>Focus</PageHeading>
       <div className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DashboardMetricCard
+          <MetricCard
             title="Sessions Today"
             icon={TimerIcon}
             content={todaysSessions.length.toString()}
             footer="Personal Best: 8 sessions"
           />
-          <DashboardMetricCard
+          <MetricCard
             title="Total Time Today"
             icon={ClockPlusIcon}
             content={getTotalFocusTime()}
             footer="+45m from yesterday"
           />
-          <DashboardMetricCard
+          <MetricCard
             title="Highest Ever"
             icon={TrophyIcon}
             content="6h 30m"
             footer="Achieved 3 days ago"
           />
-          <DashboardMetricCard
+          <MetricCard
             title="Current Streak"
             icon={FlameIcon}
             content="3 days"
             footer="Personal Best: 12 days"
           />
         </div>
-        <DashboardCard
+        <ContentCard
           title="Start a new focus session"
           action={
             selectValue === 'custom' ? (
@@ -296,9 +296,9 @@ export default function FocusPage() {
               </Button>
             </div>
           </div>
-        </DashboardCard>
+        </ContentCard>
         <SessionDurationChart data={generateChartData()} />
-        <DashboardCard title="Recent Sessions">
+        <ContentCard title="Recent Sessions">
           <ul className="mt-4 space-y-4">
             {sessions.slice(0, 5).map((session, index) => (
               <li
@@ -331,7 +331,7 @@ export default function FocusPage() {
               </li>
             ))}
           </ul>
-        </DashboardCard>
+        </ContentCard>
       </div>
     </div>
   );

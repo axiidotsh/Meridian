@@ -15,7 +15,7 @@ import {
   type HeatmapDay,
 } from '@/utils/heatmap';
 import { cn } from '@/utils/utils';
-import { DashboardCard } from './card';
+import { ContentCard } from '../../components/content-card';
 
 export const ProductivityHeatmap = () => {
   const mockData = generateMockData();
@@ -23,7 +23,7 @@ export const ProductivityHeatmap = () => {
   const monthLabels = getMonthLabels(weeks);
 
   return (
-    <DashboardCard title="Productivity" contentClassName="mt-6 !px-0">
+    <ContentCard title="Productivity" contentClassName="mt-6 !px-0">
       <div className="flex flex-col gap-3">
         <div className="overflow-x-auto pb-2">
           <div className="flex min-w-fit justify-center gap-2 px-6">
@@ -90,7 +90,7 @@ export const ProductivityHeatmap = () => {
           <span>More</span>
         </div>
       </div>
-    </DashboardCard>
+    </ContentCard>
   );
 };
 

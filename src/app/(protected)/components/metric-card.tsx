@@ -1,21 +1,21 @@
 import { LucideIcon } from 'lucide-react';
-import { DashboardCard } from './card';
+import { ContentCard } from './content-card';
 
-interface DashboardMetricCardProps {
+interface MetricCardProps {
   title: string;
   icon: LucideIcon;
   content: string;
   footer?: string;
 }
 
-export const DashboardMetricCard = ({
+export const MetricCard = ({
   title,
   icon,
   content,
   footer,
-}: DashboardMetricCardProps) => {
+}: MetricCardProps) => {
   return (
-    <DashboardCard
+    <ContentCard
       title={title}
       icon={icon}
       contentClassName="mt-3"
@@ -26,6 +26,6 @@ export const DashboardMetricCard = ({
       }
     >
       <p className="text-2xl font-semibold">{content}</p>
-    </DashboardCard>
+    </ContentCard>
   );
 };

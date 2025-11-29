@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/utils/utils';
 import { PlusIcon } from 'lucide-react';
-import { DashboardCard } from './card';
+import { ContentCard } from '../../components/content-card';
 
 interface DashboardHabitProps {
   habit: string;
@@ -18,7 +18,7 @@ interface DashboardHabitsProps {
 
 export const DashboardHabits = ({ habits }: DashboardHabitsProps) => {
   return (
-    <DashboardCard
+    <ContentCard
       title="Habits"
       action={
         <Button size="icon-sm" variant="ghost" className="size-6">
@@ -52,6 +52,6 @@ export const DashboardHabits = ({ habits }: DashboardHabitsProps) => {
           </li>
         ))}
       </ul>
-    </DashboardCard>
+    </ContentCard>
   );
 };

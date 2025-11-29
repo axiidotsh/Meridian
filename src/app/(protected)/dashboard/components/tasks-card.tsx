@@ -3,7 +3,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { formatDueDate, getDueDateUrgency } from '@/utils/date';
 import { cn } from '@/utils/utils';
 import { PlusIcon } from 'lucide-react';
-import { DashboardCard } from './card';
+import { ContentCard } from '../../components/content-card';
 
 interface DashboardTaskProps {
   task: string;
@@ -17,7 +17,7 @@ interface DashboardTasksProps {
 
 export const DashboardTasks = ({ tasks }: DashboardTasksProps) => {
   return (
-    <DashboardCard
+    <ContentCard
       title="Tasks"
       action={
         <Button size="icon-sm" variant="ghost" className="size-6">
@@ -60,6 +60,6 @@ export const DashboardTasks = ({ tasks }: DashboardTasksProps) => {
           </li>
         ))}
       </ul>
-    </DashboardCard>
+    </ContentCard>
   );
 };

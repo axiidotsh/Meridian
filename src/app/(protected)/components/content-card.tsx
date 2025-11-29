@@ -9,7 +9,7 @@ import { cn } from '@/utils/utils';
 import { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-interface DashboardCardProps {
+interface ContentCardProps {
   title: ReactNode;
   icon?: LucideIcon;
   action?: ReactNode;
@@ -19,7 +19,7 @@ interface DashboardCardProps {
   children: ReactNode;
 }
 
-export const DashboardCard = ({
+export const ContentCard = ({
   title,
   icon: Icon,
   action,
@@ -27,7 +27,7 @@ export const DashboardCard = ({
   className,
   contentClassName,
   children,
-}: DashboardCardProps) => {
+}: ContentCardProps) => {
   return (
     <Card
       className={cn(

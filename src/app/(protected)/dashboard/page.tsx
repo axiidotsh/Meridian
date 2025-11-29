@@ -9,13 +9,13 @@ import {
   TimerIcon,
   TrophyIcon,
 } from 'lucide-react';
+import { MetricCard } from '../components/metric-card';
 import { FocusTimeAreaChart } from './components/charts/focus-time';
 import { HabitCompletionAreaChart } from './components/charts/habit-completion';
 import { TaskCompletionAreaChart } from './components/charts/task-completion';
-import { DashboardHabits } from './components/habits';
-import { DashboardMetricCard } from './components/metric-card';
-import { ProductivityHeatmap } from './components/productivity-heatmap';
-import { DashboardTasks } from './components/tasks';
+import { DashboardHabits } from './components/habits-card';
+import { ProductivityHeatmap } from './components/productivity-heatmap-card';
+import { DashboardTasks } from './components/tasks-card';
 
 const dashboardMetrics = [
   {
@@ -140,7 +140,7 @@ export default function DashboardPage() {
       <div className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {dashboardMetrics.map((metric) => (
-            <DashboardMetricCard key={metric.title} {...metric} />
+            <MetricCard key={metric.title} {...metric} />
           ))}
         </div>
         <div className="grid gap-4 lg:grid-cols-2">

@@ -2,7 +2,7 @@
 
 import type { ChartConfig } from '@/components/ui/chart';
 import { chartFormatters, createGradientId } from '@/utils/chart';
-import { GenericAreaChart } from '../../dashboard/components/charts/generic-area-chart';
+import { GenericAreaChart } from '../../components/generic-area-chart';
 
 interface SessionData extends Record<string, unknown> {
   date: string;

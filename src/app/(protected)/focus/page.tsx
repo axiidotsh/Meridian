@@ -26,6 +26,7 @@ import {
 import { useState } from 'react';
 import { DashboardCard } from '../dashboard/components/card';
 import { DashboardMetricCard } from '../dashboard/components/metric-card';
+import { SessionDurationChart } from './components/session-duration-chart';
 
 const PRESET_TIMES = [
   { label: '15 min', minutes: 15 },
@@ -140,6 +141,38 @@ export default function FocusPage() {
   };
 
   const todaysSessions = getTodaysSessions();
+
+  // Generate chart data from sessions (last 7 days)
+  const generateChartData = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    const chartData = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+
+      const daySessions = sessions.filter((session) => {
+        if (!session.completedAt) return false;
+        const sessionDate = new Date(session.startedAt);
+        sessionDate.setHours(0, 0, 0, 0);
+        return sessionDate.getTime() === date.getTime();
+      });
+
+      const totalDuration = daySessions.reduce(
+        (acc, session) => acc + session.duration,
+        0
+      );
+
+      chartData.push({
+        date: days[date.getDay()],
+        duration: totalDuration,
+      });
+    }
+
+    return chartData;
+  };
 
   return (
     <div className="flex flex-col">
@@ -264,6 +297,7 @@ export default function FocusPage() {
             </div>
           </div>
         </DashboardCard>
+        <SessionDurationChart data={generateChartData()} />
         <DashboardCard title="Recent Sessions">
           <ul className="mt-4 space-y-4">
             {sessions.slice(0, 5).map((session, index) => (

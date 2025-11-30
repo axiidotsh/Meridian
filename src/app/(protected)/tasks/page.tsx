@@ -1,26 +1,14 @@
 'use client';
 
 import { PageHeading } from '@/components/page-heading';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ChartConfig } from '@/components/ui/chart';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAtomValue } from 'jotai';
 import {
   CheckCircle2Icon,
-  ClipboardCheckIcon,
-  EllipsisIcon,
-  ListChecksIcon,
-  PencilIcon,
+  CircleDashed,
+  ListTodoIcon,
   Settings2Icon,
-  Trash2Icon,
   TrendingUpIcon,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -34,15 +22,7 @@ import {
   sortByAtom,
 } from './components/task-atoms';
 import { TaskListActions } from './components/task-list-actions';
-
-interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  dueDate?: Date;
-  priority: 'low' | 'medium' | 'high';
-  tags?: string[];
-}
+import { type Task, TasksList } from './components/tasks-list';
 
 const MOCK_TASKS: Task[] = [
   {
@@ -307,39 +287,6 @@ export default function TasksPage() {
   const filteredTasks = filterTasks(tasks, searchQuery, selectedTags);
   const sortedTasks = sortTasks(filteredTasks, sortBy);
 
-  const formatDueDate = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(date);
-    dueDate.setHours(0, 0, 0, 0);
-
-    const diffTime = dueDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays < 0) {
-      return `${Math.abs(diffDays)} days overdue`;
-    } else if (diffDays === 0) {
-      return 'Due today';
-    } else if (diffDays === 1) {
-      return 'Due tomorrow';
-    } else if (diffDays <= 7) {
-      return `Due in ${diffDays} days`;
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-      });
-    }
-  };
-
-  const isOverdue = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(date);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate < today;
-  };
-
   // Generate chart data for task completion over last 7 days
   const generateCompletionChartData = () => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -350,12 +297,12 @@ export default function TasksPage() {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
 
-      // Mock data for completed tasks per day
-      const completed = Math.floor(Math.random() * 5) + 1;
+      // Mock data for completion percentage per day
+      const completionRate = Math.floor(Math.random() * 40) + 60; // 60-100%
 
       chartData.push({
         date: days[date.getDay()],
-        completed,
+        completionRate,
       });
     }
 
@@ -365,8 +312,8 @@ export default function TasksPage() {
   const chartData = generateCompletionChartData();
 
   const chartConfig = {
-    completed: {
-      label: 'Completed Tasks',
+    completionRate: {
+      label: 'Completion Rate',
       color: '#3b82f6',
     },
   } satisfies ChartConfig;
@@ -387,24 +334,24 @@ export default function TasksPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Tasks"
-            icon={ClipboardCheckIcon}
+            icon={ListTodoIcon}
             content={getTotalTasks().toString()}
-            footer="+2 from last week"
+            footer="This week"
           />
           <MetricCard
             title="Completed"
             icon={CheckCircle2Icon}
             content={getCompletedTasks().toString()}
-            footer={`${getCompletionRate()} completion rate`}
+            footer="This week"
           />
           <MetricCard
             title="Pending"
-            icon={ListChecksIcon}
+            icon={CircleDashed}
             content={getPendingTasks().toString()}
-            footer="3 due this week"
+            footer="This week"
           />
           <MetricCard
-            title="Productivity Score"
+            title="Completion Rate"
             icon={TrendingUpIcon}
             content="87%"
             footer="+5% from last week"
@@ -414,99 +361,19 @@ export default function TasksPage() {
           title="Task List"
           action={<TaskListActions tasks={tasks} />}
         >
-          <ScrollArea className="my-4 h-[600px]">
-            {tasks.length === 0 ? (
-              <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
-                <ClipboardCheckIcon className="size-12 opacity-20" />
-                <p className="text-sm font-medium">No tasks yet</p>
-                <p className="text-xs">Create your first task to get started</p>
-              </div>
-            ) : sortedTasks.length === 0 ? (
-              <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
-                <ListChecksIcon className="size-12 opacity-20" />
-                <p className="text-sm font-medium">No tasks found</p>
-                <p className="text-xs">Try adjusting your search or filters</p>
-              </div>
-            ) : (
-              <ul className="space-y-3 pr-4">
-                {sortedTasks.map((task) => (
-                  <li
-                    key={task.id}
-                    className="border-border flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0"
-                  >
-                    <Checkbox
-                      checked={task.completed}
-                      className="mt-0.5"
-                      aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
-                    />
-                    <div className="flex-1">
-                      <p
-                        className={`text-sm ${task.completed ? 'text-muted-foreground line-through' : ''}`}
-                      >
-                        {task.title}
-                      </p>
-                      {(task.dueDate || task.tags) && (
-                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                          {task.dueDate && (
-                            <span
-                              className={`font-mono text-xs ${
-                                isOverdue(task.dueDate) && !task.completed
-                                  ? 'text-destructive'
-                                  : 'text-muted-foreground'
-                              }`}
-                            >
-                              {formatDueDate(task.dueDate)}
-                            </span>
-                          )}
-                          {task.tags?.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="outline"
-                              className="h-5 text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="ghost"
-                          className="shrink-0"
-                          aria-label="Task options"
-                        >
-                          <EllipsisIcon />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <PencilIcon />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem variant="destructive">
-                          <Trash2Icon />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </ScrollArea>
+          <TasksList tasks={tasks} sortedTasks={sortedTasks} />
         </ContentCard>
         <GenericAreaChart
           title="Task Completion Trend"
           data={chartData}
           xAxisKey="date"
-          yAxisKey="completed"
+          yAxisKey="completionRate"
           chartConfig={chartConfig}
           color="#3b82f6"
           gradientId="taskCompletionGradient"
-          tooltipFormatter={(value) => `${value} tasks`}
+          yAxisFormatter={(value) => `${value}%`}
+          tooltipFormatter={(value) => `${value}%`}
+          yAxisDomain={[0, 100]}
         />
       </div>
     </div>

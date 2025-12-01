@@ -10,11 +10,9 @@ export default function ProtectedLayout({
   return (
     <SidebarProvider defaultOpen={false} open={false}>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="flex flex-col">
         <AppHeader />
-        <main className="mx-auto w-full p-5 pt-4 pb-8">
-          <div className="mx-auto w-full max-w-7xl">{children}</div>
-        </main>
+        <main className="flex-1">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

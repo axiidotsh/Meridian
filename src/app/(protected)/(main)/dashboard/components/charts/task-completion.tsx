@@ -1,6 +1,6 @@
 'use client';
 
-import { GenericAreaChart } from '@/app/(protected)/components/generic-area-chart';
+import { GenericAreaChart } from '@/app/(protected)/(main)/components/generic-area-chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { chartDomains, chartFormatters, createGradientId } from '@/utils/chart';
 

@@ -11,15 +11,20 @@ import {
 import { Kbd } from '@/components/ui/kbd';
 import { cn } from '@/utils/utils';
 import {
-  CheckSquare,
-  Clock,
-  LayoutDashboard,
-  ListTodo,
-  MessageSquarePlus,
-  Plus,
-  Repeat,
-  Timer,
+  BrainIcon,
+  CheckSquareIcon,
+  ClockPlusIcon,
+  GoalIcon,
+  LayoutDashboardIcon,
+  LayoutListIcon,
+  MessageCirclePlusIcon,
+  MonitorIcon,
+  MoonIcon,
+  PlusIcon,
+  SunIcon,
+  TimerIcon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -27,27 +32,27 @@ const pages = [
   {
     name: 'Dashboard',
     href: '/dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    name: 'Tasks',
-    href: '/tasks',
-    icon: ListTodo,
-  },
-  {
-    name: 'Habits',
-    href: '/habits',
-    icon: Repeat,
-  },
-  {
-    name: 'Focus',
-    href: '/focus',
-    icon: Clock,
+    icon: LayoutDashboardIcon,
   },
   {
     name: 'Chat',
     href: '/chat',
-    icon: MessageSquarePlus,
+    icon: BrainIcon,
+  },
+  {
+    name: 'Focus',
+    href: '/focus',
+    icon: ClockPlusIcon,
+  },
+  {
+    name: 'Tasks',
+    href: '/tasks',
+    icon: LayoutListIcon,
+  },
+  {
+    name: 'Habits',
+    href: '/habits',
+    icon: GoalIcon,
   },
 ];
 
@@ -55,22 +60,40 @@ const commands = [
   {
     name: 'Add new task',
     action: 'add-task',
-    icon: Plus,
+    icon: PlusIcon,
   },
   {
     name: 'Add new habit',
     action: 'add-habit',
-    icon: CheckSquare,
+    icon: CheckSquareIcon,
   },
   {
     name: 'Start focus session',
     action: 'start-focus',
-    icon: Timer,
+    icon: TimerIcon,
   },
   {
     name: 'Create new chat',
     action: 'new-chat',
-    icon: MessageSquarePlus,
+    icon: MessageCirclePlusIcon,
+  },
+];
+
+const themes = [
+  {
+    name: 'Light',
+    value: 'light',
+    icon: SunIcon,
+  },
+  {
+    name: 'Dark',
+    value: 'dark',
+    icon: MoonIcon,
+  },
+  {
+    name: 'System',
+    value: 'system',
+    icon: MonitorIcon,
   },
 ];
 
@@ -80,6 +103,7 @@ export function CommandMenu() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -125,7 +149,10 @@ export function CommandMenu() {
         className="bg-transparent **:data-[slot=command-input-wrapper]:flex-1 **:data-[slot=command-input-wrapper]:border-0 **:data-[slot=command-input-wrapper]:px-0"
         shouldFilter={true}
         value={value}
-        onValueChange={setValue}
+        onValueChange={(newValue) => {
+          setValue(newValue);
+          setOpen(true);
+        }}
       >
         <div className="flex w-full items-center">
           <CommandInput
@@ -137,11 +164,11 @@ export function CommandMenu() {
         </div>
         <div
           className={cn(
-            'bg-popover absolute top-full right-0 left-0 z-50 mt-5 overflow-hidden rounded-md border shadow-md',
+            'bg-popover absolute inset-x-0 top-full z-50 mt-5 overflow-hidden rounded-md border shadow-lg saturate-150 backdrop-blur-3xl',
             open ? 'block' : 'hidden'
           )}
         >
-          <CommandList>
+          <CommandList className="max-h-96">
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Pages">
               {pages.map((page) => (
@@ -154,7 +181,7 @@ export function CommandMenu() {
                     });
                   }}
                 >
-                  <page.icon className="size-4" />
+                  <page.icon className="size-3.5" />
                   <span>{page.name}</span>
                 </CommandItem>
               ))}
@@ -171,8 +198,24 @@ export function CommandMenu() {
                     });
                   }}
                 >
-                  <command.icon className="size-4" />
+                  <command.icon className="size-3.5" />
                   <span>{command.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Theme">
+              {themes.map((theme) => (
+                <CommandItem
+                  key={theme.value}
+                  value={`theme ${theme.name}`}
+                  onSelect={() => {
+                    handleSelect(() => {
+                      setTheme(theme.value);
+                    });
+                  }}
+                >
+                  <theme.icon className="size-3.5" />
+                  <span>{theme.name}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

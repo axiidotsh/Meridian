@@ -2,6 +2,7 @@
 
 import { SearchBar } from '@/components/search-bar';
 import { Button } from '@/components/ui/button';
+import { ButtonGroup } from '@/components/ui/button-group';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -118,11 +119,6 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
   const hasActiveFilters =
     selectedTags.length > 0 || selectedProjects.length > 0;
 
-  const getProjectNameById = (projectId: string): string => {
-    const project = getAllProjects().find((p) => p.id === projectId);
-    return project?.name || projectId;
-  };
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -130,176 +126,178 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
           placeholder="Search tasks..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="mr-1 w-[200px] border focus:w-[250px]"
+          className="bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 mr-1 w-[200px] border shadow-xs focus:w-[250px]"
           expandOnFocus
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="icon-sm"
-              variant={hasActiveFilters ? 'default' : 'ghost'}
-              tooltip="Filter tasks"
-              className={cn(
-                'relative',
-                hasActiveFilters && 'bg-foreground/20! text-foreground'
-              )}
-            >
-              <FilterIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                Filter by projects
-                {selectedProjects.length > 0 && (
-                  <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
-                    {selectedProjects.length}
-                  </span>
+        <ButtonGroup>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="icon-sm"
+                variant="outline"
+                tooltip="Filter tasks"
+                className={cn(
+                  'relative',
+                  hasActiveFilters && 'bg-foreground/20! text-foreground'
                 )}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-56">
-                <div className="p-2">
-                  <Input
-                    type="text"
-                    placeholder="Search projects..."
-                    value={projectSearchQuery}
-                    onChange={(e) => setProjectSearchQuery(e.target.value)}
-                    className="h-8"
-                  />
-                </div>
-                <DropdownMenuSeparator />
-                <div className="max-h-[200px] overflow-y-auto">
-                  {getFilteredProjects().length === 0 ? (
-                    <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                      No projects found
-                    </div>
-                  ) : (
-                    getFilteredProjects().map((project) => (
-                      <DropdownMenuCheckboxItem
-                        key={project.id}
-                        checked={selectedProjects.includes(project.id)}
-                        onCheckedChange={() => toggleProject(project.id)}
-                      >
-                        {project.name}
-                      </DropdownMenuCheckboxItem>
-                    ))
+              >
+                <FilterIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  Filter by projects
+                  {selectedProjects.length > 0 && (
+                    <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
+                      {selectedProjects.length}
+                    </span>
                   )}
-                </div>
-                {selectedProjects.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={clearProjectFilters}
-                      className="justify-center"
-                    >
-                      Clear filters
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                Filter by tags
-                {selectedTags.length > 0 && (
-                  <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
-                    {selectedTags.length}
-                  </span>
-                )}
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-56">
-                <div className="p-2">
-                  <Input
-                    type="text"
-                    placeholder="Search tags..."
-                    value={tagSearchQuery}
-                    onChange={(e) => setTagSearchQuery(e.target.value)}
-                    className="h-8"
-                  />
-                </div>
-                <DropdownMenuSeparator />
-                <div className="max-h-[200px] overflow-y-auto">
-                  {getFilteredTags().length === 0 ? (
-                    <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                      No tags found
-                    </div>
-                  ) : (
-                    getFilteredTags().map((tag) => (
-                      <DropdownMenuCheckboxItem
-                        key={tag}
-                        checked={selectedTags.includes(tag)}
-                        onCheckedChange={() => toggleTag(tag)}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56">
+                  <div className="p-2">
+                    <Input
+                      type="text"
+                      placeholder="Search projects..."
+                      value={projectSearchQuery}
+                      onChange={(e) => setProjectSearchQuery(e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-[200px] overflow-y-auto">
+                    {getFilteredProjects().length === 0 ? (
+                      <div className="text-muted-foreground px-2 py-6 text-center text-sm">
+                        No projects found
+                      </div>
+                    ) : (
+                      getFilteredProjects().map((project) => (
+                        <DropdownMenuCheckboxItem
+                          key={project.id}
+                          checked={selectedProjects.includes(project.id)}
+                          onCheckedChange={() => toggleProject(project.id)}
+                        >
+                          {project.name}
+                        </DropdownMenuCheckboxItem>
+                      ))
+                    )}
+                  </div>
+                  {selectedProjects.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={clearProjectFilters}
+                        className="justify-center"
                       >
-                        {tag}
-                      </DropdownMenuCheckboxItem>
-                    ))
+                        Clear filters
+                      </DropdownMenuItem>
+                    </>
                   )}
-                </div>
-                {selectedTags.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={clearTagFilters}
-                      className="justify-center"
-                    >
-                      Clear filters
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon-sm" variant="ghost" tooltip="Sort tasks">
-              <ArrowDownUpIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'dueDate'}
-              onCheckedChange={() => setSortBy('dueDate')}
-            >
-              Sort by due date
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'priority'}
-              onCheckedChange={() => setSortBy('priority')}
-            >
-              Sort by priority
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'title'}
-              onCheckedChange={() => setSortBy('title')}
-            >
-              Sort by title
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'completed'}
-              onCheckedChange={() => setSortBy('completed')}
-            >
-              Sort by status
-            </DropdownMenuCheckboxItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon-sm" variant="ghost" tooltip="Create new...">
-              <PlusIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <ListTodoIcon />
-              Task
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <FolderIcon />
-              Project
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  Filter by tags
+                  {selectedTags.length > 0 && (
+                    <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
+                      {selectedTags.length}
+                    </span>
+                  )}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent className="w-56">
+                  <div className="p-2">
+                    <Input
+                      type="text"
+                      placeholder="Search tags..."
+                      value={tagSearchQuery}
+                      onChange={(e) => setTagSearchQuery(e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-[200px] overflow-y-auto">
+                    {getFilteredTags().length === 0 ? (
+                      <div className="text-muted-foreground px-2 py-6 text-center text-sm">
+                        No tags found
+                      </div>
+                    ) : (
+                      getFilteredTags().map((tag) => (
+                        <DropdownMenuCheckboxItem
+                          key={tag}
+                          checked={selectedTags.includes(tag)}
+                          onCheckedChange={() => toggleTag(tag)}
+                        >
+                          {tag}
+                        </DropdownMenuCheckboxItem>
+                      ))
+                    )}
+                  </div>
+                  {selectedTags.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={clearTagFilters}
+                        className="justify-center"
+                      >
+                        Clear filters
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-sm" variant="outline" tooltip="Sort tasks">
+                <ArrowDownUpIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuCheckboxItem
+                checked={sortBy === 'dueDate'}
+                onCheckedChange={() => setSortBy('dueDate')}
+              >
+                Sort by due date
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={sortBy === 'priority'}
+                onCheckedChange={() => setSortBy('priority')}
+              >
+                Sort by priority
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={sortBy === 'title'}
+                onCheckedChange={() => setSortBy('title')}
+              >
+                Sort by title
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={sortBy === 'completed'}
+                onCheckedChange={() => setSortBy('completed')}
+              >
+                Sort by status
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-sm" variant="outline" tooltip="Create new...">
+                <PlusIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <ListTodoIcon />
+                Task
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <FolderIcon />
+                Project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ButtonGroup>
       </div>
     </div>
   );

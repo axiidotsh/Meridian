@@ -1,36 +1,101 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+import {
+  BarChartIcon,
+  BrainIcon,
+  ChartSplineIcon,
+  ClockIcon,
+  FileTextIcon,
+  GoalIcon,
+  ListTodoIcon,
+  SparklesIcon,
+  TargetIcon,
+  TrendingUpIcon,
+} from 'lucide-react';
 import { useState } from 'react';
-import { ChatInput } from './components/chat-input';
+import { CategoryButton } from './components/category-button';
+import { PromptCard } from './components/prompt-card';
 
-const categories = ['Habits', 'Tasks', 'Focus', 'Analytics'] as const;
-type Category = (typeof categories)[number];
+type Category = 'Habits' | 'Tasks' | 'Focus' | 'Analysis';
 
-const prompts: Record<Category, string[]> = {
+const categories: Category[] = ['Habits', 'Tasks', 'Focus', 'Analysis'];
+
+const promptsByCategory: Record<
+  Category,
+  Array<{ content: string; icon: typeof GoalIcon }>
+> = {
   Habits: [
-    'Show my habit completion rate this week',
-    'What habits am I struggling with?',
-    'Create a new morning routine habit',
-    'Analyze my most consistent habits',
+    {
+      content: 'Which habits am I struggling with this month?',
+      icon: GoalIcon,
+    },
+    {
+      content: 'What are the best times for me to schedule my habits?',
+      icon: ClockIcon,
+    },
+    {
+      content: 'Compare my performance across different habit categories',
+      icon: ChartSplineIcon,
+    },
+    {
+      content: 'How are my habits contributing to my long-term goals?',
+      icon: TargetIcon,
+    },
   ],
   Tasks: [
-    'What are my high priority tasks today?',
-    'Show overdue tasks',
-    'Create a task for tomorrow',
-    'Summarize my task completion trends',
+    {
+      content: 'What tasks do I tend to procrastinate on?',
+      icon: ListTodoIcon,
+    },
+    {
+      content: 'How can I improve my high-priority task execution?',
+      icon: TrendingUpIcon,
+    },
+    {
+      content: 'Show my task load trends and predict burnout periods',
+      icon: BarChartIcon,
+    },
+    {
+      content: 'Which recurring tasks could be automated or batched?',
+      icon: SparklesIcon,
+    },
   ],
   Focus: [
-    'How much time did I focus this week?',
-    'Start a focus session',
-    'What are my most productive hours?',
-    'Compare my focus time to last month',
+    {
+      content: 'When are my most productive time blocks?',
+      icon: ClockIcon,
+    },
+    {
+      content: 'What distractions impact my deep work sessions most?',
+      icon: BrainIcon,
+    },
+    {
+      content: 'Create a focus strategy based on my energy levels',
+      icon: TargetIcon,
+    },
+    {
+      content: 'Show correlation between habits, tasks, and focus quality',
+      icon: ChartSplineIcon,
+    },
   ],
-  Analytics: [
-    'Show my overall productivity trends',
-    'What day of the week am I most productive?',
-    'Generate a weekly productivity report',
-    'Compare this month to last month',
+  Analysis: [
+    {
+      content: 'Generate a performance report for the last month',
+      icon: FileTextIcon,
+    },
+    {
+      content: 'What are my strongest productivity patterns?',
+      icon: TrendingUpIcon,
+    },
+    {
+      content: "Compare this month's performance against previous months",
+      icon: BarChartIcon,
+    },
+    {
+      content: 'Provide recommendations to optimize my routine',
+      icon: SparklesIcon,
+    },
   ],
 };
 
@@ -38,32 +103,33 @@ export default function ChatPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category>('Habits');
 
   return (
-    <div className="relative flex size-full items-center justify-center">
-      <div className="w-full max-w-2xl space-y-8">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Welcome back!</h1>
-        </div>
-        <div className="flex gap-2">
+    <div className="flex size-full items-center justify-center">
+      <div className="-mt-24 flex w-full max-w-2xl flex-col">
+        <h1 className="text-3xl font-bold">How can I help you today?</h1>
+        <div className="mt-8 flex items-baseline gap-2">
           {categories.map((category) => (
-            <Button
+            <CategoryButton
               key={category}
+              content={category}
+              isActive={selectedCategory === category}
               onClick={() => setSelectedCategory(category)}
-              variant="outline"
-            >
-              {category}
-            </Button>
+            />
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          {prompts[selectedCategory].map((prompt, index) => (
-            <Button key={index} variant="ghost" className="justify-start">
-              {prompt}
-            </Button>
+        <div className="mt-4 flex flex-col gap-1">
+          {promptsByCategory[selectedCategory].map((prompt, i) => (
+            <>
+              <PromptCard
+                key={prompt.content}
+                prompt={prompt.content}
+                icon={prompt.icon}
+              />
+              {i !== promptsByCategory[selectedCategory].length - 1 && (
+                <Separator className="my-1 opacity-50" />
+              )}
+            </>
           ))}
         </div>
-      </div>
-      <div className="absolute inset-x-0 bottom-5">
-        <ChatInput />
       </div>
     </div>
   );

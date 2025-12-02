@@ -105,7 +105,7 @@ export default function ChatPage() {
   return (
     <div className="flex size-full items-center justify-center">
       <div className="-mt-24 flex w-full max-w-2xl flex-col">
-        <h1 className="text-3xl font-bold">How can I help you today?</h1>
+        <h1 className="font-mono">Good morning, Aditya. How can I help you?</h1>
         <div className="mt-8 flex items-baseline gap-2">
           {categories.map((category) => (
             <CategoryButton

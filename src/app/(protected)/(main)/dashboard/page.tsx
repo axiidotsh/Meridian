@@ -28,19 +28,19 @@ const dashboardMetrics = [
     title: 'Tasks',
     icon: LayoutListIcon,
     content: '1/6',
-    footer: 'Personal Best: 3/6',
+    footer: 'Ahead of your usual pace',
   },
   {
     title: 'Habits',
     icon: GoalIcon,
     content: '4/6',
-    footer: 'Personal Best: 12/12',
+    footer: '67% weekly average',
   },
   {
-    title: 'Streak',
+    title: 'Overall Streak',
     icon: TrophyIcon,
     content: '12 days',
-    footer: 'Personal Best: 15 days',
+    footer: '3 days to beat your record',
   },
 ];
 

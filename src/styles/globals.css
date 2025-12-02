@@ -133,3 +133,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes wiggle {
+  0%,
+  30%,
+  100% {
+    transform: rotate(0deg);
+  }
+  5% {
+    transform: rotate(-10deg);
+  }
+  10% {
+    transform: rotate(10deg);
+  }
+  15% {
+    transform: rotate(-10deg);
+  }
+  20% {
+    transform: rotate(10deg);
+  }
+  25% {
+    transform: rotate(0deg);
+  }
+}

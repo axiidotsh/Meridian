@@ -290,7 +290,7 @@ export default function FocusPage() {
             )
           }
         >
-          <div className="flex flex-col items-center justify-center gap-8 py-12">
+          <div className="flex flex-col items-center justify-center gap-8 py-20">
             <span className="font-mono text-7xl font-bold">
               {formatTimePreview(selectedMinutes)}
             </span>

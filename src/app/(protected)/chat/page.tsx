@@ -1,5 +1,6 @@
 'use client';
 
+import { PlaceholderLogo } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
 import {
   BarChartIcon,
@@ -105,8 +106,11 @@ export default function ChatPage() {
   return (
     <div className="flex size-full items-center justify-center">
       <div className="-mt-24 flex w-full max-w-2xl flex-col">
-        <h1 className="font-mono">Good morning, Aditya. How can I help you?</h1>
-        <div className="mt-8 flex items-baseline gap-2">
+        <h1 className="flex items-center gap-3 font-mono text-xl">
+          <PlaceholderLogo className="size-8 animate-[wiggle_3s_ease-in-out_infinite]" />
+          Good morning, Aditya. How can I help you?
+        </h1>
+        <div className="mt-12 flex items-baseline gap-2">
           {categories.map((category) => (
             <CategoryButton
               key={category}

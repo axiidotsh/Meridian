@@ -6,3 +6,5 @@ export const sortByAtom = atom<SortOption>('dueDate');
 export const searchQueryAtom = atom('');
 export const selectedTagsAtom = atom<string[]>([]);
 export const tagSearchQueryAtom = atom('');
+export const selectedProjectsAtom = atom<string[]>([]);
+export const projectSearchQueryAtom = atom('');

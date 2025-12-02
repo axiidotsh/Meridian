@@ -18,6 +18,7 @@ import { MetricCard } from '../components/metric-card';
 import type { SortOption } from './components/task-atoms';
 import {
   searchQueryAtom,
+  selectedProjectsAtom,
   selectedTagsAtom,
   sortByAtom,
 } from './components/task-atoms';
@@ -25,197 +26,91 @@ import { TaskListActions } from './components/task-list-actions';
 import { type Task, TasksList } from './components/tasks-list';
 
 const MOCK_TASKS: Task[] = [
+  // Overdue tasks (2)
   {
     id: '1',
-    title: 'Review pull requests and merge updates',
+    title: 'Update API documentation',
     completed: false,
-    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+    dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
     priority: 'high',
-    tags: ['development', 'code-review'],
+    tags: ['documentation', 'urgent'],
+    projectId: '2',
+    projectName: 'Backend Infrastructure',
   },
   {
     id: '2',
-    title: 'Design new dashboard components',
+    title: 'Submit expense reports',
     completed: false,
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     priority: 'medium',
-    tags: ['design', 'ui'],
+    tags: ['personal', 'admin'],
   },
+  // Due today (3)
   {
     id: '3',
-    title: 'Update project documentation',
-    completed: true,
-    dueDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-    priority: 'low',
-    tags: ['documentation'],
+    title: 'Complete code review for authentication module',
+    completed: false,
+    dueDate: new Date(),
+    priority: 'high',
+    tags: ['code-review', 'urgent'],
+    projectId: '2',
+    projectName: 'Backend Infrastructure',
   },
   {
     id: '4',
-    title: 'Fix authentication bug in production',
+    title: 'Deploy hotfix to production',
     completed: false,
+    dueDate: new Date(),
     priority: 'high',
-    tags: ['bug', 'urgent'],
   },
   {
     id: '5',
-    title: 'Implement dark mode toggle',
+    title: 'Review design mockups with team',
     completed: false,
-    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     priority: 'medium',
-    tags: ['feature', 'ui'],
+    projectId: '1',
+    projectName: 'Website Redesign',
   },
+  // Due this week (3)
   {
     id: '6',
-    title: 'Optimize database queries',
-    completed: true,
+    title: 'Setup CI/CD pipeline',
+    completed: false,
+    dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     priority: 'high',
-    tags: ['performance', 'database'],
+    projectId: '4',
+    projectName: 'DevOps & Automation',
   },
   {
     id: '7',
-    title: 'Setup CI/CD pipeline',
+    title: 'Implement dark mode toggle',
     completed: false,
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     priority: 'medium',
-    tags: ['devops'],
+    tags: ['feature', 'ui'],
   },
   {
     id: '8',
     title: 'Write unit tests for new features',
     completed: false,
     priority: 'low',
-    tags: ['testing'],
   },
+  // Upcoming (2)
   {
     id: '9',
-    title: 'Refactor API endpoints for better performance',
-    completed: false,
-    dueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-    priority: 'high',
-    tags: ['development', 'performance'],
-  },
-  {
-    id: '10',
-    title: 'Update dependencies to latest versions',
-    completed: false,
-    dueDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
-    priority: 'low',
-    tags: ['development'],
-  },
-  {
-    id: '11',
     title: 'Create user onboarding flow',
     completed: false,
     dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
     priority: 'medium',
     tags: ['design', 'feature', 'ui'],
+    projectId: '3',
+    projectName: 'Mobile App',
   },
   {
-    id: '12',
-    title: 'Fix mobile responsiveness issues',
-    completed: false,
-    priority: 'high',
-    tags: ['bug', 'ui'],
-  },
-  {
-    id: '13',
-    title: 'Implement data export functionality',
-    completed: false,
-    dueDate: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
-    priority: 'medium',
-    tags: ['feature', 'development'],
-  },
-  {
-    id: '14',
-    title: 'Add logging and monitoring',
-    completed: true,
-    priority: 'high',
-    tags: ['devops'],
-  },
-  {
-    id: '15',
+    id: '10',
     title: 'Research new UI framework options',
     completed: false,
     dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
     priority: 'low',
-    tags: ['design', 'ui'],
-  },
-  {
-    id: '16',
-    title: 'Configure automated backups',
-    completed: false,
-    dueDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-    priority: 'high',
-    tags: ['devops', 'database', 'urgent'],
-  },
-  {
-    id: '17',
-    title: 'Write integration tests',
-    completed: false,
-    priority: 'medium',
-    tags: ['testing', 'development'],
-  },
-  {
-    id: '18',
-    title: 'Update API documentation',
-    completed: true,
-    dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-    priority: 'low',
-    tags: ['documentation'],
-  },
-  {
-    id: '19',
-    title: 'Implement webhook support',
-    completed: false,
-    dueDate: new Date(Date.now() + 9 * 24 * 60 * 60 * 1000),
-    priority: 'medium',
-    tags: ['feature', 'development'],
-  },
-  {
-    id: '20',
-    title: 'Fix memory leak in worker processes',
-    completed: false,
-    priority: 'high',
-    tags: ['bug', 'performance', 'urgent'],
-  },
-  {
-    id: '21',
-    title: 'Add email notification system',
-    completed: false,
-    dueDate: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000),
-    priority: 'medium',
-    tags: ['feature', 'development'],
-  },
-  {
-    id: '22',
-    title: 'Conduct security audit',
-    completed: false,
-    dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-    priority: 'high',
-    tags: ['devops', 'urgent'],
-  },
-  {
-    id: '23',
-    title: 'Create admin dashboard',
-    completed: false,
-    dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-    priority: 'medium',
-    tags: ['feature', 'ui', 'design'],
-  },
-  {
-    id: '24',
-    title: 'Optimize image loading',
-    completed: true,
-    priority: 'medium',
-    tags: ['performance', 'ui'],
-  },
-  {
-    id: '25',
-    title: 'Add search functionality',
-    completed: false,
-    dueDate: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000),
-    priority: 'high',
-    tags: ['feature', 'development'],
+    tags: ['research', 'ui'],
   },
 ];
 
@@ -224,19 +119,17 @@ export default function TasksPage() {
   const sortBy = useAtomValue(sortByAtom);
   const searchQuery = useAtomValue(searchQueryAtom);
   const selectedTags = useAtomValue(selectedTagsAtom);
+  const selectedProjects = useAtomValue(selectedProjectsAtom);
 
   const getTotalTasks = () => tasks.length;
   const getCompletedTasks = () => tasks.filter((t) => t.completed).length;
   const getPendingTasks = () => tasks.filter((t) => !t.completed).length;
-  const getCompletionRate = () => {
-    if (tasks.length === 0) return '0%';
-    return `${Math.round((getCompletedTasks() / getTotalTasks()) * 100)}%`;
-  };
 
   const filterTasks = (
     tasks: Task[],
     query: string,
-    tagFilters: string[]
+    tagFilters: string[],
+    projectFilters: string[]
   ): Task[] => {
     let filtered = tasks;
 
@@ -248,7 +141,10 @@ export default function TasksPage() {
         const tagsMatch = task.tags?.some((tag) =>
           tag.toLowerCase().includes(lowerQuery)
         );
-        return titleMatch || tagsMatch;
+        const projectMatch = task.projectName
+          ?.toLowerCase()
+          .includes(lowerQuery);
+        return titleMatch || tagsMatch || projectMatch;
       });
     }
 
@@ -256,6 +152,13 @@ export default function TasksPage() {
     if (tagFilters.length > 0) {
       filtered = filtered.filter((task) =>
         tagFilters.some((tag) => task.tags?.includes(tag))
+      );
+    }
+
+    // Filter by selected projects
+    if (projectFilters.length > 0) {
+      filtered = filtered.filter((task) =>
+        task.projectId ? projectFilters.includes(task.projectId) : false
       );
     }
 
@@ -284,7 +187,12 @@ export default function TasksPage() {
     });
   };
 
-  const filteredTasks = filterTasks(tasks, searchQuery, selectedTags);
+  const filteredTasks = filterTasks(
+    tasks,
+    searchQuery,
+    selectedTags,
+    selectedProjects
+  );
   const sortedTasks = sortTasks(filteredTasks, sortBy);
 
   // Generate chart data for task completion over last 7 days

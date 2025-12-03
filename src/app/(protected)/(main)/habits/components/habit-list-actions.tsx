@@ -100,12 +100,6 @@ export function HabitListActions({ habits }: HabitListActionsProps) {
             >
               Sort by title
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'status'}
-              onCheckedChange={() => setSortBy('status')}
-            >
-              Sort by status
-            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button size="icon-sm" variant="outline" tooltip="Add new habit">

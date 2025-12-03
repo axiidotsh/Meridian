@@ -11,7 +11,7 @@ import {
   Settings2Icon,
   TrendingUpIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ContentCard } from '../components/content-card';
 import { GenericAreaChart } from '../components/generic-area-chart';
 import { MetricCard } from '../components/metric-card';
@@ -181,11 +181,69 @@ MOCK_HABITS.forEach((habit, index) => {
   habit.completed = todayRecord?.completed || false;
 });
 
+// Helper to check if two dates are the same day
+const isSameDay = (date1: Date, date2: Date): boolean => {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
 export default function HabitsPage() {
-  const [habits] = useState<Habit[]>(MOCK_HABITS);
+  const [habits, setHabits] = useState<Habit[]>(MOCK_HABITS);
   const sortBy = useAtomValue(sortByAtom);
   const searchQuery = useAtomValue(searchQueryAtom);
   const statusFilter = useAtomValue(statusFilterAtom);
+
+  // Handle toggling a habit for a specific day
+  const handleToggleDay = useCallback((habitId: string, date: Date) => {
+    setHabits((prevHabits) =>
+      prevHabits.map((habit) => {
+        if (habit.id !== habitId) return habit;
+
+        // Find or create the completion record for this date
+        const existingRecordIndex = habit.completionHistory.findIndex(
+          (record) => isSameDay(new Date(record.date), date)
+        );
+
+        const newHistory = [...habit.completionHistory];
+
+        if (existingRecordIndex >= 0) {
+          // Toggle existing record
+          newHistory[existingRecordIndex] = {
+            ...newHistory[existingRecordIndex],
+            completed: !newHistory[existingRecordIndex].completed,
+          };
+        } else {
+          // Add new record
+          newHistory.push({ date: new Date(date), completed: true });
+        }
+
+        // Recalculate streak
+        const newStreak = calculateStreak(newHistory);
+
+        // Update today's completed status
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayRecord = newHistory.find((record) =>
+          isSameDay(new Date(record.date), today)
+        );
+        const todayCompleted = todayRecord?.completed || false;
+
+        // Update best streak if current streak is higher
+        const newBestStreak = Math.max(habit.bestStreak, newStreak);
+
+        return {
+          ...habit,
+          completionHistory: newHistory,
+          currentStreak: newStreak,
+          bestStreak: newBestStreak,
+          completed: todayCompleted,
+        };
+      })
+    );
+  }, []);
 
   const getTotalHabits = () => habits.length;
   const getCompletedToday = () => habits.filter((h) => h.completed).length;
@@ -230,16 +288,23 @@ export default function HabitsPage() {
 
   const sortHabits = (habits: Habit[], sortBy: SortOption): Habit[] => {
     return [...habits].sort((a, b) => {
+      let comparison = 0;
+
       switch (sortBy) {
         case 'streak':
-          return b.currentStreak - a.currentStreak;
+          comparison = b.currentStreak - a.currentStreak;
+          break;
         case 'title':
-          return a.title.localeCompare(b.title);
-        case 'status':
-          return a.completed === b.completed ? 0 : a.completed ? 1 : -1;
-        default:
-          return 0;
+          comparison = a.title.localeCompare(b.title);
+          break;
       }
+
+      // Use id as a stable tiebreaker to prevent reordering on toggle
+      if (comparison === 0) {
+        return a.id.localeCompare(b.id);
+      }
+
+      return comparison;
     });
   };
 
@@ -332,7 +397,11 @@ export default function HabitsPage() {
           title="Habit Tracker"
           action={<HabitListActions habits={habits} />}
         >
-          <HabitsList habits={habits} sortedHabits={sortedHabits} />
+          <HabitsList
+            habits={habits}
+            sortedHabits={sortedHabits}
+            onToggleDay={handleToggleDay}
+          />
         </ContentCard>
         <GenericAreaChart
           title="Habit Completion Trend"

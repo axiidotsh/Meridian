@@ -1,6 +1,6 @@
 import { atom } from 'jotai';
 
-export type SortOption = 'streak' | 'title' | 'status';
+export type SortOption = 'streak' | 'title';
 export type FilterOption = 'all' | 'completed' | 'pending';
 
 export const sortByAtom = atom<SortOption>('streak');

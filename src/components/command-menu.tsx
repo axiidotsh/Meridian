@@ -9,7 +9,11 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import { Kbd } from '@/components/ui/kbd';
-import { cn } from '@/utils/utils';
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from '@/components/ui/popover';
 import {
   BrainIcon,
   CheckSquareIcon,
@@ -26,7 +30,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 
 const pages = [
   {
@@ -100,73 +105,79 @@ const themes = [
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
-  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { setTheme } = useTheme();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-      }
-
-      // Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault();
-        setOpen((prev) => !prev);
-        inputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+  const reset = useCallback((shouldBlur = true) => {
+    setOpen(false);
+    setValue('');
+    if (shouldBlur) {
+      inputRef.current?.blur();
+    }
   }, []);
+
+  useHotkeys(
+    'mod+k',
+    (e) => {
+      e.preventDefault();
+      setOpen((prev) => {
+        if (!prev) inputRef.current?.focus();
+        return !prev;
+      });
+    },
+    { enableOnFormTags: true }
+  );
+
+  useHotkeys(
+    'escape',
+    () => {
+      reset();
+    },
+    { enableOnFormTags: true }
+  );
 
   const handleSelect = (callback: () => void) => {
     callback();
-    setOpen(false);
-    setValue('');
+    reset();
+  };
+
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      reset();
+    } else {
+      setOpen(true);
+    }
   };
 
   return (
-    <div ref={containerRef} className="relative flex w-full items-center">
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <Command
         className="bg-transparent **:data-[slot=command-input-wrapper]:flex-1 **:data-[slot=command-input-wrapper]:border-0 **:data-[slot=command-input-wrapper]:px-0"
         shouldFilter={true}
         value={value}
         onValueChange={(newValue) => {
           setValue(newValue);
-          setOpen(true);
+          if (newValue.length > 0) {
+            setOpen(true);
+          }
         }}
       >
-        <div className="flex w-full items-center">
-          <CommandInput
-            ref={inputRef}
-            placeholder="Search for items and commands..."
-            onFocus={() => setOpen(true)}
-          />
-          <Kbd>⌘K</Kbd>
-        </div>
-        <div
-          className={cn(
-            'bg-popover absolute inset-x-0 top-full z-50 mt-5 overflow-hidden rounded-md border shadow-lg saturate-150 backdrop-blur-3xl',
-            open ? 'block' : 'hidden'
-          )}
+        <PopoverAnchor asChild>
+          <div className="flex w-full items-center">
+            <CommandInput
+              ref={inputRef}
+              placeholder="Search for items and commands..."
+              onFocus={() => setOpen(true)}
+            />
+            <Kbd>⌘K</Kbd>
+          </div>
+        </PopoverAnchor>
+        <PopoverContent
+          className="w-(--radix-popover-trigger-width) p-0"
+          align="start"
+          sideOffset={20}
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <CommandList className="max-h-96">
             <CommandEmpty>No results found.</CommandEmpty>
@@ -220,8 +231,8 @@ export function CommandMenu() {
               ))}
             </CommandGroup>
           </CommandList>
-        </div>
+        </PopoverContent>
       </Command>
-    </div>
+    </Popover>
   );
 }

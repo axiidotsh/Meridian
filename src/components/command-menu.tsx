@@ -174,7 +174,7 @@ export function CommandMenu() {
           </div>
         </PopoverAnchor>
         <PopoverContent
-          className="w-(--radix-popover-trigger-width) p-0"
+          className="dark:bg-popover/70 bg-popover/50 w-(--radix-popover-trigger-width) p-0 shadow-lg backdrop-blur-xl backdrop-saturate-150"
           align="start"
           sideOffset={20}
           onOpenAutoFocus={(e) => e.preventDefault()}

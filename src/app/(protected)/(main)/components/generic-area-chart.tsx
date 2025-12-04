@@ -1,5 +1,6 @@
 'use client';
 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartConfig,
   ChartContainer,
@@ -13,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SELECT_TRIGGER_STYLES } from '@/utils/chart';
 import { cn } from '@/utils/utils';
 import { useState } from 'react';
@@ -21,7 +23,7 @@ import { ContentCard } from './content-card';
 
 type TimePeriod = '7' | '30' | '60' | '90';
 
-interface GenericAreaChartProps<TData extends Record<string, unknown>> {
+interface GenericAreaChartProps<TData> {
   // Card configuration
   title: string;
 
@@ -44,9 +46,10 @@ interface GenericAreaChartProps<TData extends Record<string, unknown>> {
   // Optional overrides
   yAxisDomain?: [number, number];
   chartHeight?: string;
+  isLoading?: boolean;
 }
 
-export const GenericAreaChart = <TData extends Record<string, unknown>>({
+export const GenericAreaChart = <TData,>({
   title,
   data,
   xAxisKey,
@@ -59,10 +62,27 @@ export const GenericAreaChart = <TData extends Record<string, unknown>>({
   tooltipLabelFormatter,
   yAxisDomain,
   chartHeight = 'h-64',
+  isLoading = false,
 }: GenericAreaChartProps<TData>) => {
   const [period, setPeriod] = useState<TimePeriod>('7');
   const xKey = String(xAxisKey);
   const yKey = String(yAxisKey);
+
+  if (isLoading) {
+    return (
+      <Card className="bg-dashboard-card gap-0 rounded-sm shadow-none">
+        <CardHeader className="flex flex-row items-center justify-between gap-2">
+          <CardTitle className="text-muted-foreground font-mono text-sm font-normal">
+            <Skeleton className="h-4 w-48" />
+          </CardTitle>
+          <Skeleton className="h-8 w-20" />
+        </CardHeader>
+        <CardContent className="mt-6">
+          <Skeleton className={cn(chartHeight, 'w-full')} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <ContentCard

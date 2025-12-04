@@ -6,33 +6,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAtomValue } from 'jotai';
 import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@/components/ui/empty';
-import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
-  AlertCircleIcon,
-  CheckIcon,
-  ChevronDownIcon,
   ClockPlusIcon,
   FlameIcon,
   MoreHorizontalIcon,
   PencilIcon,
-  RefreshCwIcon,
   Settings2Icon,
   TimerIcon,
   Trash2Icon,
@@ -42,25 +23,19 @@ import { useSearchParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { ContentCard } from '../components/content-card';
 import { MetricCard } from '../components/metric-card';
+import { selectedMinutesAtom } from './atoms/duration';
+import { DurationDropdown } from './components/duration-dropdown';
+import { FocusErrorState } from './components/focus-error-state';
 import { FocusTimer } from './components/focus-timer';
 import { SessionDeleteDialog } from './components/session-delete-dialog';
 import { SessionDurationChart } from './components/session-duration-chart';
 import { SessionEditDialog } from './components/session-edit-dialog';
+import { RecentSessionsSkeleton } from './components/skeletons/recent-sessions-skeleton';
+import { TimerSkeleton } from './components/skeletons/timer-skeleton';
 import type { FocusSession } from './hooks/types';
 import { useActiveSession } from './hooks/use-active-session';
 import { useFocusStats } from './hooks/use-focus-stats';
 import { useRecentSessions } from './hooks/use-recent-sessions';
-
-const DURATION_PRESETS = [15, 30, 45, 60, 90, 120] as const;
-
-function formatDurationLabel(minutes: number) {
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
-  }
-  return `${minutes}m`;
-}
 
 function formatSessionTime(dateString: string) {
   return new Date(dateString).toLocaleTimeString('en-US', {
@@ -170,9 +145,7 @@ export default function FocusPage() {
     refetch: refetchStats,
   } = useFocusStats();
 
-  const [selectedMinutes, setSelectedMinutes] = useState(45);
-  const [customMinutes, setCustomMinutes] = useState('');
-  const [isCustomDuration, setIsCustomDuration] = useState(false);
+  const selectedMinutes = useAtomValue(selectedMinutesAtom);
   const [editingSession, setEditingSession] = useState<FocusSession | null>(
     null
   );
@@ -231,114 +204,13 @@ export default function FocusPage() {
     if (isStatsError) refetchStats();
   };
 
-  const handleSelectPreset = (minutes: number) => {
-    setSelectedMinutes(minutes);
-    setIsCustomDuration(false);
-    setCustomMinutes('');
-  };
-
-  const handleCustomMinutesChange = (value: string) => {
-    const numValue = value.replace(/\D/g, '');
-    setCustomMinutes(numValue);
-    if (numValue) {
-      const mins = Math.min(Math.max(parseInt(numValue, 10), 1), 480);
-      setSelectedMinutes(mins);
-    }
-  };
-
-  const handleCustomMinutesSubmit = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && customMinutes) {
-      const mins = Math.min(Math.max(parseInt(customMinutes, 10), 1), 480);
-      setSelectedMinutes(mins);
-      setCustomMinutes(mins.toString());
-    }
-  };
-
-  const handleResetDuration = () => {
-    setSelectedMinutes(45);
-    setCustomMinutes('');
-    setIsCustomDuration(false);
-  };
-
-  const durationDropdown = (
-    <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1"
-                disabled={hasActiveSession}
-              >
-                {formatDurationLabel(selectedMinutes)}
-                <ChevronDownIcon className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-          </span>
-        </TooltipTrigger>
-        {hasActiveSession && (
-          <TooltipContent>A session is active</TooltipContent>
-        )}
-      </Tooltip>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Duration</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {DURATION_PRESETS.map((minutes) => (
-          <DropdownMenuItem
-            key={minutes}
-            onClick={() => handleSelectPreset(minutes)}
-          >
-            <span className="flex-1">{formatDurationLabel(minutes)}</span>
-            {selectedMinutes === minutes && !isCustomDuration && (
-              <CheckIcon className="size-4" />
-            )}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <div>
-          <Input
-            placeholder="Custom (min)..."
-            value={customMinutes}
-            onChange={(e) => {
-              setIsCustomDuration(true);
-              handleCustomMinutesChange(e.target.value);
-            }}
-            onKeyDown={handleCustomMinutesSubmit}
-            className="h-8 border-0 bg-transparent! ring-0!"
-            type="text"
-            inputMode="numeric"
-          />
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
   if (hasError) {
     return (
       <div className="flex flex-col">
         <div className="flex items-center justify-between gap-2">
           <PageHeading>Focus</PageHeading>
         </div>
-        <div className="mt-4">
-          <Empty className="border py-16">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <AlertCircleIcon className="text-destructive" />
-              </EmptyMedia>
-              <EmptyTitle>Failed to load focus data</EmptyTitle>
-              <EmptyDescription>
-                Something went wrong while fetching your focus sessions. Please
-                try again.
-              </EmptyDescription>
-            </EmptyHeader>
-            <Button onClick={handleRetry} variant="outline">
-              <RefreshCwIcon />
-              Retry
-            </Button>
-          </Empty>
-        </div>
+        <FocusErrorState onRetry={handleRetry} />
       </div>
     );
   }
@@ -360,120 +232,52 @@ export default function FocusPage() {
           <MetricCard
             title="Sessions Today"
             icon={TimerIcon}
-            content={
-              isLoadingSessions ? (
-                <Skeleton className="h-8 w-12" />
-              ) : (
-                todaysCompleted.length.toString()
-              )
-            }
-            footer={
-              isLoadingMetrics ? (
-                <Skeleton className="h-3 w-28" />
-              ) : (
-                metrics.personalBestSessions
-              )
-            }
+            content={todaysCompleted.length.toString()}
+            footer={metrics.personalBestSessions}
+            isLoading={isLoadingSessions || isLoadingMetrics}
           />
           <MetricCard
             title="Total Time Today"
             icon={ClockPlusIcon}
-            content={
-              isLoadingSessions ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                totalFocusTime
-              )
-            }
-            footer={
-              isLoadingSessions ? (
-                <Skeleton className="h-3 w-32" />
-              ) : (
-                metrics.timeDiffLabel
-              )
-            }
+            content={totalFocusTime}
+            footer={metrics.timeDiffLabel}
+            isLoading={isLoadingSessions}
           />
           <MetricCard
             title="Highest Ever"
             icon={TrophyIcon}
-            content={
-              isLoadingMetrics ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                metrics.highestEver
-              )
-            }
-            footer={
-              isLoadingMetrics ? (
-                <Skeleton className="h-3 w-28" />
-              ) : (
-                metrics.highestEverLabel
-              )
-            }
+            content={metrics.highestEver}
+            footer={metrics.highestEverLabel}
+            isLoading={isLoadingMetrics}
           />
           <MetricCard
             title="Current Streak"
             icon={FlameIcon}
-            content={
-              isLoadingMetrics ? (
-                <Skeleton className="h-8 w-16" />
-              ) : (
-                metrics.currentStreak
-              )
-            }
-            footer={
-              isLoadingMetrics ? (
-                <Skeleton className="h-3 w-28" />
-              ) : (
-                metrics.bestStreak
-              )
-            }
+            content={metrics.currentStreak}
+            footer={metrics.bestStreak}
+            isLoading={isLoadingMetrics}
           />
         </div>
-
         <ContentCard
           title={
             hasActiveSession ? 'Focus Session' : 'Start a new focus session'
           }
-          action={durationDropdown}
+          action={<DurationDropdown hasActiveSession={hasActiveSession} />}
         >
           {isLoadingActive ? (
-            <div className="flex flex-col items-center justify-center gap-8 py-20">
-              <Skeleton className="h-20 w-48" />
-              <Skeleton className="h-10 w-64" />
-              <div className="flex gap-2">
-                <Skeleton className="size-12 rounded-full" />
-                <Skeleton className="size-12 rounded-full" />
-              </div>
-            </div>
+            <TimerSkeleton />
           ) : (
             <FocusTimer
               activeSession={activeSession}
               taskId={taskId}
               selectedMinutes={selectedMinutes}
-              onResetDuration={handleResetDuration}
             />
           )}
         </ContentCard>
-
-        <SessionDurationChart data={chartData} />
-
+        <SessionDurationChart data={chartData} isLoading={isLoadingSessions} />
         <ContentCard title="Recent Sessions">
           {isLoadingSessions ? (
-            <div className="mt-4 space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between gap-4"
-                >
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-48" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-4 w-16" />
-                </div>
-              ))}
-            </div>
+            <RecentSessionsSkeleton />
           ) : recentSessions.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center text-sm">
               No sessions yet. Start your first focus session!
@@ -538,7 +342,6 @@ export default function FocusPage() {
           )}
         </ContentCard>
       </div>
-
       <SessionEditDialog
         session={editingSession}
         open={!!editingSession}

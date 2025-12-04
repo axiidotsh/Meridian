@@ -4,13 +4,14 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { chartFormatters, createGradientId } from '@/utils/chart';
 import { GenericAreaChart } from '../../components/generic-area-chart';
 
-interface SessionData extends Record<string, unknown> {
+interface SessionData {
   date: string;
   duration: number;
 }
 
 interface SessionDurationChartProps {
   data: SessionData[];
+  isLoading?: boolean;
 }
 
 const chartConfig = {
@@ -20,7 +21,10 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export const SessionDurationChart = ({ data }: SessionDurationChartProps) => {
+export const SessionDurationChart = ({
+  data,
+  isLoading = false,
+}: SessionDurationChartProps) => {
   return (
     <GenericAreaChart
       title="Session Duration Timeline"
@@ -34,6 +38,7 @@ export const SessionDurationChart = ({ data }: SessionDurationChartProps) => {
       yAxisFormatter={chartFormatters.time.yAxis}
       tooltipFormatter={chartFormatters.time.tooltip}
       tooltipLabelFormatter={(value) => String(value)}
+      isLoading={isLoading}
     />
   );
 };

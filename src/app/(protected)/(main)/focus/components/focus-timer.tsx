@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/utils/utils';
+import { useSetAtom } from 'jotai';
 import {
   CheckIcon,
   PauseIcon,
@@ -21,6 +22,12 @@ import {
   XIcon,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import {
+  customMinutesAtom,
+  isCustomDurationAtom,
+  selectedMinutesAtom,
+} from '../atoms/duration';
 import type { FocusSession } from '../hooks/types';
 import { useCancelSession } from '../hooks/use-cancel-session';
 import { useCompleteSession } from '../hooks/use-complete-session';
@@ -68,14 +75,12 @@ interface FocusTimerProps {
   activeSession: FocusSession | null | undefined;
   taskId?: string | null;
   selectedMinutes: number;
-  onResetDuration: () => void;
 }
 
 export function FocusTimer({
   activeSession,
   taskId,
   selectedMinutes,
-  onResetDuration,
 }: FocusTimerProps) {
   const startSession = useStartSession();
   const pauseSession = usePauseSession();
@@ -85,13 +90,19 @@ export function FocusTimer({
   const endSessionEarly = useEndSessionEarly();
   const updateSession = useUpdateSession();
 
+  const setSelectedMinutes = useSetAtom(selectedMinutesAtom);
+  const setCustomMinutes = useSetAtom(customMinutesAtom);
+  const setIsCustomDuration = useSetAtom(isCustomDurationAtom);
+
   const [sessionTask, setSessionTask] = useState('');
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [showEndEarlyDialog, setShowEndEarlyDialog] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasShownToastRef = useRef(false);
 
   useEffect(() => {
     if (taskId) {
@@ -139,7 +150,11 @@ export function FocusTimer({
   };
 
   useEffect(() => {
-    if (!activeSession) return;
+    if (!activeSession) {
+      setIsCompleted(false);
+      hasShownToastRef.current = false;
+      return;
+    }
 
     const updateTimer = () => {
       const remaining = calculateRemainingSeconds(
@@ -148,20 +163,26 @@ export function FocusTimer({
         activeSession.totalPausedSeconds,
         activeSession.pausedAt
       );
-      setRemainingSeconds(remaining);
 
-      if (remaining <= 0 && !showCompleteDialog) {
-        setShowCompleteDialog(true);
+      if (remaining <= 0 && !isCompleted && !hasShownToastRef.current) {
+        setRemainingSeconds(0);
+        setIsCompleted(true);
+        hasShownToastRef.current = true;
+        toast.success('Session complete!', {
+          description: `You completed ${activeSession.durationMinutes} minutes${activeSession.task ? ` on "${activeSession.task}"` : ''}`,
+        });
+      } else if (!isCompleted) {
+        setRemainingSeconds(remaining);
       }
     };
 
     updateTimer();
 
-    if (activeSession.status === 'ACTIVE') {
+    if (activeSession.status === 'ACTIVE' && !isCompleted) {
       const interval = setInterval(updateTimer, 1000);
       return () => clearInterval(interval);
     }
-  }, [activeSession, showCompleteDialog]);
+  }, [activeSession, isCompleted]);
 
   const formatTimePreview = (minutes: number) => {
     const mins = minutes % 60;
@@ -193,13 +214,22 @@ export function FocusTimer({
   const handleComplete = () => {
     if (!activeSession) return;
     completeSession.mutate({ param: { id: activeSession.id } });
-    setShowCompleteDialog(false);
+    setIsCompleted(false);
+    hasShownToastRef.current = false;
   };
 
   const handleCancel = () => {
     if (!activeSession) return;
     cancelSession.mutate({ param: { id: activeSession.id } });
     setShowCancelDialog(false);
+  };
+
+  const handleDiscard = () => {
+    if (!activeSession) return;
+    cancelSession.mutate({ param: { id: activeSession.id } });
+    setShowDiscardDialog(false);
+    setIsCompleted(false);
+    hasShownToastRef.current = false;
   };
 
   const handleEndEarly = () => {
@@ -209,14 +239,26 @@ export function FocusTimer({
   };
 
   const handleReset = () => {
-    onResetDuration();
+    setSelectedMinutes(45);
+    setCustomMinutes('');
+    setIsCustomDuration(false);
     setSessionTask('');
   };
 
   const isActive = activeSession?.status === 'ACTIVE';
   const isPaused = activeSession?.status === 'PAUSED';
   const hasActiveSession = isActive || isPaused;
-  const isOvertime = hasActiveSession && remainingSeconds < 0;
+
+  const isSessionNaturallyCompleted = activeSession
+    ? calculateRemainingSeconds(
+        activeSession.startedAt,
+        activeSession.durationMinutes,
+        activeSession.totalPausedSeconds,
+        activeSession.pausedAt
+      ) <= 0
+    : false;
+
+  const showCompletedUI = isCompleted || isSessionNaturallyCompleted;
 
   return (
     <>
@@ -225,12 +267,14 @@ export function FocusTimer({
           className={cn(
             'font-mono text-7xl font-bold tabular-nums',
             isPaused && 'animate-pulse text-amber-500',
-            isOvertime && 'text-destructive'
+            showCompletedUI && 'text-green-500/80'
           )}
         >
-          {hasActiveSession
-            ? formatTime(remainingSeconds)
-            : formatTimePreview(selectedMinutes)}
+          {showCompletedUI
+            ? '0:00'
+            : hasActiveSession
+              ? formatTime(remainingSeconds)
+              : formatTimePreview(selectedMinutes)}
         </span>
 
         <div className="w-full max-w-md">
@@ -242,48 +286,57 @@ export function FocusTimer({
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          {!hasActiveSession ? (
-            <>
+        {showCompletedUI ? (
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-2">
               <Button
-                size="icon-lg"
-                variant="ghost"
-                tooltip="Start session"
-                onClick={handleStart}
-                disabled={startSession.isPending}
+                onClick={handleComplete}
+                disabled={completeSession.isPending}
               >
-                <PlayIcon />
+                <CheckIcon />
+                Save Session
               </Button>
               <Button
-                size="icon-lg"
-                variant="ghost"
-                tooltip="Reset"
-                onClick={handleReset}
+                variant="outline"
+                onClick={() => setShowDiscardDialog(true)}
               >
-                <RotateCcwIcon />
+                Discard
               </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                size="icon-lg"
-                variant="ghost"
-                tooltip={isPaused ? 'Resume' : 'Pause'}
-                onClick={handlePauseResume}
-                disabled={pauseSession.isPending || resumeSession.isPending}
-              >
-                {isPaused ? <PlayIcon /> : <PauseIcon />}
-              </Button>
-              {isOvertime ? (
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            {!hasActiveSession ? (
+              <>
                 <Button
                   size="icon-lg"
                   variant="ghost"
-                  tooltip="Complete session"
-                  onClick={() => setShowCompleteDialog(true)}
+                  tooltip="Start session"
+                  onClick={handleStart}
+                  disabled={startSession.isPending}
                 >
-                  <CheckIcon />
+                  <PlayIcon />
                 </Button>
-              ) : (
+                <Button
+                  size="icon-lg"
+                  variant="ghost"
+                  tooltip="Reset"
+                  onClick={handleReset}
+                >
+                  <RotateCcwIcon />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="icon-lg"
+                  variant="ghost"
+                  tooltip={isPaused ? 'Resume' : 'Pause'}
+                  onClick={handlePauseResume}
+                  disabled={pauseSession.isPending || resumeSession.isPending}
+                >
+                  {isPaused ? <PlayIcon /> : <PauseIcon />}
+                </Button>
                 <Button
                   size="icon-lg"
                   variant="ghost"
@@ -292,18 +345,18 @@ export function FocusTimer({
                 >
                   <SquareIcon />
                 </Button>
-              )}
-              <Button
-                size="icon-lg"
-                variant="ghost"
-                tooltip="Cancel session"
-                onClick={() => setShowCancelDialog(true)}
-              >
-                <XIcon />
-              </Button>
-            </>
-          )}
-        </div>
+                <Button
+                  size="icon-lg"
+                  variant="ghost"
+                  tooltip="Cancel session"
+                  onClick={() => setShowCancelDialog(true)}
+                >
+                  <XIcon />
+                </Button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
@@ -330,30 +383,6 @@ export function FocusTimer({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Session Complete!</DialogTitle>
-            <DialogDescription>
-              Great job! You&apos;ve completed your{' '}
-              {activeSession?.durationMinutes} minute focus session
-              {activeSession?.task ? ` on "${activeSession.task}"` : ''}.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Keep Going</Button>
-            </DialogClose>
-            <Button
-              onClick={handleComplete}
-              disabled={completeSession.isPending}
-            >
-              Complete Session
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <Dialog open={showEndEarlyDialog} onOpenChange={setShowEndEarlyDialog}>
         <DialogContent showCloseButton={false}>
           <DialogHeader>
@@ -372,6 +401,30 @@ export function FocusTimer({
               disabled={endSessionEarly.isPending}
             >
               End Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Discard Completed Session?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to discard this session? This action cannot
+              be undone and the session will not be saved.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDiscard}
+              disabled={cancelSession.isPending}
+            >
+              Discard Session
             </Button>
           </DialogFooter>
         </DialogContent>

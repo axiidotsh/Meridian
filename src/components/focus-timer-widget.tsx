@@ -55,11 +55,9 @@ function calculateRemainingSeconds(
 }
 
 function formatTime(seconds: number): string {
-  const absSeconds = Math.abs(seconds);
-  const mins = Math.floor(absSeconds / 60);
-  const secs = absSeconds % 60;
-  const sign = seconds < 0 ? '+' : '';
-  return `${sign}${mins}:${secs.toString().padStart(2, '0')}`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 export function FocusTimerWidget() {
@@ -83,13 +81,27 @@ export function FocusTimerWidget() {
         session.totalPausedSeconds,
         session.pausedAt
       );
-      setRemainingSeconds(remaining);
+      setRemainingSeconds((prev) => {
+        if (prev === 0 && remaining === 0) return 0;
+        return remaining;
+      });
+
+      if (remaining === 0) {
+        return true;
+      }
+      return false;
     };
 
-    updateTimer();
+    const shouldStop = updateTimer();
+    if (shouldStop) return;
 
     if (session.status === 'ACTIVE') {
-      const interval = setInterval(updateTimer, 1000);
+      const interval = setInterval(() => {
+        const shouldStop = updateTimer();
+        if (shouldStop) {
+          clearInterval(interval);
+        }
+      }, 1000);
       return () => clearInterval(interval);
     }
   }, [session]);
@@ -131,14 +143,15 @@ export function FocusTimerWidget() {
               'relative flex h-8 items-center gap-2 overflow-hidden rounded-md border px-2 font-mono text-sm font-medium transition-colors',
               'hover:bg-accent focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
               isPaused && 'animate-pulse border-amber-500/50',
-              isOvertime && 'border-destructive/50 text-destructive'
+              isOvertime &&
+                'border-green-500/50 text-green-600 dark:text-green-500'
             )}
           >
             <div
               className={cn(
                 'absolute inset-0 origin-left transition-transform duration-1000',
-                isPaused ? 'bg-amber-500/20' : 'bg-green-500/20',
-                isOvertime && 'bg-destructive/20'
+                isPaused ? 'bg-amber-500/40' : 'bg-green-500/40',
+                isOvertime && 'bg-green-500/20'
               )}
               style={{ transform: `scaleX(${progress / 100})` }}
             />

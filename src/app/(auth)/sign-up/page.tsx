@@ -117,7 +117,7 @@ export default function SignUpPage() {
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <GoogleSignInButton disabled={isPending} />
-        <FieldSeparator>OR</FieldSeparator>
+        <FieldSeparator contentClassName="bg-card">OR</FieldSeparator>
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup className="gap-4">
             <Field data-invalid={!!errors.name}>

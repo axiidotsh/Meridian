@@ -3,10 +3,15 @@ import { Toaster } from '@/components/ui/sonner';
 import '@/styles/globals.css';
 import { cn } from '@/utils/utils';
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 
-const fontSans = Inter({
+const fontSans = Geist({
   variable: '--font-sans',
+  subsets: ['latin'],
+});
+
+const fontMono = Geist_Mono({
+  variable: '--font-mono',
   subsets: ['latin'],
 });
 
@@ -25,6 +30,7 @@ export default function RootLayout({
       <body
         className={cn(
           fontSans.variable,
+          fontMono.variable,
           process.env.NODE_ENV === 'development' && 'debug-screens',
           'antialiased'
         )}

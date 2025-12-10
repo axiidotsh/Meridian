@@ -14,6 +14,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover';
+import { signOut } from '@/lib/auth-client';
 import {
   BrainIcon,
   CheckSquareIcon,
@@ -21,6 +22,7 @@ import {
   GoalIcon,
   LayoutDashboardIcon,
   LayoutListIcon,
+  LogOutIcon,
   MessageCirclePlusIcon,
   MonitorIcon,
   MoonIcon,
@@ -102,6 +104,14 @@ const themes = [
   },
 ];
 
+const accountActions = [
+  {
+    name: 'Sign out',
+    action: 'sign-out',
+    icon: LogOutIcon,
+  },
+];
+
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
@@ -155,13 +165,6 @@ export function CommandMenu() {
       <Command
         className="bg-transparent **:data-[slot=command-input-wrapper]:flex-1 **:data-[slot=command-input-wrapper]:border-0 **:data-[slot=command-input-wrapper]:px-0"
         shouldFilter={true}
-        value={value}
-        onValueChange={(newValue) => {
-          setValue(newValue);
-          if (newValue.length > 0) {
-            setOpen(true);
-          }
-        }}
       >
         <PopoverAnchor asChild>
           <div className="flex w-full items-center">
@@ -169,6 +172,8 @@ export function CommandMenu() {
               ref={inputRef}
               placeholder="Search for items and commands..."
               onFocus={() => setOpen(true)}
+              value={value}
+              onValueChange={setValue}
             />
             <Kbd>⌘K</Kbd>
           </div>
@@ -227,6 +232,24 @@ export function CommandMenu() {
                 >
                   <theme.icon className="size-3.5" />
                   <span>{theme.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            <CommandGroup heading="Account">
+              {accountActions.map((action) => (
+                <CommandItem
+                  key={action.action}
+                  value={action.name}
+                  onSelect={() => {
+                    handleSelect(() => {
+                      if (action.action === 'sign-out') {
+                        signOut();
+                      }
+                    });
+                  }}
+                >
+                  <action.icon className="size-3.5" />
+                  <span>{action.name}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

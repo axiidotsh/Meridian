@@ -86,7 +86,7 @@ export function DurationDropdown({ hasActiveSession }: DurationDropdownProps) {
           <TooltipContent>A session is active</TooltipContent>
         )}
       </Tooltip>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-40">
         <DropdownMenuLabel>Duration</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {DURATION_PRESETS.map((minutes) => (

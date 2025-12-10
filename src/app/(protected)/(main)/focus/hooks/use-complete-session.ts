@@ -4,6 +4,10 @@ import { useApiMutation } from './use-api-mutation';
 
 export function useCompleteSession() {
   return useApiMutation(api.focus.sessions[':id'].complete.$patch, {
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession, FOCUS_QUERY_KEYS.sessions],
+    invalidateKeys: [
+      FOCUS_QUERY_KEYS.activeSession,
+      FOCUS_QUERY_KEYS.sessions,
+      FOCUS_QUERY_KEYS.stats,
+    ],
   });
 }

@@ -3,9 +3,9 @@ import { Toaster } from '@/components/ui/sonner';
 import '@/styles/globals.css';
 import { cn } from '@/utils/utils';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist_Mono, Inter } from 'next/font/google';
 
-const fontSans = Geist({
+const fontSans = Inter({
   variable: '--font-sans',
   subsets: ['latin'],
 });

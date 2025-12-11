@@ -71,6 +71,59 @@ function formatTime(seconds: number): string {
   return `${sign}${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+interface CircularProgressProps {
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+  children?: React.ReactNode;
+}
+
+function CircularProgress({
+  progress,
+  size = 320,
+  strokeWidth = 8,
+  children,
+}: CircularProgressProps) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (progress / 100) * circumference;
+  const isCompleted = progress >= 100;
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          className="dark:text-muted text-muted-foreground/5"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          className={cn(
+            'text-primary transition-all duration-300',
+            isCompleted && 'text-green-500'
+          )}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 interface FocusTimerProps {
   activeSession: FocusSession | null | undefined;
   taskId?: string | null;
@@ -100,6 +153,7 @@ export function FocusTimer({
   const [showEndEarlyDialog, setShowEndEarlyDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [displayProgress, setDisplayProgress] = useState(0);
 
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasShownToastRef = useRef(false);
@@ -152,6 +206,7 @@ export function FocusTimer({
   useEffect(() => {
     if (!activeSession) {
       setIsCompleted(false);
+      setRemainingSeconds(0);
       hasShownToastRef.current = false;
       return;
     }
@@ -258,24 +313,41 @@ export function FocusTimer({
       ) <= 0
     : false;
 
-  const showCompletedUI = isCompleted || isSessionNaturallyCompleted;
+  const showCompletedUI =
+    activeSession && (isCompleted || isSessionNaturallyCompleted);
+
+  const totalSeconds = hasActiveSession
+    ? activeSession!.durationMinutes * 60
+    : selectedMinutes * 60;
+  const progress = hasActiveSession
+    ? Math.min(100, ((totalSeconds - remainingSeconds) / totalSeconds) * 100)
+    : 0;
+
+  useEffect(() => {
+    setDisplayProgress(progress);
+  }, [progress]);
 
   return (
     <>
       <div className="flex flex-col items-center justify-center gap-8 py-20">
-        <span
-          className={cn(
-            'font-mono text-7xl font-bold tabular-nums',
-            isPaused && 'animate-pulse text-amber-500',
-            showCompletedUI && 'text-green-500/80'
+        <CircularProgress progress={displayProgress}>
+          {showCompletedUI ? (
+            <span className="font-mono text-7xl font-bold tabular-nums">
+              {formatTimePreview(activeSession!.durationMinutes)}
+            </span>
+          ) : (
+            <span
+              className={cn(
+                'font-mono text-7xl font-bold tabular-nums',
+                isPaused && 'animate-pulse'
+              )}
+            >
+              {hasActiveSession
+                ? formatTime(remainingSeconds)
+                : formatTimePreview(selectedMinutes)}
+            </span>
           )}
-        >
-          {showCompletedUI
-            ? '0:00'
-            : hasActiveSession
-              ? formatTime(remainingSeconds)
-              : formatTimePreview(selectedMinutes)}
-        </span>
+        </CircularProgress>
 
         <div className="w-full max-w-md">
           <Input
@@ -331,6 +403,15 @@ export function FocusTimer({
                 <Button
                   size="icon-lg"
                   variant="ghost"
+                  tooltip="End session early"
+                  className="rounded-full"
+                  onClick={() => setShowEndEarlyDialog(true)}
+                >
+                  <SquareIcon />
+                </Button>
+                <Button
+                  size="icon"
+                  className="size-14 rounded-full"
                   tooltip={isPaused ? 'Resume' : 'Pause'}
                   onClick={handlePauseResume}
                   disabled={pauseSession.isPending || resumeSession.isPending}
@@ -340,15 +421,8 @@ export function FocusTimer({
                 <Button
                   size="icon-lg"
                   variant="ghost"
-                  tooltip="End session early"
-                  onClick={() => setShowEndEarlyDialog(true)}
-                >
-                  <SquareIcon />
-                </Button>
-                <Button
-                  size="icon-lg"
-                  variant="ghost"
                   tooltip="Cancel session"
+                  className="rounded-full"
                   onClick={() => setShowCancelDialog(true)}
                 >
                   <XIcon />
@@ -397,6 +471,7 @@ export function FocusTimer({
               <Button variant="outline">Keep Going</Button>
             </DialogClose>
             <Button
+              variant="destructive"
               onClick={handleEndEarly}
               disabled={endSessionEarly.isPending}
             >

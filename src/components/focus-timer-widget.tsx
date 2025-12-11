@@ -2,11 +2,13 @@
 
 import { useActiveSession } from '@/app/(protected)/(main)/focus/hooks/use-active-session';
 import { useCancelSession } from '@/app/(protected)/(main)/focus/hooks/use-cancel-session';
+import { useCompleteSession } from '@/app/(protected)/(main)/focus/hooks/use-complete-session';
 import { useEndSessionEarly } from '@/app/(protected)/(main)/focus/hooks/use-end-session-early';
 import { usePauseSession } from '@/app/(protected)/(main)/focus/hooks/use-pause-session';
 import { useResumeSession } from '@/app/(protected)/(main)/focus/hooks/use-resume-session';
 import { cn } from '@/utils/utils';
 import {
+  CheckIcon,
   PauseIcon,
   PlayIcon,
   SquareIcon,
@@ -65,10 +67,12 @@ export function FocusTimerWidget() {
   const pauseSession = usePauseSession();
   const resumeSession = useResumeSession();
   const cancelSession = useCancelSession();
+  const completeSession = useCompleteSession();
   const endSessionEarly = useEndSessionEarly();
 
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showEndEarlyDialog, setShowEndEarlyDialog] = useState(false);
 
   useEffect(() => {
@@ -134,30 +138,37 @@ export function FocusTimerWidget() {
     setShowEndEarlyDialog(false);
   };
 
+  const handleComplete = () => {
+    completeSession.mutate({ param: { id: session.id } });
+  };
+
+  const handleDiscard = () => {
+    cancelSession.mutate({ param: { id: session.id } });
+    setShowDiscardDialog(false);
+  };
+
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
+        <DropdownMenuTrigger
+          className={cn(
+            'relative flex h-8 items-center gap-2 overflow-hidden rounded-md border px-2 font-mono text-sm font-medium transition-colors',
+            'hover:bg-accent focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
+            isPaused && 'animate-pulse border-amber-500/50',
+            isOvertime &&
+              'border-green-500/50 text-green-600 dark:text-green-500'
+          )}
+        >
+          <div
             className={cn(
-              'relative flex h-8 items-center gap-2 overflow-hidden rounded-md border px-2 font-mono text-sm font-medium transition-colors',
-              'hover:bg-accent focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-              isPaused && 'animate-pulse border-amber-500/50',
-              isOvertime &&
-                'border-green-500/50 text-green-600 dark:text-green-500'
+              'absolute inset-0 origin-left transition-transform duration-1000',
+              isPaused ? 'bg-amber-500/40' : 'bg-green-500/40',
+              isOvertime && 'bg-green-500/20'
             )}
-          >
-            <div
-              className={cn(
-                'absolute inset-0 origin-left transition-transform duration-1000',
-                isPaused ? 'bg-amber-500/40' : 'bg-green-500/40',
-                isOvertime && 'bg-green-500/20'
-              )}
-              style={{ transform: `scaleX(${progress / 100})` }}
-            />
-            <TimerIcon className="relative size-4" />
-            <span className="relative">{formatTime(remainingSeconds)}</span>
-          </button>
+            style={{ transform: `scaleX(${progress / 100})` }}
+          />
+          <TimerIcon className="relative size-4" />
+          <span className="relative">{formatTime(remainingSeconds)}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           <DropdownMenuItem asChild>
@@ -167,33 +178,54 @@ export function FocusTimerWidget() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={handlePauseResume}
-            disabled={pauseSession.isPending || resumeSession.isPending}
-          >
-            {isPaused ? (
-              <>
-                <PlayIcon />
-                Resume
-              </>
-            ) : (
-              <>
-                <PauseIcon />
-                Pause
-              </>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setShowEndEarlyDialog(true)}>
-            <SquareIcon />
-            End Session
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setShowCancelDialog(true)}
-          >
-            <XIcon />
-            Cancel Session
-          </DropdownMenuItem>
+          {isOvertime ? (
+            <>
+              <DropdownMenuItem
+                onClick={handleComplete}
+                disabled={completeSession.isPending}
+              >
+                <CheckIcon />
+                Save Session
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setShowDiscardDialog(true)}
+              >
+                <XIcon />
+                Discard Session
+              </DropdownMenuItem>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem
+                onClick={handlePauseResume}
+                disabled={pauseSession.isPending || resumeSession.isPending}
+              >
+                {isPaused ? (
+                  <>
+                    <PlayIcon />
+                    Resume
+                  </>
+                ) : (
+                  <>
+                    <PauseIcon />
+                    Pause
+                  </>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowEndEarlyDialog(true)}>
+                <SquareIcon />
+                End Session
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setShowCancelDialog(true)}
+              >
+                <XIcon />
+                Cancel Session
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -239,6 +271,30 @@ export function FocusTimerWidget() {
               disabled={endSessionEarly.isPending}
             >
               End Session
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>Discard Completed Session?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to discard this session? This action cannot
+              be undone and the session will not be saved.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleDiscard}
+              disabled={cancelSession.isPending}
+            >
+              Discard Session
             </Button>
           </DialogFooter>
         </DialogContent>

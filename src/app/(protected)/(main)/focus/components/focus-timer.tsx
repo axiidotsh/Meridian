@@ -329,7 +329,7 @@ export function FocusTimer({
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-8 py-20">
+      <div className="flex flex-col items-center justify-center gap-8 py-10">
         <CircularProgress progress={displayProgress}>
           {showCompletedUI ? (
             <span className="font-mono text-7xl font-bold tabular-nums">

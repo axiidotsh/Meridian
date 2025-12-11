@@ -70,7 +70,15 @@ export function FocusTimerWidget() {
   const completeSession = useCompleteSession();
   const endSessionEarly = useEndSessionEarly();
 
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(() => {
+    if (!session) return 0;
+    return calculateRemainingSeconds(
+      session.startedAt,
+      session.durationMinutes,
+      session.totalPausedSeconds,
+      session.pausedAt
+    );
+  });
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showEndEarlyDialog, setShowEndEarlyDialog] = useState(false);

@@ -1,11 +1,10 @@
 'use client';
 
 import { useActiveSession } from '@/app/(protected)/(main)/focus/hooks/use-active-session';
-import { useCancelSession } from '@/app/(protected)/(main)/focus/hooks/use-cancel-session';
-import { useCompleteSession } from '@/app/(protected)/(main)/focus/hooks/use-complete-session';
-import { useEndSessionEarly } from '@/app/(protected)/(main)/focus/hooks/use-end-session-early';
-import { usePauseSession } from '@/app/(protected)/(main)/focus/hooks/use-pause-session';
-import { useResumeSession } from '@/app/(protected)/(main)/focus/hooks/use-resume-session';
+import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/use-focus-session';
+import { useTimerLogic } from '@/app/(protected)/(main)/focus/hooks/use-timer-logic';
+import { formatTime } from '@/app/(protected)/(main)/focus/utils/timer-calculations';
+import { SessionDialogs } from '@/components/session-dialogs';
 import { cn } from '@/utils/utils';
 import {
   CheckIcon,
@@ -16,17 +15,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { Button } from './ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from './ui/dialog';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,88 +24,20 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
-function calculateRemainingSeconds(
-  startedAt: string,
-  durationMinutes: number,
-  totalPausedSeconds: number,
-  pausedAt: string | null
-): number {
-  const startTime = new Date(startedAt).getTime();
-  const durationMs = durationMinutes * 60 * 1000;
-  const pausedMs = totalPausedSeconds * 1000;
-
-  let elapsed: number;
-  if (pausedAt) {
-    elapsed = new Date(pausedAt).getTime() - startTime - pausedMs;
-  } else {
-    elapsed = Date.now() - startTime - pausedMs;
-  }
-
-  const remaining = durationMs - elapsed;
-  return Math.max(0, Math.floor(remaining / 1000));
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
-
 export function FocusTimerWidget() {
   const { data: session, isLoading } = useActiveSession();
-  const pauseSession = usePauseSession();
-  const resumeSession = useResumeSession();
-  const cancelSession = useCancelSession();
-  const completeSession = useCompleteSession();
-  const endSessionEarly = useEndSessionEarly();
+  const {
+    pauseSession,
+    resumeSession,
+    cancelSession,
+    completeSession,
+    endSessionEarly,
+  } = useFocusSession();
+  const { remainingSeconds } = useTimerLogic(session);
 
-  const [remainingSeconds, setRemainingSeconds] = useState(() => {
-    if (!session) return 0;
-    return calculateRemainingSeconds(
-      session.startedAt,
-      session.durationMinutes,
-      session.totalPausedSeconds,
-      session.pausedAt
-    );
-  });
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const [showEndEarlyDialog, setShowEndEarlyDialog] = useState(false);
-
-  useEffect(() => {
-    if (!session) return;
-
-    const updateTimer = () => {
-      const remaining = calculateRemainingSeconds(
-        session.startedAt,
-        session.durationMinutes,
-        session.totalPausedSeconds,
-        session.pausedAt
-      );
-      setRemainingSeconds((prev) => {
-        if (prev === 0 && remaining === 0) return 0;
-        return remaining;
-      });
-
-      if (remaining === 0) {
-        return true;
-      }
-      return false;
-    };
-
-    const shouldStop = updateTimer();
-    if (shouldStop) return;
-
-    if (session.status === 'ACTIVE') {
-      const interval = setInterval(() => {
-        const shouldStop = updateTimer();
-        if (shouldStop) {
-          clearInterval(interval);
-        }
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [session]);
 
   if (isLoading || !session) {
     return null;
@@ -237,76 +158,27 @@ export function FocusTimerWidget() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Cancel Focus Session?</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel this focus session? Your progress
-              will not be saved.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Keep Going</Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              onClick={handleCancel}
-              disabled={cancelSession.isPending}
-            >
-              Cancel Session
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showEndEarlyDialog} onOpenChange={setShowEndEarlyDialog}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>End Session Early?</DialogTitle>
-            <DialogDescription>
-              Your progress will be saved. The session duration will be updated
-              to reflect the actual time spent.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Keep Going</Button>
-            </DialogClose>
-            <Button
-              onClick={handleEndEarly}
-              disabled={endSessionEarly.isPending}
-            >
-              End Session
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>Discard Completed Session?</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to discard this session? This action cannot
-              be undone and the session will not be saved.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button
-              variant="destructive"
-              onClick={handleDiscard}
-              disabled={cancelSession.isPending}
-            >
-              Discard Session
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SessionDialogs
+        dialogs={{
+          showCancel: showCancelDialog,
+          showEndEarly: showEndEarlyDialog,
+          showDiscard: showDiscardDialog,
+        }}
+        onOpenChange={(dialog, open) => {
+          if (dialog === 'cancel') setShowCancelDialog(open);
+          if (dialog === 'endEarly') setShowEndEarlyDialog(open);
+          if (dialog === 'discard') setShowDiscardDialog(open);
+        }}
+        handlers={{
+          onCancel: handleCancel,
+          onEndEarly: handleEndEarly,
+          onDiscard: handleDiscard,
+        }}
+        isPending={{
+          cancel: cancelSession.isPending,
+          endEarly: endSessionEarly.isPending,
+        }}
+      />
     </>
   );
 }

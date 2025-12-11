@@ -20,19 +20,38 @@ export const focusRouter = new Hono()
 
     return c.json({ session: activeSession });
   })
-  .get('/sessions', async (c) => {
-    const user = c.get('user');
+  .get(
+    '/sessions',
+    zValidator(
+      'query',
+      z.object({
+        limit: z.coerce.number().min(1).max(100).default(20),
+        cursor: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      const user = c.get('user');
+      const { limit, cursor } = c.req.valid('query');
 
-    const sessions = await db.focusSession.findMany({
-      where: {
-        userId: user.id,
-        status: 'COMPLETED',
-      },
-      orderBy: { startedAt: 'desc' },
-    });
+      const sessions = await db.focusSession.findMany({
+        where: {
+          userId: user.id,
+          status: 'COMPLETED',
+          ...(cursor && { startedAt: { lt: new Date(cursor) } }),
+        },
+        orderBy: { startedAt: 'desc' },
+        take: limit + 1,
+      });
 
-    return c.json({ sessions });
-  })
+      const hasMore = sessions.length > limit;
+      const items = hasMore ? sessions.slice(0, limit) : sessions;
+      const nextCursor = hasMore
+        ? items[items.length - 1].startedAt.toISOString()
+        : null;
+
+      return c.json({ sessions: items, nextCursor });
+    }
+  )
   .get('/stats', async (c) => {
     const user = c.get('user');
     const stats = await getStatsWithDaysAgo(user.id);
@@ -117,7 +136,9 @@ export const focusRouter = new Hono()
         focusSession.status === 'COMPLETED' &&
         durationMinutes !== undefined
       ) {
-        await recalculateStats(user.id);
+        await db.$transaction(async () => {
+          await recalculateStats(user.id);
+        });
       }
 
       return c.json({ session: updated });
@@ -140,13 +161,15 @@ export const focusRouter = new Hono()
 
     const wasCompleted = focusSession.status === 'COMPLETED';
 
-    await db.focusSession.delete({
-      where: { id },
-    });
+    await db.$transaction(async (tx) => {
+      await tx.focusSession.delete({
+        where: { id },
+      });
 
-    if (wasCompleted) {
-      await recalculateStats(user.id);
-    }
+      if (wasCompleted) {
+        await recalculateStats(user.id);
+      }
+    });
 
     return c.json({ success: true });
   })
@@ -164,6 +187,10 @@ export const focusRouter = new Hono()
 
     if (!focusSession) {
       return c.json({ error: 'Active session not found' }, 404);
+    }
+
+    if (focusSession.startedAt > new Date()) {
+      return c.json({ error: 'Invalid session start time' }, 400);
     }
 
     const updated = await db.focusSession.update({
@@ -192,9 +219,17 @@ export const focusRouter = new Hono()
       return c.json({ error: 'Paused session not found' }, 404);
     }
 
+    if (focusSession.pausedAt > new Date()) {
+      return c.json({ error: 'Invalid pause time' }, 400);
+    }
+
     const pausedDuration = Math.floor(
       (Date.now() - focusSession.pausedAt.getTime()) / 1000
     );
+
+    if (pausedDuration < 0) {
+      return c.json({ error: 'Invalid pause duration' }, 400);
+    }
 
     const updated = await db.focusSession.update({
       where: { id },
@@ -230,18 +265,22 @@ export const focusRouter = new Hono()
       );
     }
 
-    const updated = await db.focusSession.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-        pausedAt: null,
-        totalPausedSeconds:
-          focusSession.totalPausedSeconds + additionalPausedSeconds,
-      },
-    });
+    const updated = await db.$transaction(async (tx) => {
+      const session = await tx.focusSession.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+          completedAt: new Date(),
+          pausedAt: null,
+          totalPausedSeconds:
+            focusSession.totalPausedSeconds + additionalPausedSeconds,
+        },
+      });
 
-    await recalculateStats(user.id);
+      await recalculateStats(user.id);
+
+      return session;
+    });
 
     return c.json({ session: updated });
   })
@@ -296,18 +335,22 @@ export const focusRouter = new Hono()
       Date.now() - focusSession.startedAt.getTime() - totalPausedSeconds * 1000;
     const actualMinutes = Math.max(1, Math.ceil(elapsedMs / 60000));
 
-    const updated = await db.focusSession.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-        pausedAt: null,
-        totalPausedSeconds,
-        durationMinutes: actualMinutes,
-      },
-    });
+    const updated = await db.$transaction(async (tx) => {
+      const session = await tx.focusSession.update({
+        where: { id },
+        data: {
+          status: 'COMPLETED',
+          completedAt: new Date(),
+          pausedAt: null,
+          totalPausedSeconds,
+          durationMinutes: actualMinutes,
+        },
+      });
 
-    await recalculateStats(user.id);
+      await recalculateStats(user.id);
+
+      return session;
+    });
 
     return c.json({ session: updated });
   });

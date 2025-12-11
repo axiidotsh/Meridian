@@ -32,6 +32,10 @@ export async function recalculateStats(userId: string) {
       userId,
       status: 'COMPLETED',
     },
+    select: {
+      startedAt: true,
+      durationMinutes: true,
+    },
     orderBy: { startedAt: 'desc' },
   });
 

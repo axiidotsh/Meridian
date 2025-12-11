@@ -15,7 +15,7 @@ interface FocusErrorStateProps {
 export function FocusErrorState({ onRetry }: FocusErrorStateProps) {
   return (
     <div className="mt-4">
-      <Empty className="border py-16">
+      <Empty className="h-full border py-32!">
         <EmptyHeader>
           <EmptyMedia variant="icon">
             <AlertCircleIcon className="text-destructive" />

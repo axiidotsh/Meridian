@@ -1,6 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function TimerSkeleton() {
+export const TimerSkeleton = () => {
   return (
     <div className="flex flex-col items-center justify-center gap-8 py-20">
       <Skeleton className="h-20 w-48" />
@@ -11,4 +11,4 @@ export function TimerSkeleton() {
       </div>
     </div>
   );
-}
+};

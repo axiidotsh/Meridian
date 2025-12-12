@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { calculateRemainingSeconds } from '../utils/timer-calculations';
-import type { FocusSession } from './types';
+import { calculateRemainingSeconds } from '../../utils/timer-calculations';
+import type { FocusSession } from '../types';
 
 export function useTimerLogic(activeSession: FocusSession | null | undefined) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);

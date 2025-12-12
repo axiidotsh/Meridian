@@ -8,16 +8,16 @@ import {
   customMinutesAtom,
   isCustomDurationAtom,
   selectedMinutesAtom,
-} from '../atoms/duration';
-import type { FocusSession } from '../hooks/types';
-import { useFocusSession } from '../hooks/use-focus-session';
-import { useSessionTask } from '../hooks/use-session-task';
-import { useTimerLogic } from '../hooks/use-timer-logic';
+} from '../../atoms/duration';
+import { useFocusSession } from '../../hooks/mutations/use-focus-session';
+import { useSessionTask } from '../../hooks/mutations/use-session-task';
+import { useTimerLogic } from '../../hooks/timer/use-timer-logic';
+import type { FocusSession } from '../../hooks/types';
 import {
   calculateRemainingSeconds,
   formatTime,
   formatTimePreview,
-} from '../utils/timer-calculations';
+} from '../../utils/timer-calculations';
 import { TimerControls } from './timer-controls';
 import { TimerDisplay } from './timer-display';
 
@@ -151,7 +151,6 @@ export const FocusTimer = ({
           isPaused={!!isPaused}
           isCompleted={!!showCompletedUI}
         />
-
         <div className="w-full max-w-md">
           <Input
             placeholder="What are you focusing on? (optional)"
@@ -160,7 +159,6 @@ export const FocusTimer = ({
             className="resize-none rounded-none border-0 border-b bg-transparent! text-center shadow-none focus-visible:ring-0"
           />
         </div>
-
         <TimerControls
           state={controlState}
           handlers={{
@@ -181,7 +179,6 @@ export const FocusTimer = ({
           }}
         />
       </div>
-
       <SessionDialogs
         dialogs={{
           showCancel: showCancelDialog,

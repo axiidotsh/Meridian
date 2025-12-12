@@ -1,13 +1,13 @@
 import { api } from '@/lib/rpc';
 import { useQuery } from '@tanstack/react-query';
-import { FOCUS_QUERY_KEYS } from './focus-query-keys';
+import { FOCUS_QUERY_KEYS } from '../focus-query-keys';
 
-export function useRecentSessions(limit = 20, cursor?: string) {
+export function useChartSessions(days: number) {
   return useQuery({
-    queryKey: [...FOCUS_QUERY_KEYS.sessions, limit, cursor],
+    queryKey: [...FOCUS_QUERY_KEYS.sessions, 'chart', days],
     queryFn: async () => {
       const res = await api.focus.sessions.$get({
-        query: { limit: limit.toString(), ...(cursor && { cursor }) },
+        query: { days: days.toString() },
       });
       if (!res.ok) {
         throw new Error('Failed to fetch sessions');
@@ -15,5 +15,6 @@ export function useRecentSessions(limit = 20, cursor?: string) {
       const data = await res.json();
       return data.sessions || [];
     },
+    enabled: days > 0,
   });
 }

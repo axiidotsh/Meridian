@@ -47,6 +47,7 @@ interface GenericAreaChartProps<TData> {
   yAxisDomain?: [number, number];
   chartHeight?: string;
   isLoading?: boolean;
+  onPeriodChange?: (days: number) => void;
 }
 
 export const GenericAreaChart = <TData,>({
@@ -63,10 +64,16 @@ export const GenericAreaChart = <TData,>({
   yAxisDomain,
   chartHeight = 'h-64',
   isLoading = false,
+  onPeriodChange,
 }: GenericAreaChartProps<TData>) => {
   const [period, setPeriod] = useState<TimePeriod>('7');
   const xKey = String(xAxisKey);
   const yKey = String(yAxisKey);
+
+  const handlePeriodChange = (value: TimePeriod) => {
+    setPeriod(value);
+    onPeriodChange?.(Number(value));
+  };
 
   if (isLoading) {
     return (
@@ -90,7 +97,7 @@ export const GenericAreaChart = <TData,>({
       action={
         <Select
           value={period}
-          onValueChange={(value) => setPeriod(value as TimePeriod)}
+          onValueChange={(value) => handlePeriodChange(value as TimePeriod)}
         >
           <SelectTrigger className={SELECT_TRIGGER_STYLES}>
             <SelectValue placeholder="Period" />
@@ -131,6 +138,9 @@ export const GenericAreaChart = <TData,>({
             axisLine={false}
             tickMargin={8}
             tickFormatter={xAxisFormatter}
+            angle={Number(period) > 7 ? -45 : 0}
+            textAnchor={Number(period) > 7 ? 'end' : 'middle'}
+            height={Number(period) > 7 ? 60 : 30}
           />
           <YAxis
             tickLine={false}

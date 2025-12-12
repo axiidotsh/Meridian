@@ -13,8 +13,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useEffect, useState } from 'react';
-import type { FocusSession } from '../hooks/types';
-import { useEditSession } from '../hooks/use-edit-session';
+import { MAX_DURATION, MIN_DURATION } from '../../constants';
+import { useEditSession } from '../../hooks/mutations/use-edit-session';
+import type { FocusSession } from '../../hooks/types';
 
 interface SessionEditDialogProps {
   session: FocusSession | null;
@@ -22,11 +23,11 @@ interface SessionEditDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SessionEditDialog({
+export const SessionEditDialog = ({
   session,
   open,
   onOpenChange,
-}: SessionEditDialogProps) {
+}: SessionEditDialogProps) => {
   const editSession = useEditSession();
   const [task, setTask] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
@@ -42,7 +43,8 @@ export function SessionEditDialog({
     if (!session) return;
 
     const duration = parseInt(durationMinutes, 10);
-    if (isNaN(duration) || duration < 1 || duration > 480) return;
+    if (isNaN(duration) || duration < MIN_DURATION || duration > MAX_DURATION)
+      return;
 
     editSession.mutate(
       {
@@ -82,8 +84,8 @@ export function SessionEditDialog({
             <Input
               id="duration"
               type="number"
-              min={1}
-              max={480}
+              min={MIN_DURATION}
+              max={MAX_DURATION}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
             />
@@ -100,4 +102,4 @@ export function SessionEditDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

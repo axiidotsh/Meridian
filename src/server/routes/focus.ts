@@ -27,21 +27,37 @@ export const focusRouter = new Hono()
       z.object({
         limit: z.coerce.number().min(1).max(100).default(20),
         cursor: z.string().optional(),
+        days: z.coerce.number().min(1).max(365).optional(),
       })
     ),
     async (c) => {
       const user = c.get('user');
-      const { limit, cursor } = c.req.valid('query');
+      const { limit, cursor, days } = c.req.valid('query');
+
+      const whereClause = {
+        userId: user.id,
+        status: 'COMPLETED' as const,
+        startedAt: undefined as { lt?: Date; gte?: Date } | undefined,
+      };
+
+      if (days) {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        cutoffDate.setHours(0, 0, 0, 0);
+        whereClause.startedAt = { gte: cutoffDate };
+      } else if (cursor) {
+        whereClause.startedAt = { lt: new Date(cursor) };
+      }
 
       const sessions = await db.focusSession.findMany({
-        where: {
-          userId: user.id,
-          status: 'COMPLETED',
-          ...(cursor && { startedAt: { lt: new Date(cursor) } }),
-        },
+        where: whereClause,
         orderBy: { startedAt: 'desc' },
-        take: limit + 1,
+        ...(days ? {} : { take: limit + 1 }),
       });
+
+      if (days) {
+        return c.json({ sessions, nextCursor: null });
+      }
 
       const hasMore = sessions.length > limit;
       const items = hasMore ? sessions.slice(0, limit) : sessions;

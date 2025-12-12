@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { FocusSession } from '../hooks/types';
-import { useDeleteSession } from '../hooks/use-delete-session';
+import { useDeleteSession } from '../../hooks/mutations/use-delete-session';
+import type { FocusSession } from '../../hooks/types';
 
 interface SessionDeleteDialogProps {
   session: FocusSession | null;
@@ -19,11 +19,11 @@ interface SessionDeleteDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function SessionDeleteDialog({
+export const SessionDeleteDialog = ({
   session,
   open,
   onOpenChange,
-}: SessionDeleteDialogProps) {
+}: SessionDeleteDialogProps) => {
   const deleteSession = useDeleteSession();
 
   const handleDelete = () => {
@@ -63,4 +63,4 @@ export function SessionDeleteDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};

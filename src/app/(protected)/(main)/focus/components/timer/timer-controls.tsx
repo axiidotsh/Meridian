@@ -28,11 +28,11 @@ interface TimerControlsProps {
   };
 }
 
-export function TimerControls({
+export const TimerControls = ({
   state,
   handlers,
   isPending,
-}: TimerControlsProps) {
+}: TimerControlsProps) => {
   if (state === 'completed') {
     return (
       <div className="flex flex-col items-center gap-4">
@@ -104,4 +104,4 @@ export function TimerControls({
       </Button>
     </div>
   );
-}
+};

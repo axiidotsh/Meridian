@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { FocusSession } from './types';
+import type { FocusSession } from '../types';
 import { useUpdateSession } from './use-update-session';
 
 export function useSessionTask(

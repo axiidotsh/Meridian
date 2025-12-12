@@ -19,9 +19,8 @@ import {
   customMinutesAtom,
   isCustomDurationAtom,
   selectedMinutesAtom,
-} from '../atoms/duration';
-
-const DURATION_PRESETS = [15, 30, 45, 60, 90, 120] as const;
+} from '../../atoms/duration';
+import { DURATION_PRESETS, MAX_DURATION, MIN_DURATION } from '../../constants';
 
 function formatDurationLabel(minutes: number) {
   if (minutes >= 60) {
@@ -36,7 +35,9 @@ interface DurationDropdownProps {
   hasActiveSession: boolean;
 }
 
-export function DurationDropdown({ hasActiveSession }: DurationDropdownProps) {
+export const DurationDropdown = ({
+  hasActiveSession,
+}: DurationDropdownProps) => {
   const [selectedMinutes, setSelectedMinutes] = useAtom(selectedMinutesAtom);
   const [customMinutes, setCustomMinutes] = useAtom(customMinutesAtom);
   const [isCustomDuration, setIsCustomDuration] = useAtom(isCustomDurationAtom);
@@ -51,14 +52,20 @@ export function DurationDropdown({ hasActiveSession }: DurationDropdownProps) {
     const numValue = value.replace(/\D/g, '');
     setCustomMinutes(numValue);
     if (numValue) {
-      const mins = Math.min(Math.max(parseInt(numValue, 10), 1), 480);
+      const mins = Math.min(
+        Math.max(parseInt(numValue, 10), MIN_DURATION),
+        MAX_DURATION
+      );
       setSelectedMinutes(mins);
     }
   };
 
   const handleCustomMinutesSubmit = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && customMinutes) {
-      const mins = Math.min(Math.max(parseInt(customMinutes, 10), 1), 480);
+      const mins = Math.min(
+        Math.max(parseInt(customMinutes, 10), MIN_DURATION),
+        MAX_DURATION
+      );
       setSelectedMinutes(mins);
       setCustomMinutes(mins.toString());
     }
@@ -118,4 +125,4 @@ export function DurationDropdown({ hasActiveSession }: DurationDropdownProps) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+};

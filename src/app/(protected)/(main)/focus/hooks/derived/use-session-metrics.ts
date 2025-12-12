@@ -3,8 +3,8 @@ import {
   formatMinutesToTime,
   getTodaysCompletedSessions,
   getYesterdaysFocusMinutes,
-} from '../utils/session-metrics';
-import type { FocusSession } from './types';
+} from '../../utils/session-metrics';
+import type { FocusSession } from '../types';
 
 interface FocusStats {
   currentStreak: number;

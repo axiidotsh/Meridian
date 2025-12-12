@@ -64,12 +64,12 @@ interface TimerDisplayProps {
   isCompleted: boolean;
 }
 
-export function TimerDisplay({
+export const TimerDisplay = ({
   progress,
   displayTime,
   isPaused,
   isCompleted,
-}: TimerDisplayProps) {
+}: TimerDisplayProps) => {
   return (
     <CircularProgress
       progress={progress}
@@ -86,4 +86,4 @@ export function TimerDisplay({
       </span>
     </CircularProgress>
   );
-}
+};

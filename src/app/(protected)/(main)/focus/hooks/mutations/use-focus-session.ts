@@ -1,9 +1,9 @@
-import { useCancelSession } from './use-cancel-session';
-import { useCompleteSession } from './use-complete-session';
-import { useEndSessionEarly } from './use-end-session-early';
-import { usePauseSession } from './use-pause-session';
-import { useResumeSession } from './use-resume-session';
-import { useStartSession } from './use-start-session';
+import { useCancelSession } from '../mutations/use-cancel-session';
+import { useCompleteSession } from '../mutations/use-complete-session';
+import { useEndSessionEarly } from '../mutations/use-end-session-early';
+import { usePauseSession } from '../mutations/use-pause-session';
+import { useResumeSession } from '../mutations/use-resume-session';
+import { useStartSession } from '../mutations/use-start-session';
 
 export function useFocusSession() {
   const startSession = useStartSession();

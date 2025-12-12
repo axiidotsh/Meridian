@@ -56,12 +56,11 @@ export function getYesterdaysFocusMinutes(sessions: FocusSession[]): number {
     .reduce((acc, session) => acc + session.durationMinutes, 0);
 }
 
-export function generateChartData(sessions: FocusSession[]) {
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export function generateChartData(sessions: FocusSession[], days = 7) {
   const today = new Date();
   const chartData = [];
 
-  for (let i = 6; i >= 0; i--) {
+  for (let i = days - 1; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     date.setHours(0, 0, 0, 0);
@@ -78,8 +77,13 @@ export function generateChartData(sessions: FocusSession[]) {
       0
     );
 
+    const dateLabel =
+      days <= 7
+        ? date.toLocaleDateString('en-US', { weekday: 'short' })
+        : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
     chartData.push({
-      date: days[date.getDay()],
+      date: dateLabel,
       duration: totalDuration,
     });
   }

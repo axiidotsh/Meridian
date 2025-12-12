@@ -1,6 +1,6 @@
 import { api } from '@/lib/rpc';
 import { useQuery } from '@tanstack/react-query';
-import { FOCUS_QUERY_KEYS } from './focus-query-keys';
+import { FOCUS_QUERY_KEYS } from '../focus-query-keys';
 
 export function useActiveSession() {
   return useQuery({

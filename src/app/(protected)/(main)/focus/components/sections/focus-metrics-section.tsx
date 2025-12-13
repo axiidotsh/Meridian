@@ -60,7 +60,7 @@ export const FocusMetricsSection = () => {
         isLoading={isLoadingSessions}
       />
       <MetricCard
-        title="Highest Ever"
+        title="Best Day"
         icon={TrophyIcon}
         content={metrics.highestEver}
         footer={metrics.highestEverLabel}

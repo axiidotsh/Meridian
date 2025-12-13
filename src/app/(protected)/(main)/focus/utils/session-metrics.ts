@@ -17,18 +17,22 @@ export function formatMinutesToTime(totalMinutes: number): string {
   return `${minutes}m`;
 }
 
+function getDateKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function getTodaysCompletedSessions(
   sessions: FocusSession[]
 ): FocusSession[] {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const todayKey = getDateKey(now);
   return sessions.filter((session) => {
     const sessionDate = new Date(session.startedAt);
-    sessionDate.setHours(0, 0, 0, 0);
-    return (
-      sessionDate.getTime() === today.getTime() &&
-      session.status === 'COMPLETED'
-    );
+    const sessionKey = getDateKey(sessionDate);
+    return sessionKey === todayKey && session.status === 'COMPLETED';
   });
 }
 
@@ -42,34 +46,37 @@ export function getTotalFocusTime(sessions: FocusSession[]): string {
 }
 
 export function getYesterdaysFocusMinutes(sessions: FocusSession[]): number {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  yesterday.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const yesterday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)
+  );
+  const yesterdayKey = getDateKey(yesterday);
 
   return sessions
     .filter((session) => {
       if (session.status !== 'COMPLETED') return false;
       const sessionDate = new Date(session.startedAt);
-      sessionDate.setHours(0, 0, 0, 0);
-      return sessionDate.getTime() === yesterday.getTime();
+      const sessionKey = getDateKey(sessionDate);
+      return sessionKey === yesterdayKey;
     })
     .reduce((acc, session) => acc + session.durationMinutes, 0);
 }
 
 export function generateChartData(sessions: FocusSession[], days = 7) {
-  const today = new Date();
+  const now = new Date();
   const chartData = [];
 
   for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    date.setHours(0, 0, 0, 0);
+    const date = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - i)
+    );
+    const dateKey = getDateKey(date);
 
     const daySessions = sessions.filter((session) => {
       if (session.status !== 'COMPLETED') return false;
       const sessionDate = new Date(session.startedAt);
-      sessionDate.setHours(0, 0, 0, 0);
-      return sessionDate.getTime() === date.getTime();
+      const sessionKey = getDateKey(sessionDate);
+      return sessionKey === dateKey;
     });
 
     const totalDuration = daySessions.reduce(

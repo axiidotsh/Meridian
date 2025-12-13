@@ -41,9 +41,18 @@ export const focusRouter = new Hono()
       };
 
       if (days) {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - days);
-        cutoffDate.setHours(0, 0, 0, 0);
+        const now = new Date();
+        const cutoffDate = new Date(
+          Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate() - days,
+            0,
+            0,
+            0,
+            0
+          )
+        );
         whereClause.startedAt = { gte: cutoffDate };
       } else if (cursor) {
         whereClause.startedAt = { lt: new Date(cursor) };
@@ -152,8 +161,8 @@ export const focusRouter = new Hono()
         focusSession.status === 'COMPLETED' &&
         durationMinutes !== undefined
       ) {
-        await db.$transaction(async () => {
-          await recalculateStats(user.id);
+        await db.$transaction(async (tx) => {
+          await recalculateStats(user.id, tx);
         });
       }
 
@@ -183,7 +192,7 @@ export const focusRouter = new Hono()
       });
 
       if (wasCompleted) {
-        await recalculateStats(user.id);
+        await recalculateStats(user.id, tx);
       }
     });
 
@@ -281,6 +290,9 @@ export const focusRouter = new Hono()
       );
     }
 
+    const totalPausedSeconds =
+      focusSession.totalPausedSeconds + additionalPausedSeconds;
+
     const updated = await db.$transaction(async (tx) => {
       const session = await tx.focusSession.update({
         where: { id },
@@ -288,12 +300,11 @@ export const focusRouter = new Hono()
           status: 'COMPLETED',
           completedAt: new Date(),
           pausedAt: null,
-          totalPausedSeconds:
-            focusSession.totalPausedSeconds + additionalPausedSeconds,
+          totalPausedSeconds,
         },
       });
 
-      await recalculateStats(user.id);
+      await recalculateStats(user.id, tx);
 
       return session;
     });
@@ -349,7 +360,7 @@ export const focusRouter = new Hono()
       focusSession.totalPausedSeconds + additionalPausedSeconds;
     const elapsedMs =
       Date.now() - focusSession.startedAt.getTime() - totalPausedSeconds * 1000;
-    const actualMinutes = Math.max(1, Math.ceil(elapsedMs / 60000));
+    const actualMinutes = Math.max(1, Math.round(elapsedMs / 60000));
 
     const updated = await db.$transaction(async (tx) => {
       const session = await tx.focusSession.update({
@@ -363,7 +374,7 @@ export const focusRouter = new Hono()
         },
       });
 
-      await recalculateStats(user.id);
+      await recalculateStats(user.id, tx);
 
       return session;
     });

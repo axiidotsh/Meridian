@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { calculateRemainingSeconds } from '../../utils/timer-calculations';
 import type { FocusSession } from '../types';
 
 export function useTimerLogic(activeSession: FocusSession | null | undefined) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
-  const hasShownToastRef = useRef(false);
+  const hasCompletedRef = useRef(false);
 
   useEffect(() => {
     if (!activeSession) {
       setIsCompleted(false);
       setRemainingSeconds(0);
-      hasShownToastRef.current = false;
+      hasCompletedRef.current = false;
       return;
     }
 
@@ -24,25 +23,22 @@ export function useTimerLogic(activeSession: FocusSession | null | undefined) {
         activeSession.pausedAt
       );
 
-      if (remaining <= 0 && !isCompleted && !hasShownToastRef.current) {
+      if (remaining <= 0 && !hasCompletedRef.current) {
         setRemainingSeconds(0);
         setIsCompleted(true);
-        hasShownToastRef.current = true;
-        toast.success('Session complete!', {
-          description: `You completed ${activeSession.durationMinutes} minutes${activeSession.task ? ` on "${activeSession.task}"` : ''}`,
-        });
-      } else if (!isCompleted) {
+        hasCompletedRef.current = true;
+      } else if (remaining > 0) {
         setRemainingSeconds(remaining);
       }
     };
 
     updateTimer();
 
-    if (activeSession.status === 'ACTIVE' && !isCompleted) {
+    if (activeSession.status === 'ACTIVE') {
       const interval = setInterval(updateTimer, 1000);
       return () => clearInterval(interval);
     }
-  }, [activeSession, isCompleted]);
+  }, [activeSession]);
 
   return { remainingSeconds, isCompleted, setIsCompleted };
 }

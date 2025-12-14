@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -189,9 +190,9 @@ export const BulkAddTasksSheet = () => {
               <Label>Tasks</Label>
               <Badge variant="secondary">{pendingTasks.length}</Badge>
             </div>
-            <div className="flex-1 overflow-y-auto">
+            <ScrollArea className="-mx-6 flex-1 overflow-y-auto px-6">
               {pendingTasks.length === 0 ? (
-                <div className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
+                <div className="text-muted-foreground flex h-full items-center justify-center py-20 text-center text-sm">
                   No tasks added yet
                 </div>
               ) : (
@@ -210,7 +211,7 @@ export const BulkAddTasksSheet = () => {
                         size="icon"
                         variant="ghost"
                         onClick={() => removeTask(task.id)}
-                        className="size-7 opacity-0 transition-opacity group-hover:opacity-100"
+                        className="size-7"
                       >
                         <XIcon className="size-4" />
                       </Button>
@@ -219,7 +220,7 @@ export const BulkAddTasksSheet = () => {
                   </div>
                 ))
               )}
-            </div>
+            </ScrollArea>
           </div>
         </div>
 

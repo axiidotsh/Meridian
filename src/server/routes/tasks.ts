@@ -1,0 +1,306 @@
+import { zValidator } from '@hono/zod-validator';
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { db } from '../db';
+import { authMiddleware } from '../middleware/auth';
+
+const createTaskSchema = z.object({
+  title: z.string().min(1).max(500),
+  projectId: z.string().optional(),
+  dueDate: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  tags: z.array(z.string()).default([]),
+});
+
+const bulkCreateTasksSchema = z.object({
+  tasks: z.array(
+    z.object({
+      title: z.string().min(1).max(500),
+    })
+  ),
+  projectId: z.string().optional(),
+  dueDate: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
+  tags: z.array(z.string()).default([]),
+});
+
+const updateTaskSchema = z.object({
+  title: z.string().min(1).max(500).optional(),
+  projectId: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
+  tags: z.array(z.string()).optional(),
+  completed: z.boolean().optional(),
+});
+
+const listTasksSchema = z.object({
+  projectId: z.string().optional(),
+  completed: z
+    .string()
+    .transform((v) => v === 'true')
+    .optional(),
+  sortBy: z.enum(['dueDate', 'priority', 'title', 'createdAt']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('asc'),
+  limit: z.coerce.number().min(1).max(100).default(50),
+  cursor: z.string().optional(),
+});
+
+const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+
+export const tasksRouter = new Hono()
+  .use(authMiddleware)
+  .get('/stats', async (c) => {
+    const user = c.get('user');
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const [total, completed] = await Promise.all([
+      db.task.count({
+        where: {
+          userId: user.id,
+          createdAt: { gte: startOfWeek },
+        },
+      }),
+      db.task.count({
+        where: {
+          userId: user.id,
+          completed: true,
+          createdAt: { gte: startOfWeek },
+        },
+      }),
+    ]);
+
+    const pending = total - completed;
+    const completionRate =
+      total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    return c.json({
+      stats: {
+        total,
+        completed,
+        pending,
+        completionRate,
+      },
+    });
+  })
+  .get('/chart', async (c) => {
+    const user = c.get('user');
+
+    const now = new Date();
+    const days = 7;
+    const chartData = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+
+      const nextDate = new Date(date);
+      nextDate.setDate(nextDate.getDate() + 1);
+
+      const [totalTasks, completedTasks] = await Promise.all([
+        db.task.count({
+          where: {
+            userId: user.id,
+            createdAt: { lt: nextDate },
+          },
+        }),
+        db.task.count({
+          where: {
+            userId: user.id,
+            completed: true,
+            updatedAt: { gte: date, lt: nextDate },
+          },
+        }),
+      ]);
+
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      chartData.push({
+        date: dayNames[date.getDay()],
+        completionRate:
+          totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+      });
+    }
+
+    return c.json({ chartData });
+  })
+  .get('/', zValidator('query', listTasksSchema), async (c) => {
+    const user = c.get('user');
+    const { projectId, completed, sortBy, sortOrder, limit, cursor } =
+      c.req.valid('query');
+
+    const where: {
+      userId: string;
+      projectId?: string;
+      completed?: boolean;
+      createdAt?: { lt: Date };
+    } = { userId: user.id };
+
+    if (projectId) where.projectId = projectId;
+    if (completed !== undefined) where.completed = completed;
+    if (cursor) where.createdAt = { lt: new Date(cursor) };
+
+    let orderBy: Record<string, 'asc' | 'desc'>[] = [{ createdAt: 'desc' }];
+
+    if (sortBy === 'dueDate') {
+      orderBy = [{ dueDate: sortOrder }, { createdAt: 'desc' }];
+    } else if (sortBy === 'title') {
+      orderBy = [{ title: sortOrder }, { createdAt: 'desc' }];
+    } else if (sortBy === 'createdAt') {
+      orderBy = [{ createdAt: sortOrder }];
+    }
+
+    const tasks = await db.task.findMany({
+      where,
+      orderBy,
+      take: limit + 1,
+      include: {
+        project: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    let sortedTasks = tasks;
+    if (sortBy === 'priority') {
+      sortedTasks = [...tasks].sort((a, b) => {
+        const diff = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+        return sortOrder === 'asc' ? diff : -diff;
+      });
+    }
+
+    const hasMore = sortedTasks.length > limit;
+    const items = hasMore ? sortedTasks.slice(0, limit) : sortedTasks;
+    const nextCursor = hasMore
+      ? items[items.length - 1].createdAt.toISOString()
+      : null;
+
+    return c.json({ tasks: items, nextCursor });
+  })
+  .post('/', zValidator('json', createTaskSchema), async (c) => {
+    const user = c.get('user');
+    const { title, projectId, dueDate, priority, tags } = c.req.valid('json');
+
+    const task = await db.task.create({
+      data: {
+        userId: user.id,
+        title,
+        projectId: projectId || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        priority,
+        tags,
+      },
+      include: {
+        project: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    return c.json({ task }, 201);
+  })
+  .post('/bulk', zValidator('json', bulkCreateTasksSchema), async (c) => {
+    const user = c.get('user');
+    const { tasks, projectId, dueDate, priority, tags } = c.req.valid('json');
+
+    const createdTasks = await db.task.createManyAndReturn({
+      data: tasks.map((task) => ({
+        userId: user.id,
+        title: task.title,
+        projectId: projectId || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        priority,
+        tags,
+      })),
+    });
+
+    const tasksWithProjects = await db.task.findMany({
+      where: {
+        id: { in: createdTasks.map((t) => t.id) },
+      },
+      include: {
+        project: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    return c.json({ tasks: tasksWithProjects }, 201);
+  })
+  .patch('/:id', zValidator('json', updateTaskSchema), async (c) => {
+    const user = c.get('user');
+    const { id } = c.req.param();
+    const data = c.req.valid('json');
+
+    const existing = await db.task.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!existing) {
+      return c.json({ error: 'Task not found' }, 404);
+    }
+
+    const task = await db.task.update({
+      where: { id },
+      data: {
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.projectId !== undefined && { projectId: data.projectId }),
+        ...(data.dueDate !== undefined && {
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        }),
+        ...(data.priority !== undefined && { priority: data.priority }),
+        ...(data.tags !== undefined && { tags: data.tags }),
+        ...(data.completed !== undefined && { completed: data.completed }),
+      },
+      include: {
+        project: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    return c.json({ task });
+  })
+  .patch('/:id/toggle', async (c) => {
+    const user = c.get('user');
+    const { id } = c.req.param();
+
+    const existing = await db.task.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!existing) {
+      return c.json({ error: 'Task not found' }, 404);
+    }
+
+    const task = await db.task.update({
+      where: { id },
+      data: { completed: !existing.completed },
+      include: {
+        project: {
+          select: { id: true, name: true, color: true },
+        },
+      },
+    });
+
+    return c.json({ task });
+  })
+  .delete('/:id', async (c) => {
+    const user = c.get('user');
+    const { id } = c.req.param();
+
+    const existing = await db.task.findFirst({
+      where: { id, userId: user.id },
+    });
+
+    if (!existing) {
+      return c.json({ error: 'Task not found' }, 404);
+    }
+
+    await db.task.delete({ where: { id } });
+
+    return c.json({ success: true });
+  });

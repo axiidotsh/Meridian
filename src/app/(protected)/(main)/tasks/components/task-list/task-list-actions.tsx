@@ -16,14 +16,22 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/utils/utils';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import {
   ArrowDownUpIcon,
   FilterIcon,
   FolderIcon,
   ListTodoIcon,
   PlusIcon,
+  SparklesIcon,
 } from 'lucide-react';
+import {
+  bulkAddTasksSheetAtom,
+  createProjectDialogAtom,
+  createTaskDialogAtom,
+} from '../../atoms/task-dialogs';
+import { useProjects } from '../../hooks/queries/use-projects';
+import type { Project, Task } from '../../hooks/types';
 import {
   projectSearchQueryAtom,
   searchQueryAtom,
@@ -31,24 +39,13 @@ import {
   selectedTagsAtom,
   sortByAtom,
   tagSearchQueryAtom,
-} from './task-atoms';
-
-interface Task {
-  id: string;
-  title: string;
-  completed: boolean;
-  dueDate?: Date;
-  priority: 'low' | 'medium' | 'high';
-  tags?: string[];
-  projectId?: string;
-  projectName?: string;
-}
+} from '../task-atoms';
 
 interface TaskListActionsProps {
   tasks: Task[];
 }
 
-export function TaskListActions({ tasks }: TaskListActionsProps) {
+export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [selectedTags, setSelectedTags] = useAtom(selectedTagsAtom);
   const [selectedProjects, setSelectedProjects] = useAtom(selectedProjectsAtom);
@@ -57,11 +54,18 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
   const [projectSearchQuery, setProjectSearchQuery] = useAtom(
     projectSearchQueryAtom
   );
+  const setCreateTaskDialog = useSetAtom(createTaskDialogAtom);
+  const setCreateProjectDialog = useSetAtom(createProjectDialogAtom);
+  const setBulkAddTasksSheet = useSetAtom(bulkAddTasksSheetAtom);
+
+  const { data: projects = [] } = useProjects() as {
+    data: Project[] | undefined;
+  };
 
   const getAllTags = (): string[] => {
     const tagSet = new Set<string>();
     tasks.forEach((task) => {
-      task.tags?.forEach((tag) => tagSet.add(tag));
+      task.tags?.forEach((tag: string) => tagSet.add(tag));
     });
     return Array.from(tagSet).sort();
   };
@@ -84,22 +88,9 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
     setSelectedTags([]);
   };
 
-  const getAllProjects = (): { id: string; name: string }[] => {
-    const projectMap = new Map<string, string>();
-    tasks.forEach((task) => {
-      if (task.projectId && task.projectName) {
-        projectMap.set(task.projectId, task.projectName);
-      }
-    });
-    return Array.from(projectMap, ([id, name]) => ({ id, name })).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-  };
-
-  const getFilteredProjects = (): { id: string; name: string }[] => {
-    const allProjects = getAllProjects();
-    if (!projectSearchQuery.trim()) return allProjects;
-    return allProjects.filter((project) =>
+  const getFilteredProjects = () => {
+    if (!projectSearchQuery.trim()) return projects;
+    return projects.filter((project) =>
       project.name.toLowerCase().includes(projectSearchQuery.toLowerCase())
     );
   };
@@ -287,13 +278,17 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setCreateTaskDialog(true)}>
                 <ListTodoIcon />
-                Task
+                Add a Task
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setBulkAddTasksSheet(true)}>
+                <SparklesIcon />
+                Bulk Add Tasks
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setCreateProjectDialog(true)}>
                 <FolderIcon />
-                Project
+                Add a Project
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -301,4 +296,4 @@ export function TaskListActions({ tasks }: TaskListActionsProps) {
       </div>
     </div>
   );
-}
+};

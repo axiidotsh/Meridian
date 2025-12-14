@@ -1,0 +1,243 @@
+'use client';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import { useAtom } from 'jotai';
+import { PlusIcon, XIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { bulkAddTasksSheetAtom } from '../../atoms/task-dialogs';
+import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks';
+import { useProjects } from '../../hooks/queries/use-projects';
+import { useTasks } from '../../hooks/queries/use-tasks';
+import type { Project, Task, TaskPriority } from '../../hooks/types';
+import { TagInput } from './tag-input';
+
+interface PendingTask {
+  id: string;
+  title: string;
+}
+
+export const BulkAddTasksSheet = () => {
+  const [open, setOpen] = useAtom(bulkAddTasksSheetAtom);
+  const bulkCreateTasks = useBulkCreateTasks();
+  const { data: projects = [] } = useProjects() as {
+    data: Project[] | undefined;
+  };
+  const { data: tasks = [] } = useTasks() as { data: Task[] | undefined };
+
+  const [title, setTitle] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [projectId, setProjectId] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const existingTags = Array.from(
+    new Set(tasks.flatMap((t) => t.tags ?? []))
+  ).sort();
+
+  const resetForm = () => {
+    setTitle('');
+    setDueDate(undefined);
+    setProjectId('');
+    setTags([]);
+    setPendingTasks([]);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    resetForm();
+  };
+
+  const addTask = () => {
+    if (!title.trim()) return;
+
+    const newTask: PendingTask = {
+      id: crypto.randomUUID(),
+      title: title.trim(),
+    };
+
+    setPendingTasks((prev) => [...prev, newTask]);
+    setTitle('');
+    inputRef.current?.focus();
+  };
+
+  const removeTask = (id: string) => {
+    setPendingTasks((prev) => prev.filter((task) => task.id !== id));
+  };
+
+  const updateTaskTitle = (id: string, newTitle: string) => {
+    setPendingTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, title: newTitle } : task))
+    );
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTask();
+    }
+  };
+
+  const handleSaveAll = async () => {
+    if (pendingTasks.length === 0) return;
+
+    try {
+      await bulkCreateTasks.mutateAsync({
+        json: {
+          tasks: pendingTasks.map((task) => ({ title: task.title })),
+          dueDate: dueDate?.toISOString() || undefined,
+          priority: 'MEDIUM' as TaskPriority,
+          projectId: projectId === 'none' ? undefined : projectId || undefined,
+          tags,
+        },
+      });
+      handleClose();
+    } catch (error) {
+      console.error('Failed to create tasks:', error);
+    }
+  };
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetContent className="flex w-full max-w-2xl! flex-col pb-4">
+        <SheetHeader className="px-6">
+          <SheetTitle>Bulk Add Tasks</SheetTitle>
+          <SheetDescription>
+            Quickly add multiple tasks with shared settings
+          </SheetDescription>
+        </SheetHeader>
+
+        <div className="flex flex-1 flex-col gap-6 overflow-hidden px-6">
+          <div className="flex items-end gap-2">
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="task-title">Task Title</Label>
+              <Input
+                id="task-title"
+                ref={inputRef}
+                placeholder="Enter task title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={handleKeyDown}
+                autoFocus
+              />
+            </div>
+            <Button
+              size="icon"
+              onClick={addTask}
+              disabled={!title.trim()}
+              tooltip="Add task"
+            >
+              <PlusIcon />
+            </Button>
+          </div>
+
+          <div className="flex gap-3">
+            <div className="flex-1 space-y-2">
+              <Label>Due Date</Label>
+              <DatePicker
+                date={dueDate}
+                setDate={setDueDate}
+                triggerClassName="w-full"
+              />
+            </div>
+            <div className="flex-1 space-y-2">
+              <Label htmlFor="project">Project</Label>
+              <Select value={projectId} onValueChange={setProjectId}>
+                <SelectTrigger id="project" className="w-full">
+                  <SelectValue placeholder="Select project..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No project</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1 space-y-2">
+              <Label>Tags</Label>
+              <TagInput
+                tags={tags}
+                onChange={setTags}
+                suggestions={existingTags}
+              />
+            </div>
+          </div>
+          <div className="-mx-6 flex flex-1 flex-col gap-3 overflow-hidden border-t px-6 pt-4">
+            <div className="flex items-center gap-2">
+              <Label>Tasks</Label>
+              <Badge variant="secondary">{pendingTasks.length}</Badge>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {pendingTasks.length === 0 ? (
+                <div className="text-muted-foreground flex h-full items-center justify-center text-center text-sm">
+                  No tasks added yet
+                </div>
+              ) : (
+                pendingTasks.map((task, index) => (
+                  <div key={task.id}>
+                    <div className="hover:bg-accent group flex items-center gap-2 px-2.5 py-1 transition-colors">
+                      <input
+                        type="text"
+                        value={task.title}
+                        onChange={(e) =>
+                          updateTaskTitle(task.id, e.target.value)
+                        }
+                        className="flex-1 bg-transparent text-sm outline-none"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeTask(task.id)}
+                        className="size-7 opacity-0 transition-opacity group-hover:opacity-100"
+                      >
+                        <XIcon className="size-4" />
+                      </Button>
+                    </div>
+                    {index < pendingTasks.length - 1 && <Separator />}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2 border-t px-6 pt-4">
+          <Button variant="outline" onClick={handleClose} className="flex-1">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveAll}
+            disabled={pendingTasks.length === 0 || bulkCreateTasks.isPending}
+            className="flex-1"
+          >
+            {bulkCreateTasks.isPending
+              ? 'Creating...'
+              : `Create ${pendingTasks.length} ${pendingTasks.length === 1 ? 'Task' : 'Tasks'}`}
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+};

@@ -1,0 +1,163 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAtom } from 'jotai';
+import { useState } from 'react';
+import { createTaskDialogAtom } from '../../atoms/task-dialogs';
+import { PRIORITY_OPTIONS } from '../../constants';
+import { useCreateTask } from '../../hooks/mutations/use-create-task';
+import { useProjects } from '../../hooks/queries/use-projects';
+import { useTasks } from '../../hooks/queries/use-tasks';
+import type { Project, Task } from '../../hooks/types';
+import { TagInput } from './tag-input';
+
+export const CreateTaskDialog = () => {
+  const [open, setOpen] = useAtom(createTaskDialogAtom);
+  const createTask = useCreateTask();
+  const { data: projects = [] } = useProjects() as {
+    data: Project[] | undefined;
+  };
+  const { data: tasks = [] } = useTasks() as { data: Task[] | undefined };
+
+  const [title, setTitle] = useState('');
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [priority, setPriority] = useState<string>('MEDIUM');
+  const [projectId, setProjectId] = useState<string>('');
+  const [tags, setTags] = useState<string[]>([]);
+
+  const existingTags = Array.from(
+    new Set(tasks.flatMap((t) => t.tags ?? []))
+  ).sort();
+
+  const resetForm = () => {
+    setTitle('');
+    setDueDate(undefined);
+    setPriority('MEDIUM');
+    setProjectId('');
+    setTags([]);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    resetForm();
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return;
+
+    createTask.mutate(
+      {
+        json: {
+          title: title.trim(),
+          dueDate: dueDate?.toISOString() || undefined,
+          priority: priority as 'LOW' | 'MEDIUM' | 'HIGH',
+          projectId: projectId === 'none' ? undefined : projectId || undefined,
+          tags,
+        },
+      },
+      {
+        onSuccess: handleClose,
+      }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Task</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            <Input
+              id="title"
+              placeholder="Task title..."
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Due Date</Label>
+              <DatePicker
+                date={dueDate}
+                setDate={setDueDate}
+                triggerClassName="w-full"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="priority">Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger id="priority" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="project">Project</Label>
+            <Select value={projectId} onValueChange={setProjectId}>
+              <SelectTrigger id="project" className="w-full">
+                <SelectValue placeholder="Select project..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No project</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <TagInput
+              tags={tags}
+              onChange={setTags}
+              suggestions={existingTags}
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={!title.trim() || createTask.isPending}
+            >
+              {createTask.isPending ? 'Creating...' : 'Create'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};

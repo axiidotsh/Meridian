@@ -1,17 +1,11 @@
+import { useApiQuery } from '@/hooks/use-api-query';
 import { api } from '@/lib/rpc';
-import { useQuery } from '@tanstack/react-query';
 import { FOCUS_QUERY_KEYS } from '../focus-query-keys';
 
 export function useActiveSession() {
-  return useQuery({
+  return useApiQuery(api.focus.sessions.active.$get, {
     queryKey: FOCUS_QUERY_KEYS.activeSession,
-    queryFn: async () => {
-      const res = await api.focus.sessions.active.$get();
-      if (!res.ok) {
-        throw new Error('Failed to fetch active session');
-      }
-      const data = await res.json();
-      return data.session;
-    },
+    select: (data) => data.session,
+    errorMessage: 'Failed to fetch active session',
   });
 }

@@ -1,5 +1,5 @@
+import { useApiQuery } from '@/hooks/use-api-query';
 import { api } from '@/lib/rpc';
-import { useQuery } from '@tanstack/react-query';
 import { FOCUS_QUERY_KEYS } from '../focus-query-keys';
 
 export interface FocusStats {
@@ -11,15 +11,9 @@ export interface FocusStats {
 }
 
 export function useFocusStats() {
-  return useQuery({
+  return useApiQuery(api.focus.stats.$get, {
     queryKey: FOCUS_QUERY_KEYS.stats,
-    queryFn: async (): Promise<FocusStats> => {
-      const res = await api.focus.stats.$get();
-      if (!res.ok) {
-        throw new Error('Failed to fetch focus stats');
-      }
-      const data = await res.json();
-      return data.stats;
-    },
+    select: (data) => data.stats,
+    errorMessage: 'Failed to fetch focus stats',
   });
 }

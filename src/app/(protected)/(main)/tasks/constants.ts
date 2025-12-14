@@ -2,46 +2,42 @@ export const PROJECT_COLORS = [
   {
     name: 'Blue',
     value: 'blue',
-    class: 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30',
+    class: 'bg-blue-500 text-white border-blue-600',
   },
   {
     name: 'Green',
     value: 'green',
-    class:
-      'bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30',
+    class: 'bg-green-500 text-white border-green-600',
   },
   {
     name: 'Purple',
     value: 'purple',
-    class:
-      'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30',
+    class: 'bg-purple-500 text-white border-purple-600',
   },
   {
     name: 'Orange',
     value: 'orange',
-    class:
-      'bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30',
+    class: 'bg-orange-500 text-white border-orange-600',
   },
   {
     name: 'Teal',
     value: 'teal',
-    class: 'bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/30',
+    class: 'bg-teal-500 text-white border-teal-600',
   },
   {
     name: 'Pink',
     value: 'pink',
-    class: 'bg-pink-500/20 text-pink-700 dark:text-pink-300 border-pink-500/30',
+    class: 'bg-pink-500 text-white border-pink-600',
   },
   {
     name: 'Yellow',
     value: 'yellow',
-    class:
-      'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/30',
+    class: 'bg-yellow-400 text-black border-yellow-500',
   },
   {
     name: 'Red',
     value: 'red',
-    class: 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30',
+    class: 'bg-red-500 text-white border-red-600',
   },
 ] as const;
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { ChartConfig } from '@/components/ui/chart';
+import { useState } from 'react';
 import { GenericAreaChart } from '../../../components/generic-area-chart';
 import { useTaskChart } from '../../hooks/queries/use-task-chart';
 
@@ -12,7 +13,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export const TaskChartSection = () => {
-  const { data: chartData, isLoading } = useTaskChart();
+  const [days, setDays] = useState(7);
+  const { data: chartData, isLoading } = useTaskChart(days);
 
   return (
     <GenericAreaChart
@@ -27,6 +29,7 @@ export const TaskChartSection = () => {
       tooltipFormatter={(value) => `${value}%`}
       yAxisDomain={[0, 100]}
       isLoading={isLoading}
+      onPeriodChange={setDays}
     />
   );
 };

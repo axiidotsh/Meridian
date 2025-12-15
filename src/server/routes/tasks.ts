@@ -45,6 +45,10 @@ const listTasksSchema = z.object({
   cursor: z.string().optional(),
 });
 
+const chartQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(365).default(7),
+});
+
 const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
 export const tasksRouter = new Hono()
@@ -86,11 +90,11 @@ export const tasksRouter = new Hono()
       },
     });
   })
-  .get('/chart', async (c) => {
+  .get('/chart', zValidator('query', chartQuerySchema), async (c) => {
     const user = c.get('user');
+    const { days } = c.req.valid('query');
 
     const now = new Date();
-    const days = 7;
     const chartData = [];
 
     for (let i = days - 1; i >= 0; i--) {
@@ -117,9 +121,13 @@ export const tasksRouter = new Hono()
         }),
       ]);
 
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dateLabel =
+        days <= 7
+          ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
+          : `${date.getMonth() + 1}/${date.getDate()}`;
+
       chartData.push({
-        date: dayNames[date.getDay()],
+        date: dateLabel,
         completionRate:
           totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
       });

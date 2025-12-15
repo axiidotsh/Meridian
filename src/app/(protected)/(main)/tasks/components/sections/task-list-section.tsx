@@ -2,7 +2,7 @@
 
 import { useAtomValue } from 'jotai';
 import { ClipboardCheckIcon, ListChecksIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ContentCard } from '../../../components/content-card';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import {
@@ -27,9 +27,30 @@ export const TaskListSection = () => {
   const selectedTags = useAtomValue(selectedTagsAtom);
   const selectedProjects = useAtomValue(selectedProjectsAtom);
 
-  const [openSections, setOpenSections] = useState<Set<string>>(
-    new Set(['dueToday'])
+  const filteredTasks = filterTasks(
+    tasks,
+    searchQuery,
+    selectedTags,
+    selectedProjects
   );
+  const sortedTasks = sortTasks(filteredTasks, sortBy);
+  const groupedTasks = groupTasksByDueDate(sortedTasks);
+
+  const defaultOpenSection = useMemo(() => {
+    if (groupedTasks.dueToday.length > 0) return 'dueToday';
+    if (groupedTasks.dueThisWeek.length > 0) return 'dueThisWeek';
+    if (groupedTasks.upcoming.length > 0) return 'upcoming';
+    if (groupedTasks.overdue.length > 0) return 'overdue';
+    return 'dueToday';
+  }, [groupedTasks]);
+
+  console.log('defaultOpenSection', defaultOpenSection);
+
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setOpenSections(new Set([defaultOpenSection]));
+  }, [defaultOpenSection]);
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => {
@@ -42,15 +63,6 @@ export const TaskListSection = () => {
       return next;
     });
   };
-
-  const filteredTasks = filterTasks(
-    tasks,
-    searchQuery,
-    selectedTags,
-    selectedProjects
-  );
-  const sortedTasks = sortTasks(filteredTasks, sortBy);
-  const groupedTasks = groupTasksByDueDate(sortedTasks);
 
   const renderContent = () => {
     if (isLoading) {

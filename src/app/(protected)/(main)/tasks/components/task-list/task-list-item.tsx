@@ -19,7 +19,6 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { deletingTaskAtom, editingTaskAtom } from '../../atoms/task-dialogs';
-import { getProjectColorClass } from '../../constants';
 import { useToggleTask } from '../../hooks/mutations/use-toggle-task';
 import type { Task } from '../../hooks/types';
 import { formatDueDate, isOverdue } from '../../utils/task-filters';
@@ -68,10 +67,16 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
               <>
                 <Badge
                   variant="outline"
-                  className={cn(
-                    'gap-1',
-                    getProjectColorClass(task.project.color)
-                  )}
+                  className="gap-1 border"
+                  style={{
+                    backgroundColor: task.project.color
+                      ? `${task.project.color}20`
+                      : undefined,
+                    borderColor: task.project.color
+                      ? `${task.project.color}80`
+                      : undefined,
+                    color: task.project.color || undefined,
+                  }}
                 >
                   <FolderIcon className="size-3" />
                   {task.project.name}

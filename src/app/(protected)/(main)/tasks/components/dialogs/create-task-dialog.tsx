@@ -26,6 +26,7 @@ import { useCreateTask } from '../../hooks/mutations/use-create-task';
 import { useProjects } from '../../hooks/queries/use-projects';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import type { Project, Task } from '../../hooks/types';
+import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
 export const CreateTaskDialog = () => {
@@ -69,7 +70,7 @@ export const CreateTaskDialog = () => {
           title: title.trim(),
           dueDate: dueDate?.toISOString() || undefined,
           priority: priority as 'LOW' | 'MEDIUM' | 'HIGH',
-          projectId: projectId === 'none' ? undefined : projectId || undefined,
+          projectId: projectId || undefined,
           tags,
         },
       },
@@ -123,19 +124,12 @@ export const CreateTaskDialog = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="project">Project</Label>
-            <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger id="project" className="w-full">
-                <SelectValue placeholder="Select project..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No project</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ProjectSelect
+              id="project"
+              projects={projects}
+              value={projectId}
+              onValueChange={setProjectId}
+            />
           </div>
           <div className="space-y-2">
             <Label>Tags</Label>

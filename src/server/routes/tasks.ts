@@ -9,7 +9,7 @@ const createTaskSchema = z.object({
   projectId: z.string().optional(),
   dueDate: z.string().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
-  tags: z.array(z.string()).default([]),
+  tags: z.array(z.string()).max(5).default([]),
 });
 
 const bulkCreateTasksSchema = z.object({
@@ -21,7 +21,7 @@ const bulkCreateTasksSchema = z.object({
   projectId: z.string().optional(),
   dueDate: z.string().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).default('MEDIUM'),
-  tags: z.array(z.string()).default([]),
+  tags: z.array(z.string()).max(5).default([]),
 });
 
 const updateTaskSchema = z.object({
@@ -29,7 +29,7 @@ const updateTaskSchema = z.object({
   projectId: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH']).optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()).max(5).optional(),
   completed: z.boolean().optional(),
 });
 

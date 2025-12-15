@@ -6,13 +6,6 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -29,6 +22,7 @@ import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks'
 import { useProjects } from '../../hooks/queries/use-projects';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import type { Project, Task, TaskPriority } from '../../hooks/types';
+import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
 interface PendingTask {
@@ -107,7 +101,7 @@ export const BulkAddTasksSheet = () => {
           tasks: pendingTasks.map((task) => ({ title: task.title })),
           dueDate: dueDate?.toISOString() || undefined,
           priority: 'MEDIUM' as TaskPriority,
-          projectId: projectId === 'none' ? undefined : projectId || undefined,
+          projectId: projectId || undefined,
           tags,
         },
       });
@@ -162,19 +156,12 @@ export const BulkAddTasksSheet = () => {
             </div>
             <div className="flex-1 space-y-2">
               <Label htmlFor="project">Project</Label>
-              <Select value={projectId} onValueChange={setProjectId}>
-                <SelectTrigger id="project" className="w-full">
-                  <SelectValue placeholder="Select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No project</SelectItem>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ProjectSelect
+                id="project"
+                projects={projects}
+                value={projectId}
+                onValueChange={setProjectId}
+              />
             </div>
             <div className="flex-1 space-y-2">
               <Label>Tags</Label>

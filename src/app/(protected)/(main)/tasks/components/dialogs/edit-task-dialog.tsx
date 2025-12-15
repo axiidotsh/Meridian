@@ -26,6 +26,7 @@ import { useUpdateTask } from '../../hooks/mutations/use-update-task';
 import { useProjects } from '../../hooks/queries/use-projects';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import type { Project, Task } from '../../hooks/types';
+import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
 export const EditTaskDialog = () => {
@@ -51,7 +52,7 @@ export const EditTaskDialog = () => {
       setTitle(task.title);
       setDueDate(task.dueDate ? new Date(task.dueDate) : undefined);
       setPriority(task.priority);
-      setProjectId(task.projectId ?? 'none');
+      setProjectId(task.projectId ?? '');
       setTags(task.tags ?? []);
     }
   }, [task]);
@@ -71,7 +72,7 @@ export const EditTaskDialog = () => {
           title: title.trim(),
           dueDate: dueDate?.toISOString() || null,
           priority: priority as 'LOW' | 'MEDIUM' | 'HIGH',
-          projectId: projectId === 'none' ? null : projectId || null,
+          projectId: projectId || null,
           tags,
         },
       },
@@ -125,19 +126,12 @@ export const EditTaskDialog = () => {
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-project">Project</Label>
-            <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger id="edit-project" className="w-full">
-                <SelectValue placeholder="Select project..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No project</SelectItem>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ProjectSelect
+              id="edit-project"
+              projects={projects}
+              value={projectId}
+              onValueChange={setProjectId}
+            />
           </div>
           <div className="space-y-2">
             <Label>Tags</Label>

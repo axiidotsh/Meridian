@@ -1,5 +1,6 @@
 'use client';
 
+import { ColorPicker } from '@/components/color-picker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,12 +11,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { cn } from '@/utils/utils';
 import { useAtom } from 'jotai';
-import { CheckIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { editingProjectAtom } from '../../atoms/task-dialogs';
-import { PROJECT_COLORS } from '../../constants';
 import { useUpdateProject } from '../../hooks/mutations/use-update-project';
 
 export const EditProjectDialog = () => {
@@ -23,12 +21,12 @@ export const EditProjectDialog = () => {
   const updateProject = useUpdateProject();
 
   const [name, setName] = useState('');
-  const [color, setColor] = useState<string>('blue');
+  const [color, setColor] = useState<string>('#3b82f6');
 
   useEffect(() => {
     if (project) {
       setName(project.name);
-      setColor(project.color ?? 'blue');
+      setColor(project.color ?? '#3b82f6');
     }
   }, [project]);
 
@@ -73,24 +71,29 @@ export const EditProjectDialog = () => {
           </div>
           <div className="space-y-2">
             <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
-              {PROJECT_COLORS.map((c) => (
-                <button
-                  key={c.value}
-                  type="button"
-                  onClick={() => setColor(c.value)}
-                  className={cn(
-                    'flex size-8 items-center justify-center rounded-full border-2 transition-all',
-                    c.class,
-                    color === c.value
-                      ? 'border-foreground'
-                      : 'border-transparent'
-                  )}
-                  title={c.name}
-                >
-                  {color === c.value && <CheckIcon className="size-4" />}
-                </button>
-              ))}
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 -translate-y-1/2">
+                  #
+                </span>
+                <Input
+                  value={color.replace('#', '')}
+                  onChange={(e) => {
+                    const hex = e.target.value.replace(/[^0-9A-Fa-f]/g, '');
+                    if (hex.length <= 6) {
+                      setColor(`#${hex}`);
+                    }
+                  }}
+                  placeholder="000000"
+                  maxLength={6}
+                  className="pl-7"
+                />
+              </div>
+              <ColorPicker
+                value={color}
+                onChange={setColor}
+                className="size-9"
+              />
             </div>
           </div>
           <DialogFooter>

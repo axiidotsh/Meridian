@@ -16,9 +16,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { cn } from '@/utils/utils';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
 import { useState } from 'react';
+
+const MAX_TAGS = 5;
 
 interface TagInputProps {
   tags: string[];
@@ -32,7 +33,7 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
 
   const addTag = (tag: string) => {
     const trimmed = tag.trim().toLowerCase();
-    if (trimmed && !tags.includes(trimmed)) {
+    if (trimmed && !tags.includes(trimmed) && tags.length < MAX_TAGS) {
       onChange([...tags, trimmed]);
     }
     setInputValue('');
@@ -66,7 +67,8 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
   const showCreateNew =
     inputValue.trim() &&
     !suggestions.includes(inputValue.trim().toLowerCase()) &&
-    !tags.includes(inputValue.trim().toLowerCase());
+    !tags.includes(inputValue.trim().toLowerCase()) &&
+    tags.length < MAX_TAGS;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -106,12 +108,17 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
               ))}
             </div>
           ) : (
-            <span className="text-muted-foreground">Select tags...</span>
+            <span className="text-muted-foreground">
+              Select tags{tags.length > 0 && ` (${tags.length}/${MAX_TAGS})`}...
+            </span>
           )}
           <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+      >
         <Command>
           <CommandInput
             placeholder="Search or create tag..."
@@ -120,7 +127,11 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
             onKeyDown={handleKeyDown}
           />
           <CommandList>
-            <CommandEmpty>No tags found</CommandEmpty>
+            <CommandEmpty>
+              {tags.length >= MAX_TAGS
+                ? `Maximum ${MAX_TAGS} tags reached`
+                : 'No tags found'}
+            </CommandEmpty>
             {showCreateNew && (
               <>
                 <CommandGroup>
@@ -129,9 +140,12 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
                       addTag(inputValue);
                       setOpen(true);
                     }}
+                    className="justify-between"
                   >
-                    <CheckIcon className="mr-2 size-4 opacity-0" />
-                    Create &quot;{inputValue.trim()}&quot;
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">#</span>
+                      <span>Create &quot;{inputValue.trim()}&quot;</span>
+                    </div>
                   </CommandItem>
                 </CommandGroup>
                 {filteredSuggestions.length > 0 && <CommandSeparator />}
@@ -139,23 +153,31 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
             )}
             {filteredSuggestions.length > 0 && (
               <CommandGroup>
-                {filteredSuggestions.map((suggestion) => (
-                  <CommandItem
-                    key={suggestion}
-                    onSelect={() => {
-                      toggleTag(suggestion);
-                      setOpen(true);
-                    }}
-                  >
-                    <CheckIcon
-                      className={cn(
-                        'mr-2 size-4',
-                        tags.includes(suggestion) ? 'opacity-100' : 'opacity-0'
+                {filteredSuggestions.map((suggestion) => {
+                  const isDisabled =
+                    !tags.includes(suggestion) && tags.length >= MAX_TAGS;
+                  return (
+                    <CommandItem
+                      key={suggestion}
+                      onSelect={() => {
+                        if (!isDisabled) {
+                          toggleTag(suggestion);
+                          setOpen(true);
+                        }
+                      }}
+                      disabled={isDisabled}
+                      className="justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">#</span>
+                        <span>{suggestion}</span>
+                      </div>
+                      {tags.includes(suggestion) && (
+                        <CheckIcon className="size-4" />
                       )}
-                    />
-                    {suggestion}
-                  </CommandItem>
-                ))}
+                    </CommandItem>
+                  );
+                })}
               </CommandGroup>
             )}
             {tags.length > 0 && availableSuggestions.length > 0 && (
@@ -170,9 +192,13 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
                       removeTag(tag);
                       setOpen(true);
                     }}
+                    className="justify-between"
                   >
-                    <CheckIcon className="mr-2 size-4 opacity-100" />
-                    {tag}
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">#</span>
+                      <span>{tag}</span>
+                    </div>
+                    <CheckIcon className="size-4" />
                   </CommandItem>
                 ))}
               </CommandGroup>

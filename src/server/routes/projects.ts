@@ -6,12 +6,12 @@ import { authMiddleware } from '../middleware/auth';
 
 const createProjectSchema = z.object({
   name: z.string().min(1).max(100),
-  color: z.string().optional(),
+  color: z.string().length(7).startsWith('#').optional(),
 });
 
 const updateProjectSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  color: z.string().nullable().optional(),
+  color: z.string().length(7).startsWith('#').nullable().optional(),
 });
 
 export const projectsRouter = new Hono()

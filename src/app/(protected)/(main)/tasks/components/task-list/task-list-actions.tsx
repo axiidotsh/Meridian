@@ -8,22 +8,17 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/utils/utils';
 import { useAtom, useSetAtom } from 'jotai';
 import {
   ArrowDownUpIcon,
   FilterIcon,
   FolderIcon,
+  ListPlusIcon,
   ListTodoIcon,
   PlusIcon,
-  SparklesIcon,
 } from 'lucide-react';
 import {
   bulkAddTasksSheetAtom,
@@ -32,6 +27,8 @@ import {
 } from '../../atoms/task-dialogs';
 import { useProjects } from '../../hooks/queries/use-projects';
 import type { Project, Task } from '../../hooks/types';
+import { ProjectFilterMenu } from '../project-filter-menu';
+import { TagFilterMenu } from '../tag-filter-menu';
 import {
   projectSearchQueryAtom,
   searchQueryAtom,
@@ -62,50 +59,9 @@ export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
     data: Project[] | undefined;
   };
 
-  const getAllTags = (): string[] => {
-    const tagSet = new Set<string>();
-    tasks.forEach((task) => {
-      task.tags?.forEach((tag: string) => tagSet.add(tag));
-    });
-    return Array.from(tagSet).sort();
-  };
-
-  const getFilteredTags = (): string[] => {
-    const allTags = getAllTags();
-    if (!tagSearchQuery.trim()) return allTags;
-    return allTags.filter((tag) =>
-      tag.toLowerCase().includes(tagSearchQuery.toLowerCase())
-    );
-  };
-
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const clearTagFilters = () => {
-    setSelectedTags([]);
-  };
-
-  const getFilteredProjects = () => {
-    if (!projectSearchQuery.trim()) return projects;
-    return projects.filter((project) =>
-      project.name.toLowerCase().includes(projectSearchQuery.toLowerCase())
-    );
-  };
-
-  const toggleProject = (projectId: string) => {
-    setSelectedProjects((prev) =>
-      prev.includes(projectId)
-        ? prev.filter((p) => p !== projectId)
-        : [...prev, projectId]
-    );
-  };
-
-  const clearProjectFilters = () => {
-    setSelectedProjects([]);
-  };
+  const allTags = Array.from(
+    new Set(tasks.flatMap((task) => task.tags ?? []))
+  ).sort();
 
   const hasActiveFilters =
     selectedTags.length > 0 || selectedProjects.length > 0;
@@ -136,106 +92,34 @@ export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  Filter by projects
-                  {selectedProjects.length > 0 && (
-                    <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
-                      {selectedProjects.length}
-                    </span>
-                  )}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-56">
-                  <div className="p-2">
-                    <Input
-                      type="text"
-                      placeholder="Search projects..."
-                      value={projectSearchQuery}
-                      onChange={(e) => setProjectSearchQuery(e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                  <DropdownMenuSeparator />
-                  <div className="max-h-[200px] overflow-y-auto">
-                    {getFilteredProjects().length === 0 ? (
-                      <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                        No projects found
-                      </div>
-                    ) : (
-                      getFilteredProjects().map((project) => (
-                        <DropdownMenuCheckboxItem
-                          key={project.id}
-                          checked={selectedProjects.includes(project.id)}
-                          onCheckedChange={() => toggleProject(project.id)}
-                        >
-                          {project.name}
-                        </DropdownMenuCheckboxItem>
-                      ))
-                    )}
-                  </div>
-                  {selectedProjects.length > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={clearProjectFilters}
-                        className="justify-center"
-                      >
-                        Clear filters
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  Filter by tags
-                  {selectedTags.length > 0 && (
-                    <span className="bg-primary text-primary-foreground ml-auto flex size-5 items-center justify-center rounded-full text-xs">
-                      {selectedTags.length}
-                    </span>
-                  )}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent className="w-56">
-                  <div className="p-2">
-                    <Input
-                      type="text"
-                      placeholder="Search tags..."
-                      value={tagSearchQuery}
-                      onChange={(e) => setTagSearchQuery(e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                  <DropdownMenuSeparator />
-                  <div className="max-h-[200px] overflow-y-auto">
-                    {getFilteredTags().length === 0 ? (
-                      <div className="text-muted-foreground px-2 py-6 text-center text-sm">
-                        No tags found
-                      </div>
-                    ) : (
-                      getFilteredTags().map((tag) => (
-                        <DropdownMenuCheckboxItem
-                          key={tag}
-                          checked={selectedTags.includes(tag)}
-                          onCheckedChange={() => toggleTag(tag)}
-                        >
-                          {tag}
-                        </DropdownMenuCheckboxItem>
-                      ))
-                    )}
-                  </div>
-                  {selectedTags.length > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={clearTagFilters}
-                        className="justify-center"
-                      >
-                        Clear filters
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
+              <ProjectFilterMenu
+                projects={projects}
+                selectedProjects={selectedProjects}
+                onToggleProject={(projectId) =>
+                  setSelectedProjects((prev) =>
+                    prev.includes(projectId)
+                      ? prev.filter((p) => p !== projectId)
+                      : [...prev, projectId]
+                  )
+                }
+                onClearFilters={() => setSelectedProjects([])}
+                searchQuery={projectSearchQuery}
+                onSearchQueryChange={setProjectSearchQuery}
+              />
+              <TagFilterMenu
+                tags={allTags}
+                selectedTags={selectedTags}
+                onToggleTag={(tag) =>
+                  setSelectedTags((prev) =>
+                    prev.includes(tag)
+                      ? prev.filter((t) => t !== tag)
+                      : [...prev, tag]
+                  )
+                }
+                onClearFilters={() => setSelectedTags([])}
+                searchQuery={tagSearchQuery}
+                onSearchQueryChange={setTagSearchQuery}
+              />
             </DropdownMenuContent>
           </DropdownMenu>
           <DropdownMenu>
@@ -283,7 +167,7 @@ export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
                 Add a Task
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setBulkAddTasksSheet(true)}>
-                <SparklesIcon />
+                <ListPlusIcon />
                 Bulk Add Tasks
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setCreateProjectDialog(true)}>

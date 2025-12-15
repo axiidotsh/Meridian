@@ -1,12 +1,17 @@
+import type { SortOption } from '../atoms/task-atoms';
 import type { Task, TaskPriority } from '../hooks/types';
-
-export type SortOption = 'dueDate' | 'priority' | 'title' | 'completed';
 
 const PRIORITY_ORDER: Record<TaskPriority, number> = {
   HIGH: 0,
   MEDIUM: 1,
   LOW: 2,
 };
+
+function normalizeDateToMidnight(date: Date) {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+}
 
 export function filterTasks(
   tasks: Task[],
@@ -20,7 +25,7 @@ export function filterTasks(
     const lowerQuery = query.toLowerCase();
     filtered = filtered.filter((task) => {
       const titleMatch = task.title.toLowerCase().includes(lowerQuery);
-      const tagsMatch = task.tags?.some((tag: string) =>
+      const tagsMatch = task.tags?.some((tag) =>
         tag.toLowerCase().includes(lowerQuery)
       );
       const projectMatch = task.project?.name
@@ -76,8 +81,7 @@ export function groupTasksByDueDate(tasks: Task[]) {
     upcoming: [] as Task[],
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = normalizeDateToMidnight(new Date());
 
   tasks.forEach((task) => {
     if (!task.dueDate) {
@@ -85,9 +89,7 @@ export function groupTasksByDueDate(tasks: Task[]) {
       return;
     }
 
-    const dueDate = new Date(task.dueDate);
-    dueDate.setHours(0, 0, 0, 0);
-
+    const dueDate = normalizeDateToMidnight(new Date(task.dueDate));
     const diffTime = dueDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
@@ -106,10 +108,8 @@ export function groupTasksByDueDate(tasks: Task[]) {
 }
 
 export function formatDueDate(date: Date | string): string {
-  const dueDate = new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  dueDate.setHours(0, 0, 0, 0);
+  const dueDate = normalizeDateToMidnight(new Date(date));
+  const today = normalizeDateToMidnight(new Date());
 
   const diffTime = dueDate.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -133,9 +133,7 @@ export function formatDueDate(date: Date | string): string {
 }
 
 export function isOverdue(date: Date | string): boolean {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dueDate = new Date(date);
-  dueDate.setHours(0, 0, 0, 0);
+  const today = normalizeDateToMidnight(new Date());
+  const dueDate = normalizeDateToMidnight(new Date(date));
   return dueDate < today;
 }

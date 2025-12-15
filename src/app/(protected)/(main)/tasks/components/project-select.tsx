@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { CheckIcon, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
+import { MAX_DROPDOWN_HEIGHT } from '../constants';
 import type { Project } from '../hooks/types';
 
 interface ProjectSelectProps {
@@ -63,7 +64,10 @@ export const ProjectSelect = ({
           />
         </div>
         <DropdownMenuSeparator />
-        <div className="max-h-[200px] overflow-y-auto">
+        <div
+          style={{ maxHeight: MAX_DROPDOWN_HEIGHT }}
+          className="overflow-y-auto"
+        >
           {filteredProjects.length === 0 ? (
             <div className="text-muted-foreground px-2 py-6 text-center text-sm">
               No projects found

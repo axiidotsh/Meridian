@@ -24,8 +24,8 @@ import { createTaskDialogAtom } from '../../atoms/task-dialogs';
 import { PRIORITY_OPTIONS } from '../../constants';
 import { useCreateTask } from '../../hooks/mutations/use-create-task';
 import { useProjects } from '../../hooks/queries/use-projects';
-import { useTasks } from '../../hooks/queries/use-tasks';
-import type { Project, Task } from '../../hooks/types';
+import type { Project } from '../../hooks/types';
+import { useExistingTags } from '../../hooks/use-existing-tags';
 import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
@@ -35,17 +35,13 @@ export const CreateTaskDialog = () => {
   const { data: projects = [] } = useProjects() as {
     data: Project[] | undefined;
   };
-  const { data: tasks = [] } = useTasks() as { data: Task[] | undefined };
+  const existingTags = useExistingTags();
 
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [priority, setPriority] = useState<string>('MEDIUM');
   const [projectId, setProjectId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
-
-  const existingTags = Array.from(
-    new Set(tasks.flatMap((t) => t.tags ?? []))
-  ).sort();
 
   const resetForm = () => {
     setTitle('');

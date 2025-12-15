@@ -21,28 +21,25 @@ import {
   PlusIcon,
 } from 'lucide-react';
 import {
-  bulkAddTasksSheetAtom,
-  createProjectDialogAtom,
-  createTaskDialogAtom,
-} from '../../atoms/task-dialogs';
-import { useProjects } from '../../hooks/queries/use-projects';
-import type { Project, Task } from '../../hooks/types';
-import { ProjectFilterMenu } from '../project-filter-menu';
-import { TagFilterMenu } from '../tag-filter-menu';
-import {
   projectSearchQueryAtom,
   searchQueryAtom,
   selectedProjectsAtom,
   selectedTagsAtom,
   sortByAtom,
   tagSearchQueryAtom,
-} from '../task-atoms';
+} from '../../atoms/task-atoms';
+import {
+  bulkAddTasksSheetAtom,
+  createProjectDialogAtom,
+  createTaskDialogAtom,
+} from '../../atoms/task-dialogs';
+import { useProjects } from '../../hooks/queries/use-projects';
+import type { Project } from '../../hooks/types';
+import { useExistingTags } from '../../hooks/use-existing-tags';
+import { ProjectFilterMenu } from '../project-filter-menu';
+import { TagFilterMenu } from '../tag-filter-menu';
 
-interface TaskListActionsProps {
-  tasks: Task[];
-}
-
-export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
+export const TaskListActions = () => {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [selectedTags, setSelectedTags] = useAtom(selectedTagsAtom);
   const [selectedProjects, setSelectedProjects] = useAtom(selectedProjectsAtom);
@@ -58,10 +55,7 @@ export const TaskListActions = ({ tasks }: TaskListActionsProps) => {
   const { data: projects = [] } = useProjects() as {
     data: Project[] | undefined;
   };
-
-  const allTags = Array.from(
-    new Set(tasks.flatMap((task) => task.tags ?? []))
-  ).sort();
+  const allTags = useExistingTags();
 
   const hasActiveFilters =
     selectedTags.length > 0 || selectedProjects.length > 0;

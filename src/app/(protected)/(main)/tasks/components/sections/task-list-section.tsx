@@ -4,6 +4,13 @@ import { useAtomValue } from 'jotai';
 import { ClipboardCheckIcon, ListChecksIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { ContentCard } from '../../../components/content-card';
+import {
+  searchQueryAtom,
+  selectedProjectsAtom,
+  selectedTagsAtom,
+  sortByAtom,
+} from '../../atoms/task-atoms';
+import { LIST_HEIGHT } from '../../constants';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import {
   filterTasks,
@@ -11,12 +18,6 @@ import {
   sortTasks,
 } from '../../utils/task-filters';
 import { TaskListSkeleton } from '../skeletons/task-list-skeleton';
-import {
-  searchQueryAtom,
-  selectedProjectsAtom,
-  selectedTagsAtom,
-  sortByAtom,
-} from '../task-atoms';
 import { TaskListActions } from '../task-list/task-list-actions';
 import { TaskListGroup } from '../task-list/task-list-group';
 
@@ -44,8 +45,6 @@ export const TaskListSection = () => {
     return 'dueToday';
   }, [groupedTasks]);
 
-  console.log('defaultOpenSection', defaultOpenSection);
-
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -71,7 +70,10 @@ export const TaskListSection = () => {
 
     if (tasks.length === 0) {
       return (
-        <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
+        <div
+          className="text-muted-foreground flex flex-col items-center justify-center gap-2 text-center"
+          style={{ height: LIST_HEIGHT }}
+        >
           <ClipboardCheckIcon className="size-12 opacity-20" />
           <p className="text-sm font-medium">No tasks yet</p>
           <p className="text-xs">Create your first task to get started</p>
@@ -81,7 +83,10 @@ export const TaskListSection = () => {
 
     if (sortedTasks.length === 0) {
       return (
-        <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
+        <div
+          className="text-muted-foreground flex flex-col items-center justify-center gap-2 text-center"
+          style={{ height: LIST_HEIGHT }}
+        >
           <ListChecksIcon className="size-12 opacity-20" />
           <p className="text-sm font-medium">No tasks found</p>
           <p className="text-xs">Try adjusting your search or filters</p>
@@ -120,7 +125,7 @@ export const TaskListSection = () => {
   };
 
   return (
-    <ContentCard title="Task List" action={<TaskListActions tasks={tasks} />}>
+    <ContentCard title="Task List" action={<TaskListActions />}>
       {renderContent()}
     </ContentCard>
   );

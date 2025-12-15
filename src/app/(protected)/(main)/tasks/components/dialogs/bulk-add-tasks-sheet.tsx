@@ -20,8 +20,8 @@ import { useRef, useState } from 'react';
 import { bulkAddTasksSheetAtom } from '../../atoms/task-dialogs';
 import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks';
 import { useProjects } from '../../hooks/queries/use-projects';
-import { useTasks } from '../../hooks/queries/use-tasks';
-import type { Project, Task, TaskPriority } from '../../hooks/types';
+import type { Project, TaskPriority } from '../../hooks/types';
+import { useExistingTags } from '../../hooks/use-existing-tags';
 import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
@@ -36,7 +36,7 @@ export const BulkAddTasksSheet = () => {
   const { data: projects = [] } = useProjects() as {
     data: Project[] | undefined;
   };
-  const { data: tasks = [] } = useTasks() as { data: Task[] | undefined };
+  const existingTags = useExistingTags();
 
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
@@ -44,10 +44,6 @@ export const BulkAddTasksSheet = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const existingTags = Array.from(
-    new Set(tasks.flatMap((t) => t.tags ?? []))
-  ).sort();
 
   const resetForm = () => {
     setTitle('');
@@ -92,11 +88,11 @@ export const BulkAddTasksSheet = () => {
     }
   };
 
-  const handleSaveAll = async () => {
+  const handleSaveAll = () => {
     if (pendingTasks.length === 0) return;
 
-    try {
-      await bulkCreateTasks.mutateAsync({
+    bulkCreateTasks.mutate(
+      {
         json: {
           tasks: pendingTasks.map((task) => ({ title: task.title })),
           dueDate: dueDate?.toISOString() || undefined,
@@ -104,11 +100,11 @@ export const BulkAddTasksSheet = () => {
           projectId: projectId || undefined,
           tags,
         },
-      });
-      handleClose();
-    } catch (error) {
-      console.error('Failed to create tasks:', error);
-    }
+      },
+      {
+        onSuccess: handleClose,
+      }
+    );
   };
 
   return (

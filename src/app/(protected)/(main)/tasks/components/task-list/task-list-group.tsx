@@ -8,6 +8,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/utils/utils';
 import { ChevronRightIcon } from 'lucide-react';
+import { LIST_HEIGHT } from '../../constants';
 import type { Task } from '../../hooks/types';
 import { TaskListItem } from './task-list-item';
 
@@ -41,7 +42,7 @@ export const TaskListGroup = ({
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-6">
         <ScrollArea className="mt-2">
-          <div className="max-h-[600px]">
+          <div style={{ maxHeight: LIST_HEIGHT }}>
             <ul className="mb-4 space-y-3 pr-4">
               {tasks.map((task) => (
                 <TaskListItem key={task.id} task={task} />

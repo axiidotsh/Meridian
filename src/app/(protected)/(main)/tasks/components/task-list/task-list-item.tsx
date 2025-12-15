@@ -88,7 +88,7 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
             )}
             {task.tags && task.tags.length > 0 && (
               <>
-                {task.tags.map((tag: string) => (
+                {task.tags.map((tag) => (
                   <Badge
                     key={tag}
                     variant="secondary"

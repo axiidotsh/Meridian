@@ -10,29 +10,20 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/utils/utils';
-import { useAtom } from 'jotai';
+import { useAtom, useSetAtom } from 'jotai';
 import { ArrowDownUpIcon, FilterIcon, PlusIcon } from 'lucide-react';
-import { searchQueryAtom, sortByAtom, statusFilterAtom } from './habit-atoms';
+import { createDialogOpenAtom } from '../atoms/dialog-atoms';
+import {
+  searchQueryAtom,
+  sortByAtom,
+  statusFilterAtom,
+} from '../atoms/habit-atoms';
 
-interface Habit {
-  id: string;
-  title: string;
-  completed: boolean;
-  category?: string;
-  currentStreak: number;
-  bestStreak: number;
-  totalCompletions: number;
-  createdAt: Date;
-}
-
-interface HabitListActionsProps {
-  habits: Habit[];
-}
-
-export function HabitListActions({ habits }: HabitListActionsProps) {
+export function HabitListActions() {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [sortBy, setSortBy] = useAtom(sortByAtom);
   const [statusFilter, setStatusFilter] = useAtom(statusFilterAtom);
+  const setCreateDialogOpen = useSetAtom(createDialogOpenAtom);
 
   const hasActiveFilters = statusFilter !== 'all';
 
@@ -102,7 +93,12 @@ export function HabitListActions({ habits }: HabitListActionsProps) {
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button size="icon-sm" variant="outline" tooltip="Add new habit">
+        <Button
+          size="icon-sm"
+          variant="outline"
+          tooltip="Add new habit"
+          onClick={() => setCreateDialogOpen(true)}
+        >
           <PlusIcon />
         </Button>
       </ButtonGroup>

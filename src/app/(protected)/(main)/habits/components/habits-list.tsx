@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/utils/utils';
+import { useSetAtom } from 'jotai';
 import {
   EllipsisIcon,
   FlameIcon,
@@ -20,6 +21,8 @@ import {
   TargetIcon,
   Trash2Icon,
 } from 'lucide-react';
+import { deletingHabitIdAtom, editingHabitIdAtom } from '../atoms/dialog-atoms';
+import type { HabitWithMetrics } from '../hooks/types';
 
 // Helper to get the last 7 days (today + 6 previous days)
 function getLast7Days(): Date[] {
@@ -27,9 +30,9 @@ function getLast7Days(): Date[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  for (let i = 6; i >= 0; i--) {
+  for (let i = 0; i <= 6; i++) {
     const date = new Date(today);
-    date.setDate(date.getDate() - i);
+    date.setDate(date.getDate() - (6 - i));
     days.push(date);
   }
 
@@ -113,7 +116,7 @@ function WeekDayToggle({ completionHistory, onToggleDay }: WeekDayToggleProps) {
               <button
                 onClick={() => onToggleDay(day)}
                 className={cn(
-                  'size-3.5 rounded-full border transition-all duration-150',
+                  'size-3.5 cursor-pointer rounded-full border transition-all duration-150',
                   'hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
                   completed
                     ? 'border-emerald-500 bg-emerald-500'
@@ -154,18 +157,7 @@ export interface CompletionRecord {
   completed: boolean;
 }
 
-export interface Habit {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  category?: string;
-  currentStreak: number;
-  bestStreak: number;
-  totalCompletions: number;
-  createdAt: Date;
-  completionHistory: CompletionRecord[];
-}
+export type Habit = HabitWithMetrics;
 
 interface HabitsListProps {
   habits: Habit[];
@@ -178,6 +170,9 @@ export function HabitsList({
   sortedHabits,
   onToggleDay,
 }: HabitsListProps) {
+  const setEditingHabitId = useSetAtom(editingHabitIdAtom);
+  const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
+
   const getStreakColor = (streak: number): string => {
     if (streak >= 30) return 'text-purple-500';
     if (streak >= 14) return 'text-yellow-500';
@@ -249,11 +244,16 @@ export function HabitsList({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setEditingHabitId(habit.id)}
+                      >
                         <PencilIcon />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem variant="destructive">
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeletingHabitId(habit.id)}
+                      >
                         <Trash2Icon />
                         Delete
                       </DropdownMenuItem>

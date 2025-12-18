@@ -1,9 +1,11 @@
 'use client';
 
+import { ErrorState } from '@/components/error-state';
 import { PageHeading } from '@/components/page-heading';
 import { Button } from '@/components/ui/button';
 import { ChartConfig } from '@/components/ui/chart';
-import { useAtomValue } from 'jotai';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAtom, useAtomValue } from 'jotai';
 import {
   CheckCircle2Icon,
   FlameIcon,
@@ -11,318 +13,126 @@ import {
   Settings2Icon,
   TrendingUpIcon,
 } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ContentCard } from '../components/content-card';
 import { GenericAreaChart } from '../components/generic-area-chart';
 import { MetricCard } from '../components/metric-card';
-import type { SortOption } from './components/habit-atoms';
+import {
+  createDialogOpenAtom,
+  deletingHabitIdAtom,
+  editingHabitIdAtom,
+} from './atoms/dialog-atoms';
 import {
   searchQueryAtom,
   sortByAtom,
   statusFilterAtom,
-} from './components/habit-atoms';
+} from './atoms/habit-atoms';
+import { CreateHabitDialog } from './components/dialogs/create-habit-dialog';
+import { DeleteHabitDialog } from './components/dialogs/delete-habit-dialog';
+import { EditHabitDialog } from './components/dialogs/edit-habit-dialog';
 import { HabitListActions } from './components/habit-list-actions';
-import { type Habit, HabitsList } from './components/habits-list';
+import { HabitsList } from './components/habits-list';
+import { useToggleHabit } from './hooks/mutations/use-toggle-habit';
+import { useHabitStats } from './hooks/queries/use-habit-stats';
+import { useHabits } from './hooks/queries/use-habits';
+import {
+  enrichHabitsWithMetrics,
+  filterHabits,
+  sortHabits,
+} from './utils/habit-calculations';
 
-// Helper function to generate completion history
-const generateCompletionHistory = (
-  daysBack: number,
-  completionRate: number
-) => {
-  const history = [];
-  const today = new Date();
+const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  for (let i = daysBack; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    date.setHours(0, 0, 0, 0);
-
-    history.push({
-      date,
-      completed: Math.random() < completionRate,
-    });
-  }
-
-  return history;
-};
-
-// Helper function to calculate streak from history
-const calculateStreak = (
-  history: { date: Date; completed: boolean }[]
-): number => {
-  const sortedHistory = [...history].sort(
-    (a, b) => b.date.getTime() - a.date.getTime()
-  );
-
-  let streak = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentDate = new Date(today);
-
-  for (const record of sortedHistory) {
-    const recordDate = new Date(record.date);
-    recordDate.setHours(0, 0, 0, 0);
-
-    if (recordDate.getTime() === currentDate.getTime() && record.completed) {
-      streak++;
-      currentDate.setDate(currentDate.getDate() - 1);
-    } else if (recordDate.getTime() < currentDate.getTime()) {
-      break;
-    }
-  }
-
-  return streak;
-};
-
-const MOCK_HABITS: Habit[] = [
-  {
-    id: '1',
-    title: 'Morning meditation',
-    description: '10 minutes of mindfulness',
-    completed: true,
-    category: 'wellness',
-    currentStreak: 0,
-    bestStreak: 15,
-    totalCompletions: 45,
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-  {
-    id: '2',
-    title: 'Exercise for 30 minutes',
-    completed: false,
-    category: 'health',
-    currentStreak: 0,
-    bestStreak: 20,
-    totalCompletions: 82,
-    createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-  {
-    id: '3',
-    title: 'Read for 30 minutes',
-    completed: false,
-    category: 'learning',
-    currentStreak: 0,
-    bestStreak: 8,
-    totalCompletions: 25,
-    createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-  {
-    id: '4',
-    title: 'Drink 8 glasses of water',
-    completed: true,
-    category: 'health',
-    currentStreak: 0,
-    bestStreak: 25,
-    totalCompletions: 67,
-    createdAt: new Date(Date.now() - 75 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-  {
-    id: '5',
-    title: 'Write in journal',
-    completed: true,
-    category: 'wellness',
-    currentStreak: 0,
-    bestStreak: 12,
-    totalCompletions: 38,
-    createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-  {
-    id: '6',
-    title: 'Practice gratitude',
-    completed: false,
-    category: 'mindfulness',
-    currentStreak: 0,
-    bestStreak: 18,
-    totalCompletions: 52,
-    createdAt: new Date(Date.now() - 65 * 24 * 60 * 60 * 1000),
-    completionHistory: [],
-  },
-];
-
-// Initialize completion histories and calculate streaks
-MOCK_HABITS.forEach((habit, index) => {
-  // Create varied completion rates for realistic streaks
-  let completionRate = 0.7;
-
-  if (index % 5 === 0) {
-    // High performers (30+ day streaks)
-    completionRate = 0.95;
-    habit.completionHistory = generateCompletionHistory(35, completionRate);
-  } else if (index % 3 === 0) {
-    // Medium performers (14+ day streaks)
-    completionRate = 0.85;
-    habit.completionHistory = generateCompletionHistory(20, completionRate);
-  } else if (index % 2 === 0) {
-    // Moderate performers (7+ day streaks)
-    completionRate = 0.75;
-    habit.completionHistory = generateCompletionHistory(15, completionRate);
-  } else {
-    // Lower performers (0-5 day streaks or broken)
-    completionRate = 0.6;
-    habit.completionHistory = generateCompletionHistory(10, completionRate);
-  }
-
-  // Calculate current streak based on history
-  habit.currentStreak = calculateStreak(habit.completionHistory);
-
-  // Update today's completion status from the most recent history
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayRecord = habit.completionHistory.find((record) => {
-    const recordDate = new Date(record.date);
-    recordDate.setHours(0, 0, 0, 0);
-    return recordDate.getTime() === today.getTime();
-  });
-  habit.completed = todayRecord?.completed || false;
-});
-
-// Helper to check if two dates are the same day
-const isSameDay = (date1: Date, date2: Date): boolean => {
+function HabitTrackerSkeleton() {
   return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
+    <div className="my-4 space-y-3 pr-4">
+      <div className="border-border mb-2 flex items-center gap-3 border-b pb-2">
+        <div className="flex-1" />
+        <div className="flex gap-1">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <Skeleton key={i} className="size-3.5" />
+          ))}
+        </div>
+        <div className="w-8 shrink-0" />
+      </div>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="border-border flex items-center gap-3 border-b pb-3"
+        >
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <div className="flex gap-1">
+            {Array.from({ length: 7 }).map((_, j) => (
+              <Skeleton key={j} className="size-3.5 rounded-full" />
+            ))}
+          </div>
+          <Skeleton className="size-8 shrink-0" />
+        </div>
+      ))}
+    </div>
   );
-};
+}
 
 export default function HabitsPage() {
-  const [habits, setHabits] = useState<Habit[]>(MOCK_HABITS);
+  const [period, setPeriod] = useState(7);
+  const {
+    data: rawHabits = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useHabits(period);
+  const { data: statsData, isLoading: isStatsLoading } = useHabitStats();
+  const { toggleDate } = useToggleHabit();
+
+  const [createDialogOpen, setCreateDialogOpen] = useAtom(createDialogOpenAtom);
+  const [editingHabitId, setEditingHabitId] = useAtom(editingHabitIdAtom);
+  const [deletingHabitId, setDeletingHabitId] = useAtom(deletingHabitIdAtom);
+
   const sortBy = useAtomValue(sortByAtom);
   const searchQuery = useAtomValue(searchQueryAtom);
   const statusFilter = useAtomValue(statusFilterAtom);
 
-  // Handle toggling a habit for a specific day
-  const handleToggleDay = useCallback((habitId: string, date: Date) => {
-    setHabits((prevHabits) =>
-      prevHabits.map((habit) => {
-        if (habit.id !== habitId) return habit;
+  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
 
-        // Find or create the completion record for this date
-        const existingRecordIndex = habit.completionHistory.findIndex(
-          (record) => isSameDay(new Date(record.date), date)
-        );
+  const filteredHabits = useMemo(
+    () => filterHabits(habits, searchQuery, statusFilter),
+    [habits, searchQuery, statusFilter]
+  );
 
-        const newHistory = [...habit.completionHistory];
+  const sortedHabits = useMemo(
+    () => sortHabits(filteredHabits, sortBy),
+    [filteredHabits, sortBy]
+  );
 
-        if (existingRecordIndex >= 0) {
-          // Toggle existing record
-          newHistory[existingRecordIndex] = {
-            ...newHistory[existingRecordIndex],
-            completed: !newHistory[existingRecordIndex].completed,
-          };
-        } else {
-          // Add new record
-          newHistory.push({ date: new Date(date), completed: true });
-        }
+  const editingHabit = habits.find((h) => h.id === editingHabitId) || null;
+  const deletingHabit = habits.find((h) => h.id === deletingHabitId) || null;
 
-        // Recalculate streak
-        const newStreak = calculateStreak(newHistory);
-
-        // Update today's completed status
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayRecord = newHistory.find((record) =>
-          isSameDay(new Date(record.date), today)
-        );
-        const todayCompleted = todayRecord?.completed || false;
-
-        // Update best streak if current streak is higher
-        const newBestStreak = Math.max(habit.bestStreak, newStreak);
-
-        return {
-          ...habit,
-          completionHistory: newHistory,
-          currentStreak: newStreak,
-          bestStreak: newBestStreak,
-          completed: todayCompleted,
-        };
-      })
+  const handleToggleDay = (habitId: string, date: Date) => {
+    const utcDate = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
     );
-  }, []);
-
-  const getTotalHabits = () => habits.length;
-  const getCompletedToday = () => habits.filter((h) => h.completed).length;
-  const getCurrentStreak = () => {
-    const maxStreak = Math.max(...habits.map((h) => h.currentStreak), 0);
-    return maxStreak;
-  };
-  const getBestStreak = () => {
-    const maxBest = Math.max(...habits.map((h) => h.bestStreak), 0);
-    return maxBest;
-  };
-  const getCompletionRate = () => {
-    if (habits.length === 0) return '0%';
-    return `${Math.round((getCompletedToday() / getTotalHabits()) * 100)}%`;
-  };
-
-  const filterHabits = (
-    habits: Habit[],
-    query: string,
-    statusFilter: 'all' | 'completed' | 'pending'
-  ): Habit[] => {
-    let filtered = habits;
-
-    // Filter by search query
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
-      filtered = filtered.filter((habit) => {
-        const titleMatch = habit.title.toLowerCase().includes(lowerQuery);
-        return titleMatch;
-      });
-    }
-
-    // Filter by status
-    if (statusFilter === 'completed') {
-      filtered = filtered.filter((habit) => habit.completed);
-    } else if (statusFilter === 'pending') {
-      filtered = filtered.filter((habit) => !habit.completed);
-    }
-
-    return filtered;
-  };
-
-  const sortHabits = (habits: Habit[], sortBy: SortOption): Habit[] => {
-    return [...habits].sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'streak':
-          comparison = b.currentStreak - a.currentStreak;
-          break;
-        case 'title':
-          comparison = a.title.localeCompare(b.title);
-          break;
-      }
-
-      // Use id as a stable tiebreaker to prevent reordering on toggle
-      if (comparison === 0) {
-        return a.id.localeCompare(b.id);
-      }
-
-      return comparison;
+    toggleDate.mutate({
+      param: { id: habitId },
+      json: { date: utcDate.toISOString() },
     });
   };
 
-  const filteredHabits = filterHabits(habits, searchQuery, statusFilter);
-  const sortedHabits = sortHabits(filteredHabits, sortBy);
+  const handlePeriodChange = (days: number) => {
+    setPeriod(days);
+  };
 
-  // Generate chart data for habit completion over last 7 days
   const generateCompletionChartData = () => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
     const chartData = [];
 
-    for (let i = 6; i >= 0; i--) {
+    for (let i = period - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
 
-      // Count habits completed on this day
       const totalHabits = habits.length;
       const completedOnDay = habits.filter((habit) => {
         const record = habit.completionHistory.find((r) => {
@@ -337,7 +147,7 @@ export default function HabitsPage() {
         totalHabits > 0 ? Math.round((completedOnDay / totalHabits) * 100) : 0;
 
       chartData.push({
-        date: days[date.getDay()],
+        date: DAYS[date.getDay()],
         completionRate,
       });
     }
@@ -353,6 +163,17 @@ export default function HabitsPage() {
       color: '#10b981',
     },
   } satisfies ChartConfig;
+
+  const stats = statsData || {
+    totalHabits: 0,
+    completedToday: 0,
+    longestStreak: 0,
+    completionRate: 0,
+  };
+
+  if (isError) {
+    return <ErrorState onRetry={refetch} />;
+  }
 
   return (
     <div className="flex flex-col">
@@ -371,37 +192,42 @@ export default function HabitsPage() {
           <MetricCard
             title="Total Habits"
             icon={GoalIcon}
-            content={getTotalHabits().toString()}
+            content={stats.totalHabits.toString()}
             footer="Active habits"
+            isLoading={isStatsLoading}
           />
           <MetricCard
             title="Completed Today"
             icon={CheckCircle2Icon}
-            content={`${getCompletedToday()}/${getTotalHabits()}`}
-            footer={getCompletionRate()}
+            content={`${stats.completedToday}/${stats.totalHabits}`}
+            footer={`${stats.completionRate}%`}
+            isLoading={isStatsLoading}
           />
           <MetricCard
             title="Current Streak"
             icon={FlameIcon}
-            content={`${getCurrentStreak()} days`}
-            footer={`Personal best: ${getBestStreak()} days`}
+            content={`${stats.longestStreak} days`}
+            footer="Personal best"
+            isLoading={isStatsLoading}
           />
           <MetricCard
             title="Completion Rate"
             icon={TrendingUpIcon}
-            content={getCompletionRate()}
-            footer="+5% from last week"
+            content={`${stats.completionRate}%`}
+            footer="Today"
+            isLoading={isStatsLoading}
           />
         </div>
-        <ContentCard
-          title="Habit Tracker"
-          action={<HabitListActions habits={habits} />}
-        >
-          <HabitsList
-            habits={habits}
-            sortedHabits={sortedHabits}
-            onToggleDay={handleToggleDay}
-          />
+        <ContentCard title="Habit Tracker" action={<HabitListActions />}>
+          {isLoading ? (
+            <HabitTrackerSkeleton />
+          ) : (
+            <HabitsList
+              habits={habits}
+              sortedHabits={sortedHabits}
+              onToggleDay={handleToggleDay}
+            />
+          )}
         </ContentCard>
         <GenericAreaChart
           title="Habit Completion Trend"
@@ -414,8 +240,25 @@ export default function HabitsPage() {
           yAxisFormatter={(value) => `${value}%`}
           tooltipFormatter={(value) => `${value}%`}
           yAxisDomain={[0, 100]}
+          isLoading={isLoading}
+          onPeriodChange={handlePeriodChange}
         />
       </div>
+
+      <CreateHabitDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
+      <EditHabitDialog
+        habit={editingHabit}
+        open={!!editingHabitId}
+        onOpenChange={(open) => !open && setEditingHabitId(null)}
+      />
+      <DeleteHabitDialog
+        habit={deletingHabit}
+        open={!!deletingHabitId}
+        onOpenChange={(open) => !open && setDeletingHabitId(null)}
+      />
     </div>
   );
 }

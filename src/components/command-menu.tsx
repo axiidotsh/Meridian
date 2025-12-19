@@ -29,6 +29,7 @@ import {
   actionsViewOpenAtom,
   selectedItemAtom,
 } from '@/atoms/command-menu-atoms';
+import { settingsAtom } from '@/atoms/settings-atoms';
 import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
 import {
   Command,
@@ -39,6 +40,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Kbd } from '@/components/ui/kbd';
 import {
   Popover,
@@ -46,7 +48,7 @@ import {
   PopoverContent,
 } from '@/components/ui/popover';
 import { cn } from '@/utils/utils';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   BrainIcon,
   CheckCircle2Icon,
@@ -64,6 +66,7 @@ import {
   PlayIcon,
   PlusIcon,
   SaveIcon,
+  SettingsIcon,
   SquareIcon,
   SunIcon,
   TimerIcon,
@@ -127,6 +130,12 @@ const pages: PageItem[] = [
     icon: GoalIcon,
     searchWords: ['routine', 'daily', 'goals', 'tracking'],
   },
+  {
+    name: 'Settings',
+    href: '/settings',
+    icon: SettingsIcon,
+    searchWords: ['preferences', 'config', 'options', 'customize'],
+  },
 ];
 
 const themes: ThemeItem[] = [
@@ -178,11 +187,14 @@ export function CommandMenu() {
   const [selectedValue, setSelectedValue] = useState('');
   const [actionsOpen, setActionsOpen] = useAtom(actionsViewOpenAtom);
   const [selectedItem, setSelectedItem] = useAtom(selectedItemAtom);
+  const settings = useAtomValue(settingsAtom);
   const setLogoutDialogOpen = useSetAtom(logoutDialogOpenAtom);
   const inputRef = useRef<HTMLInputElement>(null);
+  const dialogInputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { setTheme } = useTheme();
+  const isCentered = settings.commandMenuPosition === 'center';
 
   const setCreateTaskDialogOpen = useSetAtom(createTaskDialogAtom);
   const setCreateHabitDialogOpen = useSetAtom(createDialogOpenAtom);
@@ -323,10 +335,19 @@ export function CommandMenu() {
     'mod+k',
     (e) => {
       e.preventDefault();
-      setOpen((prev) => {
-        if (!prev) inputRef.current?.focus();
-        return !prev;
-      });
+      if (isCentered) {
+        setOpen((prev) => {
+          if (!prev) {
+            setTimeout(() => dialogInputRef.current?.focus(), 0);
+          }
+          return !prev;
+        });
+      } else {
+        setOpen((prev) => {
+          if (!prev) inputRef.current?.focus();
+          return !prev;
+        });
+      }
     },
     { enableOnFormTags: true }
   );
@@ -439,8 +460,234 @@ export function CommandMenu() {
 
   const handleCloseActions = () => {
     setActionsOpen(false);
-    inputRef.current?.focus();
+    if (isCentered) {
+      dialogInputRef.current?.focus();
+    } else {
+      inputRef.current?.focus();
+    }
   };
+
+  const commandListContent = (
+    <>
+      <CommandEmpty>No results found.</CommandEmpty>
+
+      <CommandGroup heading="Pages">
+        {pages.map((page) => (
+          <CommandItem
+            key={page.href}
+            value={[page.name, ...(page.searchWords ?? [])].join(' ')}
+            onSelect={() => handleSelect(() => router.push(page.href))}
+          >
+            <page.icon className="size-3.5" />
+            <span>{page.name}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+
+      {focusCommands.length > 0 && (
+        <CommandGroup heading="Focus">
+          {focusCommands.map((command) => (
+            <CommandItem
+              key={command.action}
+              value={[command.name, ...(command.searchWords ?? [])].join(' ')}
+              onSelect={() =>
+                handleSelect(() => handleCommandAction(command.action))
+              }
+              className={command.destructive ? 'text-destructive!' : ''}
+            >
+              <command.icon
+                className={cn(
+                  'size-3.5',
+                  command.destructive && 'text-destructive!'
+                )}
+              />
+              <span>{command.name}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+
+      <CommandGroup heading="Create">
+        {createCommands.map((command) => (
+          <CommandItem
+            key={command.action}
+            value={[command.name, ...(command.searchWords ?? [])].join(' ')}
+            onSelect={() =>
+              handleSelect(() => handleCommandAction(command.action))
+            }
+          >
+            <command.icon className="size-3.5" />
+            <span>{command.name}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+
+      <CommandSeparator />
+
+      {tasks.length > 0 && (
+        <CommandGroup heading="Todos">
+          {tasks.slice(0, ITEM_LIMIT).map((task) => (
+            <CommandItem
+              key={`todo:${task.id}`}
+              value={`todo ${task.title}`}
+              onSelect={() => handleItemSelect({ type: 'todo', data: task })}
+            >
+              {task.completed ? (
+                <CheckCircle2Icon className="text-muted-foreground size-3.5" />
+              ) : (
+                <CircleIcon className="size-3.5" />
+              )}
+              <span
+                className={
+                  task.completed ? 'text-muted-foreground line-through' : ''
+                }
+              >
+                {task.title}
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+
+      {habits.length > 0 && (
+        <CommandGroup heading="Habits">
+          {habits.slice(0, ITEM_LIMIT).map((habit) => (
+            <CommandItem
+              key={`habit:${habit.id}`}
+              value={`habit ${habit.title}`}
+              onSelect={() => handleItemSelect({ type: 'habit', data: habit })}
+            >
+              <TimerIcon className="size-3.5" />
+              <span>{habit.title}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+
+      {recentSessions.length > 0 && (
+        <CommandGroup heading="Recent Sessions">
+          {recentSessions.slice(0, ITEM_LIMIT).map((session) => (
+            <CommandItem
+              key={`session:${session.id}`}
+              value={`session ${session.task || 'Focus session'}`}
+              onSelect={() =>
+                handleItemSelect({ type: 'session', data: session })
+              }
+            >
+              <ClockPlusIcon className="size-3.5" />
+              <span>{session.task || 'Focus session'}</span>
+              <span className="text-muted-foreground ml-auto text-xs">
+                {session.durationMinutes}m
+              </span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
+
+      <CommandSeparator />
+
+      <CommandGroup heading="Theme">
+        {themes.map((theme) => (
+          <CommandItem
+            key={theme.value}
+            value={['theme', theme.name, ...(theme.searchWords ?? [])].join(
+              ' '
+            )}
+            onSelect={() => handleSelect(() => setTheme(theme.value))}
+          >
+            <theme.icon className="size-3.5" />
+            <span>{theme.name}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+
+      <CommandGroup heading="Account">
+        {accountActions.map((action) => (
+          <CommandItem
+            key={action.action}
+            value={[action.name, ...(action.searchWords ?? [])].join(' ')}
+            onSelect={() =>
+              handleSelect(() => handleCommandAction(action.action))
+            }
+            className={action.destructive ? 'text-destructive!' : ''}
+          >
+            <action.icon
+              className={cn(
+                'size-3.5',
+                action.destructive && 'text-destructive!'
+              )}
+            />
+            <span>{action.name}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </>
+  );
+
+  const actionsFooter = selectedItem && (
+    <div className="relative border-t px-3 py-2">
+      <div className="flex items-center justify-between">
+        <span className="text-muted-foreground truncate text-xs">
+          {getItemTitle(selectedItem)}
+        </span>
+        <button
+          onClick={() => setActionsOpen((prev) => !prev)}
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"
+        >
+          <span>Actions</span>
+          <Kbd>⌘O</Kbd>
+        </button>
+      </div>
+      {actionsOpen && (
+        <div className="absolute right-1.5 bottom-full z-50 mb-2">
+          <CommandMenuActions
+            item={selectedItem}
+            onAction={handleAction}
+            onClose={handleCloseActions}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  if (isCentered) {
+    return (
+      <>
+        <Command className="bg-transparent **:data-[slot=command-input-wrapper]:flex-1 **:data-[slot=command-input-wrapper]:border-0 **:data-[slot=command-input-wrapper]:px-0">
+          <div className="flex w-full items-center">
+            <CommandInput
+              ref={inputRef}
+              placeholder="Search for items and commands..."
+              onFocus={() => setOpen(true)}
+              value=""
+              readOnly
+            />
+            <Kbd>⌘K</Kbd>
+          </div>
+        </Command>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
+          <DialogContent className="h-full max-h-[338px] border-0 sm:max-w-xl">
+            <Command
+              className="bg-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-lg border shadow-lg"
+              shouldFilter={true}
+              value={selectedValue}
+              onValueChange={setSelectedValue}
+            >
+              <CommandInput
+                ref={dialogInputRef}
+                placeholder="Search for items and commands..."
+                value={searchValue}
+                onValueChange={setSearchValue}
+                containerClassName="h-12"
+              />
+              <CommandList ref={listRef}>{commandListContent}</CommandList>
+              {actionsFooter}
+            </Command>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -469,197 +716,9 @@ export function CommandMenu() {
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <CommandList ref={listRef} className="max-h-80">
-            <CommandEmpty>No results found.</CommandEmpty>
-
-            <CommandGroup heading="Pages">
-              {pages.map((page) => (
-                <CommandItem
-                  key={page.href}
-                  value={[page.name, ...(page.searchWords ?? [])].join(' ')}
-                  onSelect={() => handleSelect(() => router.push(page.href))}
-                >
-                  <page.icon className="size-3.5" />
-                  <span>{page.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            {focusCommands.length > 0 && (
-              <CommandGroup heading="Focus">
-                {focusCommands.map((command) => (
-                  <CommandItem
-                    key={command.action}
-                    value={[command.name, ...(command.searchWords ?? [])].join(
-                      ' '
-                    )}
-                    onSelect={() =>
-                      handleSelect(() => handleCommandAction(command.action))
-                    }
-                    className={command.destructive ? 'text-destructive!' : ''}
-                  >
-                    <command.icon
-                      className={cn(
-                        'size-3.5',
-                        command.destructive && 'text-destructive!'
-                      )}
-                    />
-                    <span>{command.name}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-
-            <CommandGroup heading="Create">
-              {createCommands.map((command) => (
-                <CommandItem
-                  key={command.action}
-                  value={[command.name, ...(command.searchWords ?? [])].join(
-                    ' '
-                  )}
-                  onSelect={() =>
-                    handleSelect(() => handleCommandAction(command.action))
-                  }
-                >
-                  <command.icon className="size-3.5" />
-                  <span>{command.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            <CommandSeparator />
-
-            {tasks.length > 0 && (
-              <CommandGroup heading="Todos">
-                {tasks.slice(0, ITEM_LIMIT).map((task) => (
-                  <CommandItem
-                    key={`todo:${task.id}`}
-                    value={`todo ${task.title}`}
-                    onSelect={() =>
-                      handleItemSelect({ type: 'todo', data: task })
-                    }
-                  >
-                    {task.completed ? (
-                      <CheckCircle2Icon className="text-muted-foreground size-3.5" />
-                    ) : (
-                      <CircleIcon className="size-3.5" />
-                    )}
-                    <span
-                      className={
-                        task.completed
-                          ? 'text-muted-foreground line-through'
-                          : ''
-                      }
-                    >
-                      {task.title}
-                    </span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-
-            {habits.length > 0 && (
-              <CommandGroup heading="Habits">
-                {habits.slice(0, ITEM_LIMIT).map((habit) => (
-                  <CommandItem
-                    key={`habit:${habit.id}`}
-                    value={`habit ${habit.title}`}
-                    onSelect={() =>
-                      handleItemSelect({ type: 'habit', data: habit })
-                    }
-                  >
-                    <TimerIcon className="size-3.5" />
-                    <span>{habit.title}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-
-            {recentSessions.length > 0 && (
-              <CommandGroup heading="Recent Sessions">
-                {recentSessions.slice(0, ITEM_LIMIT).map((session) => (
-                  <CommandItem
-                    key={`session:${session.id}`}
-                    value={`session ${session.task || 'Focus session'}`}
-                    onSelect={() =>
-                      handleItemSelect({ type: 'session', data: session })
-                    }
-                  >
-                    <ClockPlusIcon className="size-3.5" />
-                    <span>{session.task || 'Focus session'}</span>
-                    <span className="text-muted-foreground ml-auto text-xs">
-                      {session.durationMinutes}m
-                    </span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-
-            <CommandSeparator />
-
-            <CommandGroup heading="Theme">
-              {themes.map((theme) => (
-                <CommandItem
-                  key={theme.value}
-                  value={[
-                    'theme',
-                    theme.name,
-                    ...(theme.searchWords ?? []),
-                  ].join(' ')}
-                  onSelect={() => handleSelect(() => setTheme(theme.value))}
-                >
-                  <theme.icon className="size-3.5" />
-                  <span>{theme.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-
-            <CommandGroup heading="Account">
-              {accountActions.map((action) => (
-                <CommandItem
-                  key={action.action}
-                  value={[action.name, ...(action.searchWords ?? [])].join(' ')}
-                  onSelect={() =>
-                    handleSelect(() => handleCommandAction(action.action))
-                  }
-                  className={action.destructive ? 'text-destructive!' : ''}
-                >
-                  <action.icon
-                    className={cn(
-                      'size-3.5',
-                      action.destructive && 'text-destructive!'
-                    )}
-                  />
-                  <span>{action.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {commandListContent}
           </CommandList>
-
-          {selectedItem && (
-            <div className="relative border-t px-3 py-2">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground truncate text-xs">
-                  {getItemTitle(selectedItem)}
-                </span>
-                <button
-                  onClick={() => setActionsOpen((prev) => !prev)}
-                  className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs"
-                >
-                  <span>Actions</span>
-                  <Kbd>⌘O</Kbd>
-                </button>
-              </div>
-              {actionsOpen && (
-                <div className="absolute right-1.5 bottom-full z-50 mb-2">
-                  <CommandMenuActions
-                    item={selectedItem}
-                    onAction={handleAction}
-                    onClose={handleCloseActions}
-                  />
-                </div>
-              )}
-            </div>
-          )}
+          {actionsFooter}
         </PopoverContent>
       </Command>
     </Popover>

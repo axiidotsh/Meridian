@@ -1,10 +1,14 @@
 'use client';
 
 import {
+  deletingSessionAtom,
+  editingSessionAtom,
   showCancelDialogAtom,
   showDiscardDialogAtom,
   showEndEarlyDialogAtom,
 } from '@/app/(protected)/(main)/focus/atoms/session-dialogs';
+import { SessionDeleteDialog } from '@/app/(protected)/(main)/focus/components/sessions/session-delete-dialog';
+import { SessionEditDialog } from '@/app/(protected)/(main)/focus/components/sessions/session-edit-dialog';
 import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/mutations/use-focus-session';
 import { useActiveSession } from '@/app/(protected)/(main)/focus/hooks/queries/use-active-session';
 import { Button } from '@/components/ui/button';
@@ -26,6 +30,8 @@ export function SessionDialogs() {
   const [showCancel, setShowCancel] = useAtom(showCancelDialogAtom);
   const [showEndEarly, setShowEndEarly] = useAtom(showEndEarlyDialogAtom);
   const [showDiscard, setShowDiscard] = useAtom(showDiscardDialogAtom);
+  const [editingSession, setEditingSession] = useAtom(editingSessionAtom);
+  const [deletingSession, setDeletingSession] = useAtom(deletingSessionAtom);
 
   const handleCancel = () => {
     if (!activeSession) return;
@@ -121,6 +127,17 @@ export function SessionDialogs() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <SessionEditDialog
+        session={editingSession}
+        open={!!editingSession}
+        onOpenChange={(open) => !open && setEditingSession(null)}
+      />
+      <SessionDeleteDialog
+        session={deletingSession}
+        open={!!deletingSession}
+        onOpenChange={(open) => !open && setDeletingSession(null)}
+      />
     </>
   );
 }

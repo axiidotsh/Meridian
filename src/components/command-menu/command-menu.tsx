@@ -135,7 +135,8 @@ export const CommandMenu = () => {
               placeholder="Search for items and commands..."
               value={state.searchValue}
               onValueChange={actions.setSearchValue}
-              containerClassName="h-12"
+              containerClassName="h-10!"
+              className="h-10!"
             />
             <CommandList className="max-h-80">
               {!state.selectedItem ? (

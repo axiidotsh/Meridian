@@ -61,11 +61,10 @@ export const CommandActionsView = ({
 }: CommandActionsViewProps) => {
   const last7Days = useMemo(() => getLast7Days(), []);
 
-  if (item.type === 'focus-start') {
-    return (
-      <>
-        <CommandMenuEmpty />
-        <CommandGroup heading={getItemTitle(item)}>
+  const renderActions = () => {
+    if (item.type === 'focus-start') {
+      return (
+        <>
           {PRESET_TIMERS.map((timer) => (
             <CommandItem
               key={timer.value}
@@ -79,16 +78,13 @@ export const CommandActionsView = ({
             <PencilIcon className="size-4" />
             <span>Custom...</span>
           </CommandItem>
-        </CommandGroup>
-      </>
-    );
-  }
+        </>
+      );
+    }
 
-  return (
-    <>
-      <CommandMenuEmpty />
-      <CommandGroup heading={getItemTitle(item)}>
-        {item.type === 'todo' && (
+    if (item.type === 'todo') {
+      return (
+        <>
           <CommandItem onSelect={() => onAction('toggle')}>
             {item.data.completed ? (
               <CircleIcon className="size-4" />
@@ -99,18 +95,47 @@ export const CommandActionsView = ({
               {item.data.completed ? 'Mark as undone' : 'Mark as done'}
             </span>
           </CommandItem>
-        )}
-        <CommandItem onSelect={() => onAction('edit')}>
-          <PencilIcon className="size-4" />
-          <span>Edit</span>
-        </CommandItem>
-        <CommandItem
-          onSelect={() => onAction('delete')}
-          className="text-destructive!"
-        >
-          <TrashIcon className={cn('size-4', 'text-destructive!')} />
-          <span>Delete</span>
-        </CommandItem>
+          <CommandItem onSelect={() => onAction('edit')}>
+            <PencilIcon className="size-4" />
+            <span>Edit</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => onAction('delete')}
+            className="text-destructive!"
+          >
+            <TrashIcon className={cn('size-4', 'text-destructive!')} />
+            <span>Delete</span>
+          </CommandItem>
+        </>
+      );
+    }
+
+    if (item.type === 'habit') {
+      return (
+        <>
+          <CommandItem onSelect={() => onAction('edit')}>
+            <PencilIcon className="size-4" />
+            <span>Edit</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => onAction('delete')}
+            className="text-destructive!"
+          >
+            <TrashIcon className={cn('size-4', 'text-destructive!')} />
+            <span>Delete</span>
+          </CommandItem>
+        </>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <>
+      <CommandMenuEmpty />
+      <CommandGroup heading={getItemTitle(item)}>
+        {renderActions()}
       </CommandGroup>
       {item.type === 'habit' && onDateSelect && (
         <CommandGroup heading="Mark done for...">

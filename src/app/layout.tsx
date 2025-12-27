@@ -31,7 +31,7 @@ export default function RootLayout({
         className={cn(
           fontSans.variable,
           fontMono.variable,
-          process.env.NODE_ENV === 'development' && 'debug-screens',
+          // process.env.NODE_ENV === 'development' && 'debug-screens',
           'antialiased'
         )}
       >

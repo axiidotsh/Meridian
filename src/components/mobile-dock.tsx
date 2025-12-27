@@ -1,0 +1,80 @@
+'use client';
+
+import { commandMenuOpenAtom } from '@/atoms/command-menu-atoms';
+import { cn } from '@/utils/utils';
+import { useSetAtom } from 'jotai';
+import {
+  BrainIcon,
+  ClockPlusIcon,
+  GoalIcon,
+  LayoutDashboardIcon,
+  LayoutListIcon,
+  SearchIcon,
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const navItems = [
+  {
+    title: 'Dashboard',
+    url: '/dashboard',
+    icon: LayoutDashboardIcon,
+  },
+  {
+    title: 'Chat',
+    url: '/chat',
+    icon: BrainIcon,
+  },
+  {
+    title: 'Focus',
+    url: '/focus',
+    icon: ClockPlusIcon,
+  },
+  {
+    title: 'Tasks',
+    url: '/tasks',
+    icon: LayoutListIcon,
+  },
+  {
+    title: 'Habits',
+    url: '/habits',
+    icon: GoalIcon,
+  },
+];
+
+export const MobileDock = () => {
+  const pathname = usePathname();
+  const setCommandMenuOpen = useSetAtom(commandMenuOpenAtom);
+
+  return (
+    <div className="bg-sidebar/20 fixed inset-x-4 bottom-3 z-50 flex h-14 items-center justify-between gap-1 rounded-full border px-2 shadow-lg backdrop-blur-md md:hidden">
+      {navItems.map((item) => {
+        const isActive = pathname === item.url;
+        const Icon = item.icon;
+
+        return (
+          <Link
+            key={item.url}
+            href={item.url}
+            className={cn(
+              'flex size-10 items-center justify-center rounded-full transition-colors',
+              isActive
+                ? 'bg-foreground/10 text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            )}
+          >
+            <Icon className="size-5" />
+            <span className="sr-only">{item.title}</span>
+          </Link>
+        );
+      })}
+      <button
+        onClick={() => setCommandMenuOpen(true)}
+        className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex size-10 items-center justify-center rounded-full transition-colors"
+      >
+        <SearchIcon className="size-5" />
+        <span className="sr-only">Search</span>
+      </button>
+    </div>
+  );
+};

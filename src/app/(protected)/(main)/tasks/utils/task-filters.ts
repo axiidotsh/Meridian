@@ -137,3 +137,17 @@ export function isOverdue(date: Date | string): boolean {
   const dueDate = normalizeDateToMidnight(new Date(date));
   return dueDate < today;
 }
+
+export function getDueDateUrgency(
+  dueDate: Date | string
+): 'overdue' | 'today' | 'upcoming' | 'none' {
+  if (!dueDate) return 'none';
+
+  const date = new Date(dueDate);
+  const today = normalizeDateToMidnight(new Date());
+  const due = normalizeDateToMidnight(date);
+
+  if (due < today) return 'overdue';
+  if (due.getTime() === today.getTime()) return 'today';
+  return 'upcoming';
+}

@@ -1,18 +1,28 @@
+import { DASHBOARD_QUERY_KEYS } from '@/app/(protected)/(main)/dashboard/hooks/dashboard-query-keys';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { api } from '@/lib/rpc';
 import { FOCUS_QUERY_KEYS } from '../focus-query-keys';
 
 export function useFocusSession() {
   const start = useApiMutation(api.focus.sessions.$post, {
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession],
+    invalidateKeys: [
+      FOCUS_QUERY_KEYS.activeSession,
+      DASHBOARD_QUERY_KEYS.metrics,
+    ],
   });
 
   const pause = useApiMutation(api.focus.sessions[':id'].pause.$patch, {
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession],
+    invalidateKeys: [
+      FOCUS_QUERY_KEYS.activeSession,
+      DASHBOARD_QUERY_KEYS.metrics,
+    ],
   });
 
   const resume = useApiMutation(api.focus.sessions[':id'].resume.$patch, {
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession],
+    invalidateKeys: [
+      FOCUS_QUERY_KEYS.activeSession,
+      DASHBOARD_QUERY_KEYS.metrics,
+    ],
   });
 
   const complete = useApiMutation(api.focus.sessions[':id'].complete.$patch, {
@@ -20,11 +30,17 @@ export function useFocusSession() {
       FOCUS_QUERY_KEYS.activeSession,
       FOCUS_QUERY_KEYS.sessions,
       FOCUS_QUERY_KEYS.stats,
+      DASHBOARD_QUERY_KEYS.metrics,
+      DASHBOARD_QUERY_KEYS.heatmap,
     ],
   });
 
   const cancel = useApiMutation(api.focus.sessions[':id'].cancel.$patch, {
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession, FOCUS_QUERY_KEYS.sessions],
+    invalidateKeys: [
+      FOCUS_QUERY_KEYS.activeSession,
+      FOCUS_QUERY_KEYS.sessions,
+      DASHBOARD_QUERY_KEYS.metrics,
+    ],
   });
 
   const endEarly = useApiMutation(
@@ -34,6 +50,8 @@ export function useFocusSession() {
         FOCUS_QUERY_KEYS.activeSession,
         FOCUS_QUERY_KEYS.sessions,
         FOCUS_QUERY_KEYS.stats,
+        DASHBOARD_QUERY_KEYS.metrics,
+        DASHBOARD_QUERY_KEYS.heatmap,
       ],
     }
   );

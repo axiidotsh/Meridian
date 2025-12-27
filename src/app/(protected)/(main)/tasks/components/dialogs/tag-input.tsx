@@ -78,7 +78,7 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full scale-100! justify-between"
+          className="w-full justify-between"
         >
           {tags.length > 0 ? (
             <div className="flex flex-wrap gap-1">

@@ -1,3 +1,4 @@
+import { DASHBOARD_QUERY_KEYS } from '@/app/(protected)/(main)/dashboard/hooks/dashboard-query-keys';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { api } from '@/lib/rpc';
 import { TASK_QUERY_KEYS } from '../task-query-keys';
@@ -8,6 +9,8 @@ export function useToggleTask() {
       TASK_QUERY_KEYS.tasks,
       TASK_QUERY_KEYS.stats,
       TASK_QUERY_KEYS.chart,
+      DASHBOARD_QUERY_KEYS.metrics,
+      DASHBOARD_QUERY_KEYS.heatmap,
     ],
   });
 }

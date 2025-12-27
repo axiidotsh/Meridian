@@ -76,6 +76,10 @@ function getStreakComparisonLabel(
   currentStreak: number,
   bestStreak: number
 ): string {
+  if (currentStreak === 0) {
+    return 'Start your streak today!';
+  }
+
   if (currentStreak >= bestStreak && currentStreak > 0) {
     return 'New personal record!';
   }

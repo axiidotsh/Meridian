@@ -1,165 +1,123 @@
+'use client';
+
+import { useChartSessions } from '@/app/(protected)/(main)/focus/hooks/queries/use-chart-sessions';
+import { useTaskChart } from '@/app/(protected)/(main)/tasks/hooks/queries/use-task-chart';
 import { PageHeading } from '@/components/page-heading';
-import { Button } from '@/components/ui/button';
-import { getDaysFromNowAt, getTodayAt } from '@/utils/date';
-import {
-  ClockPlusIcon,
-  GoalIcon,
-  LayoutListIcon,
-  Settings2Icon,
-  TimerIcon,
-  TrophyIcon,
-} from 'lucide-react';
-import { MetricCard } from '../components/metric-card';
-import { FocusTimeAreaChart } from './components/charts/focus-time';
-import { HabitCompletionAreaChart } from './components/charts/habit-completion';
-import { TaskCompletionAreaChart } from './components/charts/task-completion';
-import { DashboardHabits } from './components/habits-card';
-import { ProductivityHeatmap } from './components/productivity-heatmap-card';
-import { DashboardTasks } from './components/tasks-card';
-
-const dashboardMetrics = [
-  {
-    title: 'Focus',
-    icon: ClockPlusIcon,
-    content: '2h 35m',
-    footer: '+24m from yesterday',
-  },
-  {
-    title: 'Tasks',
-    icon: LayoutListIcon,
-    content: '1/6',
-    footer: 'Ahead of your usual pace',
-  },
-  {
-    title: 'Habits',
-    icon: GoalIcon,
-    content: '4/6',
-    footer: '67% weekly average',
-  },
-  {
-    title: 'Overall Streak',
-    icon: TrophyIcon,
-    content: '12 days',
-    footer: '3 days to beat your record',
-  },
-];
-
-const dashboardTasks = [
-  {
-    task: 'Review pull requests',
-    completed: true,
-    dueDate: getTodayAt(10, 0),
-  },
-  {
-    task: 'Update project documentation',
-    completed: false,
-    dueDate: getTodayAt(14, 30),
-  },
-  {
-    task: 'Deploy to staging',
-    completed: false,
-    dueDate: getTodayAt(16, 0),
-  },
-  {
-    task: 'Team sync meeting',
-    completed: false,
-    dueDate: getDaysFromNowAt(1, 9, 0),
-  },
-  {
-    task: 'Refactor authentication module',
-    completed: false,
-    dueDate: getDaysFromNowAt(2, 15, 30),
-  },
-  {
-    task: 'Code review session',
-    completed: true,
-    dueDate: getDaysFromNowAt(3, 11, 0),
-  },
-  {
-    task: 'Quarterly planning meeting',
-    completed: false,
-    dueDate: getDaysFromNowAt(5, 14, 0),
-  },
-];
-
-const dashboardHabits = [
-  {
-    habit: 'Morning meditation',
-    completed: true,
-    streak: 12,
-  },
-  {
-    habit: 'Exercise',
-    completed: true,
-    streak: 8,
-  },
-  {
-    habit: 'Read for 30 minutes',
-    completed: false,
-    streak: 5,
-  },
-  {
-    habit: 'Journal',
-    completed: false,
-    streak: 3,
-  },
-  {
-    habit: 'Drink 8 glasses of water',
-    completed: true,
-    streak: 15,
-  },
-  {
-    habit: 'No social media before noon',
-    completed: false,
-    streak: 2,
-  },
-];
+import { useState } from 'react';
+import { ActiveFocusSession } from './components/active-focus-session';
+import { FocusTimeChart } from './components/charts/focus-time-chart';
+import { HabitCompletionChart } from './components/charts/habit-completion-chart';
+import { TaskCompletionChart } from './components/charts/task-completion-chart';
+import { DashboardHabitsCard } from './components/dashboard-habits-card';
+import { DashboardMetrics } from './components/dashboard-metrics';
+import { DashboardTasksCard } from './components/dashboard-tasks-card';
+import { ProductivityHeatmap } from './components/productivity-heatmap';
+import { MetricsSkeleton } from './components/skeletons/metrics-skeleton';
+import { StartFocusButton } from './components/start-focus-button';
+import { useDashboardMetrics } from './hooks/queries/use-dashboard-metrics';
+import { useHabitChart } from './hooks/queries/use-habit-chart';
+import { useHeatmapData } from './hooks/queries/use-heatmap-data';
 
 export default function DashboardPage() {
+  const [chartPeriod, setChartPeriod] = useState(7);
+
+  const {
+    data: metrics,
+    isLoading: metricsLoading,
+    error: metricsError,
+    refetch: refetchMetrics,
+  } = useDashboardMetrics();
+
+  const {
+    data: heatmapData,
+    isLoading: heatmapLoading,
+    error: heatmapError,
+  } = useHeatmapData(52);
+
+  const { data: taskChartData, isLoading: taskChartLoading } =
+    useTaskChart(chartPeriod);
+
+  const { data: habitChartData, isLoading: habitChartLoading } =
+    useHabitChart(chartPeriod);
+
+  const { data: focusSessions, isLoading: focusLoading } =
+    useChartSessions(chartPeriod);
+
+  if (metricsError) {
+    return (
+      <div className="space-y-6">
+        <PageHeading>Dashboard</PageHeading>
+        <div className="flex flex-col items-center justify-center py-12">
+          <p className="text-destructive mb-4 text-sm">
+            Failed to load dashboard
+          </p>
+          <button
+            onClick={() => refetchMetrics()}
+            className="text-primary text-sm hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between gap-2">
         <PageHeading>Dashboard</PageHeading>
-        <div className="flex items-center">
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            tooltip="Start a new focus session"
-          >
-            <TimerIcon />
-          </Button>
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            tooltip="Configure dashboard cards"
-          >
-            <Settings2Icon />
-          </Button>
-        </div>
+        {!metrics?.focus.activeSession && <StartFocusButton />}
       </div>
+
       <div className="mt-4 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {dashboardMetrics.map((metric) => (
-            <MetricCard key={metric.title} {...metric} />
-          ))}
-        </div>
+        {metrics?.focus.activeSession && (
+          <ActiveFocusSession session={metrics.focus.activeSession} />
+        )}
+
+        {metricsLoading ? (
+          <MetricsSkeleton />
+        ) : (
+          metrics && <DashboardMetrics metrics={metrics} />
+        )}
+
         <div className="grid gap-4 lg:grid-cols-2">
-          <DashboardTasks tasks={dashboardTasks} />
-          <DashboardHabits habits={dashboardHabits} />
+          <DashboardTasksCard />
+          <DashboardHabitsCard />
         </div>
+
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="min-w-0">
-            <FocusTimeAreaChart />
+            <FocusTimeChart
+              data={focusSessions}
+              isLoading={focusLoading}
+              period={chartPeriod}
+              onPeriodChange={setChartPeriod}
+            />
           </div>
           <div className="min-w-0">
-            <TaskCompletionAreaChart />
+            <TaskCompletionChart
+              data={taskChartData}
+              isLoading={taskChartLoading}
+              period={chartPeriod}
+              onPeriodChange={setChartPeriod}
+            />
           </div>
           <div className="min-w-0">
-            <HabitCompletionAreaChart />
+            <HabitCompletionChart
+              data={habitChartData}
+              isLoading={habitChartLoading}
+              period={chartPeriod}
+              onPeriodChange={setChartPeriod}
+            />
           </div>
         </div>
+
         <div className="grid grid-cols-1">
-          <ProductivityHeatmap />
+          <ProductivityHeatmap
+            data={heatmapData}
+            isLoading={heatmapLoading}
+            error={heatmapError}
+          />
         </div>
       </div>
     </div>

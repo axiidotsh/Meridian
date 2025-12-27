@@ -7,7 +7,7 @@ interface AppSettings {
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
-  commandMenuPosition: 'top',
+  commandMenuPosition: 'center',
 };
 
 export const settingsAtom = atomWithStorage<AppSettings>(

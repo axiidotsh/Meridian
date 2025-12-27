@@ -6,6 +6,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import { handle } from 'hono/vercel';
 import { auth } from './auth';
 import { httpLogger } from './logger';
+import { dashboardRouter } from './routes/dashboard';
 import { focusRouter } from './routes/focus';
 import { habitsRouter } from './routes/habits';
 import { projectsRouter } from './routes/projects';
@@ -27,7 +28,8 @@ const router = app
   .route('/focus', focusRouter)
   .route('/tasks', tasksRouter)
   .route('/projects', projectsRouter)
-  .route('/habits', habitsRouter);
+  .route('/habits', habitsRouter)
+  .route('/dashboard', dashboardRouter);
 
 export type AppType = typeof router;
 export const httpHandler = handle(router);

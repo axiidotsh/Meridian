@@ -1,0 +1,123 @@
+import type { PrismaClient } from '../db/generated/client';
+
+type TransactionClient = Omit<
+  PrismaClient,
+  '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+>;
+
+interface DailyActivity {
+  hasFocus: boolean;
+  hasTasks: boolean;
+  hasHabits: boolean;
+}
+
+function getDateKey(date: Date): string {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export async function calculateOverallStreak(
+  userId: string,
+  client: PrismaClient | TransactionClient
+): Promise<{ currentStreak: number; bestStreak: number }> {
+  const [focusSessions, completedTasks, habitCompletions] = await Promise.all([
+    client.focusSession.findMany({
+      where: { userId, status: 'COMPLETED' },
+      select: { startedAt: true },
+    }),
+    client.task.findMany({
+      where: { userId, completed: true },
+      select: { updatedAt: true },
+    }),
+    client.habitCompletion.findMany({
+      where: { userId },
+      select: { date: true },
+    }),
+  ]);
+
+  const activityMap = new Map<string, DailyActivity>();
+
+  focusSessions.forEach((session) => {
+    const key = getDateKey(session.startedAt);
+    const activity = activityMap.get(key) || {
+      hasFocus: false,
+      hasTasks: false,
+      hasHabits: false,
+    };
+    activity.hasFocus = true;
+    activityMap.set(key, activity);
+  });
+
+  completedTasks.forEach((task) => {
+    const key = getDateKey(task.updatedAt);
+    const activity = activityMap.get(key) || {
+      hasFocus: false,
+      hasTasks: false,
+      hasHabits: false,
+    };
+    activity.hasTasks = true;
+    activityMap.set(key, activity);
+  });
+
+  habitCompletions.forEach((completion) => {
+    const key = getDateKey(completion.date);
+    const activity = activityMap.get(key) || {
+      hasFocus: false,
+      hasTasks: false,
+      hasHabits: false,
+    };
+    activity.hasHabits = true;
+    activityMap.set(key, activity);
+  });
+
+  const today = getDateKey(new Date());
+  const yesterday = getDateKey(new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+  let currentStreak = 0;
+
+  if (!activityMap.has(today) && !activityMap.has(yesterday)) {
+    currentStreak = 0;
+  } else {
+    let currentDate = activityMap.has(today)
+      ? new Date()
+      : new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    while (true) {
+      const dateKey = getDateKey(currentDate);
+      if (activityMap.has(dateKey)) {
+        currentStreak++;
+        currentDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+      } else {
+        break;
+      }
+    }
+  }
+
+  const sortedDates = Array.from(activityMap.keys()).sort();
+  let bestStreak = 0;
+  let tempStreak = 0;
+  let lastDate: Date | null = null;
+
+  sortedDates.forEach((dateKey) => {
+    const currentDate = new Date(dateKey);
+    if (lastDate === null) {
+      tempStreak = 1;
+    } else {
+      const diffDays = Math.round(
+        (currentDate.getTime() - lastDate.getTime()) / (24 * 60 * 60 * 1000)
+      );
+      if (diffDays === 1) {
+        tempStreak++;
+      } else {
+        bestStreak = Math.max(bestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    lastDate = currentDate;
+  });
+  bestStreak = Math.max(bestStreak, tempStreak);
+
+  return { currentStreak, bestStreak };
+}

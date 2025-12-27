@@ -231,6 +231,67 @@ export const habitsRouter = new Hono()
 
     return c.json({ completed: true, completion });
   })
+  .get(
+    '/chart',
+    zValidator(
+      'query',
+      z.object({
+        days: z.coerce.number().min(1).max(365).default(7),
+      })
+    ),
+    async (c) => {
+      const user = c.get('user');
+      const { days } = c.req.valid('query');
+
+      const chartData = [];
+      const endDate = new Date();
+
+      for (let i = days - 1; i >= 0; i--) {
+        const targetDate = new Date(endDate);
+        targetDate.setDate(targetDate.getDate() - i);
+        const dateKey = new Date(
+          Date.UTC(
+            targetDate.getUTCFullYear(),
+            targetDate.getUTCMonth(),
+            targetDate.getUTCDate()
+          )
+        );
+
+        const [totalHabits, completedCount] = await Promise.all([
+          db.habit.count({
+            where: {
+              userId: user.id,
+              archived: false,
+              createdAt: { lte: targetDate },
+            },
+          }),
+          db.habitCompletion.count({
+            where: {
+              userId: user.id,
+              date: dateKey,
+            },
+          }),
+        ]);
+
+        const completionRate =
+          totalHabits > 0
+            ? Math.round((completedCount / totalHabits) * 100)
+            : 0;
+
+        const dateLabel =
+          days <= 7
+            ? targetDate.toLocaleDateString('en-US', { weekday: 'short' })
+            : `${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
+
+        chartData.push({
+          date: dateLabel,
+          completionRate,
+        });
+      }
+
+      return c.json({ chartData });
+    }
+  )
   .get('/stats', async (c) => {
     const user = c.get('user');
 

@@ -1,17 +1,17 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { MAX_DURATION, MIN_DURATION } from '../../constants';
@@ -55,14 +55,16 @@ export const SessionCreateDialog = ({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Start Custom Focus Session</DialogTitle>
-          <DialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>
+            Start Custom Focus Session
+          </ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Set a custom duration and task name for your focus session.
-          </DialogDescription>
-        </DialogHeader>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="task">Task (optional)</Label>
@@ -85,12 +87,12 @@ export const SessionCreateDialog = ({
             />
           </div>
         </div>
-        <DialogFooter>
-          <DialogClose asChild>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose asChild>
             <Button variant="outline" disabled={start.isPending}>
               Cancel
             </Button>
-          </DialogClose>
+          </ResponsiveDialogClose>
           <Button
             onClick={handleCreate}
             disabled={start.isPending || durationMinutes.length === 0}
@@ -99,8 +101,8 @@ export const SessionCreateDialog = ({
           >
             Start Session
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

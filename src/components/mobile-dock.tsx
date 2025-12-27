@@ -60,7 +60,7 @@ export const MobileDock = () => {
               'flex size-10 items-center justify-center rounded-full transition-colors',
               isActive
                 ? 'bg-foreground/10 text-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                : 'text-muted-foreground hover:bg-foreground/10 hover:text-accent-foreground'
             )}
           >
             <Icon className="size-5" />
@@ -70,7 +70,7 @@ export const MobileDock = () => {
       })}
       <button
         onClick={() => setCommandMenuOpen(true)}
-        className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex size-10 items-center justify-center rounded-full transition-colors"
+        className="text-muted-foreground hover:bg-foreground/10 hover:text-accent-foreground flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors"
       >
         <SearchIcon className="size-5" />
         <span className="sr-only">Search</span>

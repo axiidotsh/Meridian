@@ -34,6 +34,7 @@ export default async function ProtectedLayout({
           <main className="flex-1">{children}</main>
         </SidebarInset>
       </SidebarProvider>
+      <div className="h-12 w-full md:hidden" />
       <MobileDock />
       <LogoutDialog />
       <SessionDialogs />

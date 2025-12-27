@@ -2,15 +2,14 @@
 
 import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  ResponsiveDialog,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { signOut } from '@/lib/auth-client';
 import { useAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
@@ -44,35 +43,33 @@ export function LogoutDialog() {
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Log out</AlertDialogTitle>
-          <AlertDialogDescription>
+    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+      <ResponsiveDialogContent showCloseButton={false}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Log out</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Are you sure you want to log out? You&apos;ll need to sign in again
             to access your account.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel asChild>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose asChild>
             <Button variant="outline" disabled={isLoading}>
               Cancel
             </Button>
-          </AlertDialogCancel>
-          <AlertDialogAction asChild>
-            <Button
-              variant="destructive"
-              className="text-white"
-              onClick={(e) => handleLogout(e)}
-              disabled={isLoading}
-              isLoading={isLoading}
-              loadingContent={'Logging out...'}
-            >
-              Log out
-            </Button>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </ResponsiveDialogClose>
+          <Button
+            variant="destructive"
+            className="text-white"
+            onClick={(e) => handleLogout(e)}
+            disabled={isLoading}
+            isLoading={isLoading}
+            loadingContent={'Logging out...'}
+          >
+            Log out
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 }

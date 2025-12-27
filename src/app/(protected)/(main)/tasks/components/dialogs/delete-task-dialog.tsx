@@ -1,16 +1,15 @@
 'use client';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogClose,
+  ResponsiveDialogContent,
+  ResponsiveDialogDescription,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
 import { deletingTaskAtom } from '../../atoms/task-dialogs';
 import { useDeleteTask } from '../../hooks/mutations/use-delete-task';
@@ -30,35 +29,39 @@ export const DeleteTaskDialog = () => {
   };
 
   return (
-    <AlertDialog open={!!task} onOpenChange={(open) => !open && handleClose()}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Task</AlertDialogTitle>
-          <AlertDialogDescription>
+    <ResponsiveDialog
+      open={!!task}
+      onOpenChange={(open) => !open && handleClose()}
+    >
+      <ResponsiveDialogContent showCloseButton={false}>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Delete Task</ResponsiveDialogTitle>
+          <ResponsiveDialogDescription>
             Are you sure you want to delete &quot;{task?.title}&quot;? This
             action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            onClick={handleClose}
-            disabled={deleteTask.isPending}
-          >
-            Cancel
-          </AlertDialogCancel>
-          <AlertDialogAction asChild>
+          </ResponsiveDialogDescription>
+        </ResponsiveDialogHeader>
+        <ResponsiveDialogFooter>
+          <ResponsiveDialogClose asChild>
             <Button
-              variant="destructive"
-              onClick={handleDelete}
+              variant="outline"
+              onClick={handleClose}
               disabled={deleteTask.isPending}
-              isLoading={deleteTask.isPending}
-              loadingContent="Deleting..."
             >
-              Delete
+              Cancel
             </Button>
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </ResponsiveDialogClose>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={deleteTask.isPending}
+            isLoading={deleteTask.isPending}
+            loadingContent="Deleting..."
+          >
+            Delete
+          </Button>
+        </ResponsiveDialogFooter>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

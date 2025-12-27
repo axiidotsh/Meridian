@@ -2,15 +2,15 @@
 
 import { ColorPicker } from '@/components/color-picker';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  ResponsiveDialog,
+  ResponsiveDialogContent,
+  ResponsiveDialogFooter,
+  ResponsiveDialogHeader,
+  ResponsiveDialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { editingProjectAtom } from '../../atoms/task-dialogs';
@@ -53,11 +53,14 @@ export const EditProjectDialog = () => {
   };
 
   return (
-    <Dialog open={!!project} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-        </DialogHeader>
+    <ResponsiveDialog
+      open={!!project}
+      onOpenChange={(open) => !open && handleClose()}
+    >
+      <ResponsiveDialogContent>
+        <ResponsiveDialogHeader>
+          <ResponsiveDialogTitle>Edit Project</ResponsiveDialogTitle>
+        </ResponsiveDialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-project-name">Name</Label>
@@ -96,7 +99,7 @@ export const EditProjectDialog = () => {
               />
             </div>
           </div>
-          <DialogFooter>
+          <ResponsiveDialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -113,9 +116,9 @@ export const EditProjectDialog = () => {
             >
               Save
             </Button>
-          </DialogFooter>
+          </ResponsiveDialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </ResponsiveDialogContent>
+    </ResponsiveDialog>
   );
 };

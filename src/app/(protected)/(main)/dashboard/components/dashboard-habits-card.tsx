@@ -50,7 +50,7 @@ export function DashboardHabitsCard() {
       contentClassName="mt-5"
     >
       {enrichedHabits.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="flex flex-col items-center justify-center space-y-2 py-20 text-center">
           <p className="text-muted-foreground text-sm">No habits</p>
           <p className="text-muted-foreground text-xs">
             Create a habit to get started

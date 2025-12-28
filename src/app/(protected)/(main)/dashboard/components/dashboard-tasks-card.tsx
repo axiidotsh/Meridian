@@ -54,7 +54,7 @@ export function DashboardTasksCard() {
       contentClassName="mt-5"
     >
       {displayTasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="flex flex-col items-center justify-center space-y-2 py-20 text-center">
           <p className="text-muted-foreground text-sm">No tasks</p>
           <p className="text-muted-foreground text-xs">
             Create a task to get started

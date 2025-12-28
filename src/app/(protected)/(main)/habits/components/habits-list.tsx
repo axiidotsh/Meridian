@@ -185,14 +185,14 @@ export function HabitsList({
     <ScrollArea className="my-4">
       <div className="max-h-[600px]">
         {habits.length === 0 ? (
-          <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
-            <TargetIcon className="size-12 opacity-20" />
+          <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-20 text-center">
+            <TargetIcon className="mb-2 size-12 stroke-1 opacity-50" />
             <p className="text-sm font-medium">No habits yet</p>
             <p className="text-xs">Create your first habit to get started</p>
           </div>
         ) : sortedHabits.length === 0 ? (
-          <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 text-center">
-            <ListChecksIcon className="size-12 opacity-20" />
+          <div className="text-muted-foreground flex h-[600px] flex-col items-center justify-center gap-2 py-20 text-center">
+            <ListChecksIcon className="mb-2 size-12 stroke-1 opacity-50" />
             <p className="text-sm font-medium">No habits found</p>
             <p className="text-xs">Try adjusting your search or filters</p>
           </div>

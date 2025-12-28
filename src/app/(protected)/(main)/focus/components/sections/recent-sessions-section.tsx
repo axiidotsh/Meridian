@@ -46,7 +46,7 @@ export const RecentSessionsSection = () => {
   if (recentSessions.length === 0) {
     return (
       <ContentCard title="Recent Sessions">
-        <p className="text-muted-foreground py-8 text-center text-sm">
+        <p className="text-muted-foreground py-20 text-center text-sm">
           No sessions yet. Start your first focus session!
         </p>
       </ContentCard>

@@ -10,7 +10,6 @@ import {
   selectedTagsAtom,
   sortByAtom,
 } from '../../atoms/task-atoms';
-import { LIST_HEIGHT } from '../../constants';
 import { useTasks } from '../../hooks/queries/use-tasks';
 import {
   filterTasks,
@@ -70,11 +69,8 @@ export const TaskListSection = () => {
 
     if (tasks.length === 0) {
       return (
-        <div
-          className="text-muted-foreground flex flex-col items-center justify-center gap-2 text-center"
-          style={{ height: LIST_HEIGHT }}
-        >
-          <ClipboardCheckIcon className="size-12 opacity-20" />
+        <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-24 text-center">
+          <ClipboardCheckIcon className="mb-2 size-12 stroke-1 opacity-50" />
           <p className="text-sm font-medium">No tasks yet</p>
           <p className="text-xs">Create your first task to get started</p>
         </div>
@@ -83,11 +79,8 @@ export const TaskListSection = () => {
 
     if (sortedTasks.length === 0) {
       return (
-        <div
-          className="text-muted-foreground flex flex-col items-center justify-center gap-2 text-center"
-          style={{ height: LIST_HEIGHT }}
-        >
-          <ListChecksIcon className="size-12 opacity-20" />
+        <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-24 text-center">
+          <ListChecksIcon className="mb-2 size-12 stroke-1 opacity-50" />
           <p className="text-sm font-medium">No tasks found</p>
           <p className="text-xs">Try adjusting your search or filters</p>
         </div>

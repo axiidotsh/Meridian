@@ -48,7 +48,7 @@ const navItems = [
 export const MobileDock = () => {
   const pathname = usePathname();
   const [commandMenuOpen, setCommandMenuOpen] = useAtom(commandMenuOpenAtom);
-  const { data: session, isLoading } = useActiveSession();
+  const { data: session } = useActiveSession();
 
   return (
     <LayoutGroup>

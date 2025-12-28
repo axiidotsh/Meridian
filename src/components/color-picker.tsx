@@ -69,7 +69,7 @@ const ColorPicker = forwardRef<HTMLInputElement, ColorPickerProps>(
             <div />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full">
+        <PopoverContent className="w-full" align="end">
           <div className="space-y-3">
             <HexColorPicker
               color={parsedValue}

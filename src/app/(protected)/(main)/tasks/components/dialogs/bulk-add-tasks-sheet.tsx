@@ -128,7 +128,6 @@ export const BulkAddTasksSheet = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={handleKeyDown}
-                autoFocus
               />
             </div>
             <Button
@@ -141,8 +140,8 @@ export const BulkAddTasksSheet = () => {
             </Button>
           </div>
 
-          <div className="flex gap-3">
-            <div className="flex-1 space-y-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="space-y-2">
               <Label>Due Date</Label>
               <DatePicker
                 date={dueDate}
@@ -150,7 +149,7 @@ export const BulkAddTasksSheet = () => {
                 triggerClassName="w-full"
               />
             </div>
-            <div className="flex-1 space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="project">Project</Label>
               <ProjectSelect
                 id="project"
@@ -159,7 +158,7 @@ export const BulkAddTasksSheet = () => {
                 onValueChange={setProjectId}
               />
             </div>
-            <div className="flex-1 space-y-2">
+            <div className="space-y-2 max-sm:col-span-2">
               <Label>Tags</Label>
               <TagInput
                 tags={tags}

@@ -64,7 +64,6 @@ export const CreateProjectDialog = () => {
               placeholder="Project name..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              autoFocus
             />
           </div>
           <div className="space-y-2">

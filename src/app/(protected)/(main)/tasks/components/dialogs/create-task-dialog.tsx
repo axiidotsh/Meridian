@@ -90,7 +90,6 @@ export const CreateTaskDialog = () => {
               placeholder="Task title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              autoFocus
             />
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

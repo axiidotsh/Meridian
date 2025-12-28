@@ -1,3 +1,4 @@
+import { env } from '@/lib/config/env/server';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from './generated/client';
 
@@ -8,4 +9,4 @@ const globalForPrisma = globalThis as unknown as {
 
 export const db = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;
+if (env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

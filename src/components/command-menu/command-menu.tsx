@@ -13,6 +13,7 @@ import { useCommandActions } from '@/hooks/command-menu/use-command-actions';
 import { useCommandItems } from '@/hooks/command-menu/use-command-items';
 import { useCommandRegistry } from '@/hooks/command-menu/use-command-registry';
 import { useCommandState } from '@/hooks/command-menu/use-command-state';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useAtomValue } from 'jotai';
 import { useCallback, useRef } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
@@ -23,6 +24,7 @@ export const CommandMenu = () => {
   const items = useCommandItems();
   const { handleAction, handleDateToggle } = useCommandActions();
   const settings = useAtomValue(settingsAtom);
+  const isMobile = useIsMobile();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dialogInputRef = useRef<HTMLInputElement>(null);
@@ -108,7 +110,9 @@ export const CommandMenu = () => {
     [state.selectedItem, actions]
   );
 
-  if (isCentered) {
+  const mode = isMobile ? 'mobile' : 'dialog';
+
+  if (isCentered || isMobile) {
     return (
       <>
         <CommandMenuTrigger
@@ -119,13 +123,17 @@ export const CommandMenu = () => {
           onFocus={() => actions.setOpen(true)}
         />
         <CommandMenuContent
-          mode="dialog"
+          mode={mode}
           open={state.open}
           onOpenChange={handleOpenChange}
           onEscapeKeyDown={handleEscapeKeyDown}
         >
           <Command
-            className="bg-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-lg border shadow-lg"
+            className={
+              isMobile
+                ? 'bg-background flex h-full flex-col'
+                : 'bg-popover data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%] overflow-hidden rounded-lg border shadow-lg'
+            }
             shouldFilter={true}
             value={state.selectedValue}
             onValueChange={actions.setSelectedValue}
@@ -137,8 +145,15 @@ export const CommandMenu = () => {
               onValueChange={actions.setSearchValue}
               containerClassName="h-10!"
               className="h-10!"
+              showBackButton={isMobile && !!state.selectedItem}
+              onBackClick={() => {
+                actions.setSelectedItem(null);
+                actions.setSelectedValue('');
+              }}
             />
-            <CommandList className="max-h-80">
+            <CommandList
+              className={isMobile ? 'max-h-none flex-1' : 'max-h-80'}
+            >
               {!state.selectedItem ? (
                 <CommandPalette
                   commands={commands}

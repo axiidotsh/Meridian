@@ -1,7 +1,14 @@
 import { CommandSeparator } from '@/components/ui/command';
 import { Kbd } from '@/components/ui/kbd';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const CommandMenuFooter = () => {
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return null;
+  }
+
   return (
     <>
       <CommandSeparator className="mx-0 mt-auto w-full" />

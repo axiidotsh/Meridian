@@ -1,7 +1,7 @@
 'use client';
 
 import { Command as CommandPrimitive } from 'cmdk';
-import { SearchIcon } from 'lucide-react';
+import { ChevronLeftIcon, SearchIcon } from 'lucide-react';
 import * as React from 'react';
 
 import {
@@ -63,9 +63,13 @@ function CommandDialog({
 function CommandInput({
   className,
   containerClassName,
+  showBackButton,
+  onBackClick,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input> & {
   containerClassName?: string;
+  showBackButton?: boolean;
+  onBackClick?: () => void;
 }) {
   return (
     <div
@@ -75,7 +79,17 @@ function CommandInput({
         containerClassName
       )}
     >
-      <SearchIcon className="size-4 shrink-0 opacity-50" />
+      {showBackButton && onBackClick ? (
+        <button
+          type="button"
+          onClick={onBackClick}
+          className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer transition-colors"
+        >
+          <ChevronLeftIcon className="size-4 shrink-0" />
+        </button>
+      ) : (
+        <SearchIcon className="size-4 shrink-0 opacity-50" />
+      )}
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(

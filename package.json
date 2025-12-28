@@ -4,11 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "prepare": "husky",
-    "postinstall": "prisma generate",
     "shadcn": "pnpm dlx shadcn@latest",
     "db:start": "docker compose up -d",
     "db:stop": "docker compose stop",

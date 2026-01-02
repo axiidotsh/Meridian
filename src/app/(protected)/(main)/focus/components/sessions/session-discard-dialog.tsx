@@ -27,8 +27,12 @@ export const SessionDiscardDialog = ({
 
   const handleDiscard = () => {
     if (!activeSession) return;
-    cancel.mutate({ param: { id: activeSession.id } });
-    onOpenChange(false);
+    cancel.mutate(
+      { param: { id: activeSession.id } },
+      {
+        onSuccess: () => onOpenChange(false),
+      }
+    );
   };
 
   return (

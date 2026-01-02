@@ -30,7 +30,7 @@ export const FocusTimerSection = () => {
 
   return (
     <ContentCard
-      title={hasActiveSession ? 'Focus Session' : 'Start a new focus session'}
+      title="Focus Session"
       action={<DurationDropdown hasActiveSession={hasActiveSession} />}
     >
       {isLoading ? (

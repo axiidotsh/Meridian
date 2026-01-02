@@ -27,8 +27,12 @@ export const SessionEndEarlyDialog = ({
 
   const handleEndEarly = () => {
     if (!activeSession) return;
-    endEarly.mutate({ param: { id: activeSession.id } });
-    onOpenChange(false);
+    endEarly.mutate(
+      { param: { id: activeSession.id } },
+      {
+        onSuccess: () => onOpenChange(false),
+      }
+    );
   };
 
   return (

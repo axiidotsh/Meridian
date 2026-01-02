@@ -171,3 +171,81 @@ export function sortHabits(
     return comparison;
   });
 }
+
+export function calculateHabitStats(habits: Habit[]) {
+  const today = new Date();
+  const todayKey = new Date(
+    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+  );
+
+  const startOfWeek = new Date(todayKey);
+  const dayOfWeek = todayKey.getUTCDay();
+  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  startOfWeek.setUTCDate(todayKey.getUTCDate() - daysToMonday);
+
+  const weekDaysWithActivity = new Set<string>();
+  const weekCompletions: { date: Date; count: number }[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(startOfWeek);
+    date.setUTCDate(startOfWeek.getUTCDate() + i);
+
+    const completedCount = habits.filter((habit) =>
+      (habit.completions || []).some((comp) => {
+        const compDate = new Date(comp.date);
+        return compDate.getTime() === date.getTime();
+      })
+    ).length;
+
+    if (completedCount > 0) {
+      weekDaysWithActivity.add(date.toISOString());
+    }
+
+    weekCompletions.push({ date, count: completedCount });
+  }
+
+  let longestStreak = 0;
+  let bestStreak = 0;
+  let activeStreakCount = 0;
+
+  for (const habit of habits) {
+    const completions = habit.completions || [];
+    const currentStreak = calculateCurrentStreak(completions);
+    const allTimeStreak = calculateBestStreak(completions);
+
+    if (currentStreak > 0) {
+      activeStreakCount++;
+    }
+
+    if (currentStreak > longestStreak) {
+      longestStreak = currentStreak;
+    }
+
+    if (allTimeStreak > bestStreak) {
+      bestStreak = allTimeStreak;
+    }
+  }
+
+  const totalHabits = habits.length;
+  const weekCompletionRate =
+    totalHabits > 0
+      ? Math.round(
+          (weekCompletions.reduce((sum, day) => sum + day.count, 0) /
+            (totalHabits * 7)) *
+            100
+        )
+      : 0;
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
+
+  return {
+    weekConsistency: weekDaysWithActivity.size,
+    activeStreakCount,
+    longestStreak,
+    bestStreak,
+    completionRate: weekCompletionRate,
+    weekStart: startOfWeek.toISOString(),
+    weekEnd: endOfWeek.toISOString(),
+  };
+}

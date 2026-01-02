@@ -15,6 +15,18 @@ type ClientResponse = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyEndpoint = (args: any) => Promise<ClientResponse>;
 
+type OptimisticUpdate<TVariables> = {
+  queryKey: QueryKey;
+  updater: (oldData: unknown, variables: TVariables) => unknown;
+};
+
+type OptimisticUpdateContext = {
+  snapshots: Array<{
+    queryKey: QueryKey;
+    data: unknown;
+  }>;
+};
+
 export function useApiMutation<TEndpoint extends AnyEndpoint>(
   endpoint: TEndpoint,
   options?: {
@@ -23,13 +35,14 @@ export function useApiMutation<TEndpoint extends AnyEndpoint>(
     onSuccess?: (data: InferResponseType<TEndpoint>) => void;
     onError?: (error: Error) => void;
     errorMessage?: string;
-    optimisticUpdate?: {
-      queryKey: QueryKey;
-      updater: (
-        oldData: unknown,
-        variables: InferRequestType<TEndpoint>
-      ) => unknown;
-    };
+    optimisticUpdate?: OptimisticUpdate<InferRequestType<TEndpoint>>;
+    optimisticUpdates?: Array<OptimisticUpdate<InferRequestType<TEndpoint>>>;
+    onMutate?: (
+      variables: InferRequestType<TEndpoint>
+    ) =>
+      | Promise<OptimisticUpdateContext | void>
+      | OptimisticUpdateContext
+      | void;
   }
 ) {
   const queryClient = useQueryClient();
@@ -49,23 +62,34 @@ export function useApiMutation<TEndpoint extends AnyEndpoint>(
       return res.json() as Promise<InferResponseType<TEndpoint>>;
     },
     onMutate: async (variables) => {
-      if (options?.optimisticUpdate) {
-        await queryClient.cancelQueries({
-          queryKey: options.optimisticUpdate.queryKey,
+      const updates =
+        options?.optimisticUpdates ||
+        (options?.optimisticUpdate ? [options.optimisticUpdate] : []);
+
+      if (updates.length > 0) {
+        await Promise.all(
+          updates.map((update) =>
+            queryClient.cancelQueries({ queryKey: update.queryKey })
+          )
+        );
+
+        const snapshots = updates.map((update) => ({
+          queryKey: update.queryKey,
+          data: queryClient.getQueryData(update.queryKey),
+        }));
+
+        updates.forEach((update) => {
+          queryClient.setQueryData(update.queryKey, (old: unknown) =>
+            update.updater(old, variables)
+          );
         });
 
-        const previousData = queryClient.getQueryData(
-          options.optimisticUpdate.queryKey
-        );
+        const customContext = await options?.onMutate?.(variables);
 
-        queryClient.setQueryData(
-          options.optimisticUpdate.queryKey,
-          (old: unknown) => options.optimisticUpdate!.updater(old, variables)
-        );
-
-        return { previousData };
+        return customContext ? { ...customContext, snapshots } : { snapshots };
       }
-      return {};
+
+      return options?.onMutate?.(variables);
     },
     onSuccess: (data) => {
       options?.invalidateKeys?.forEach((key) => {
@@ -74,11 +98,10 @@ export function useApiMutation<TEndpoint extends AnyEndpoint>(
       options?.onSuccess?.(data);
     },
     onError: (error: Error & { status?: number }, _variables, context) => {
-      if (options?.optimisticUpdate && context?.previousData !== undefined) {
-        queryClient.setQueryData(
-          options.optimisticUpdate.queryKey,
-          context.previousData
-        );
+      if (context?.snapshots) {
+        context.snapshots.forEach(({ queryKey, data }) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
 
       const isRateLimitError = error.status === 429;

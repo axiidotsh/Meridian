@@ -2,7 +2,6 @@
 
 import { ErrorState } from '@/components/error-state';
 import { PageHeading } from '@/components/page-heading';
-import { Button } from '@/components/ui/button';
 import { ChartConfig } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAtomValue } from 'jotai';
@@ -10,7 +9,6 @@ import {
   CheckCircle2Icon,
   FlameIcon,
   GoalIcon,
-  Settings2Icon,
   TrendingUpIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -166,13 +164,13 @@ export default function HabitsPage() {
     <div className="flex flex-col">
       <div className="flex items-center justify-between gap-2">
         <PageHeading>Habits</PageHeading>
-        <Button
+        {/* <Button
           size="icon-sm"
           variant="ghost"
           tooltip="Configure dashboard cards"
         >
           <Settings2Icon />
-        </Button>
+        </Button> */}
       </div>
       <div className="mt-4 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

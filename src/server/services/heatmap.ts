@@ -42,6 +42,9 @@ export async function getHeatmapData(
       where: {
         userId,
         date: { gte: startDate },
+        habit: {
+          archived: false,
+        },
       },
       select: { date: true },
     }),

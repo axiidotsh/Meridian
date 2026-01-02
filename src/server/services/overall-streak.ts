@@ -32,7 +32,12 @@ export async function calculateOverallStreak(
       select: { updatedAt: true },
     }),
     client.habitCompletion.findMany({
-      where: { userId },
+      where: {
+        userId,
+        habit: {
+          archived: false,
+        },
+      },
       select: { date: true },
     }),
   ]);

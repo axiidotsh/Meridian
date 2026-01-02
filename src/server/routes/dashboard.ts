@@ -170,12 +170,18 @@ export const dashboardRouter = new Hono()
         where: {
           userId: user.id,
           date: todayKey,
+          habit: {
+            archived: false,
+          },
         },
       }),
       db.habitCompletion.count({
         where: {
           userId: user.id,
           date: { gte: new Date(todayKey.getTime() - 7 * 24 * 60 * 60 * 1000) },
+          habit: {
+            archived: false,
+          },
         },
       }),
       calculateOverallStreak(user.id, db),

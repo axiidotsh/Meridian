@@ -2,9 +2,12 @@ import { DASHBOARD_QUERY_KEYS } from '@/app/(protected)/(main)/dashboard/hooks/d
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { api } from '@/lib/rpc';
 import { useQueryClient, type QueryKey } from '@tanstack/react-query';
-import { calculateTaskStats } from '../../utils/task-calculations';
+import {
+  calculateTaskChartData,
+  calculateTaskStats,
+} from '../../utils/task-calculations';
 import { TASK_QUERY_KEYS } from '../task-query-keys';
-import type { Task, TaskStats } from '../types';
+import type { ChartData, Task, TaskStats } from '../types';
 
 export function useToggleTask(taskId?: string) {
   const queryClient = useQueryClient();
@@ -30,6 +33,18 @@ export function useToggleTask(taskId?: string) {
     queryClient.setQueryData<{ stats: TaskStats }>(TASK_QUERY_KEYS.stats, {
       stats: newStats,
     });
+
+    const chartQueries = queryClient.getQueriesData<{ chartData: ChartData }>({
+      queryKey: TASK_QUERY_KEYS.chart,
+    });
+
+    chartQueries.forEach(([queryKey]) => {
+      const days = (
+        queryKey as ReturnType<typeof TASK_QUERY_KEYS.chartWithDays>
+      )[2];
+      const newChartData = calculateTaskChartData(updatedTasks, days);
+      queryClient.setQueryData(queryKey, { chartData: newChartData });
+    });
   };
 
   return useApiMutation(api.tasks[':id'].toggle.$patch, {
@@ -45,18 +60,33 @@ export function useToggleTask(taskId?: string) {
         data,
       }));
 
+      const chartQueries = queryClient.getQueriesData<{ chartData: ChartData }>(
+        {
+          queryKey: TASK_QUERY_KEYS.chart,
+        }
+      );
+
+      const previousChartData = chartQueries.map(([queryKey, data]) => ({
+        queryKey,
+        data,
+      }));
+
       if (queries.length > 0 && queries[0][1]) {
         const data = queries[0][1];
         const updatedTasks = data.tasks.map((task) =>
           task.id === variables.param.id
-            ? { ...task, completed: !task.completed }
+            ? {
+                ...task,
+                completed: !task.completed,
+                updatedAt: new Date().toISOString(),
+              }
             : task
         );
         updateAllTaskQueries(updatedTasks);
       }
 
       const previousStats = queryClient.getQueryData(TASK_QUERY_KEYS.stats);
-      return { previousData, previousStats, snapshots: [] };
+      return { previousData, previousStats, previousChartData, snapshots: [] };
     },
     onError: (_error, _variables, context) => {
       if (context?.previousData) {
@@ -66,6 +96,11 @@ export function useToggleTask(taskId?: string) {
       }
       if (context?.previousStats) {
         queryClient.setQueryData(TASK_QUERY_KEYS.stats, context.previousStats);
+      }
+      if (context?.previousChartData) {
+        context.previousChartData.forEach(({ queryKey, data }) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
     },
     errorMessage: 'Failed to toggle task',

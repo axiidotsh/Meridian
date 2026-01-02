@@ -1,5 +1,5 @@
 import { addUTCDays } from '@/utils/date-utc';
-import type { Task, TaskStats } from '../hooks/types';
+import type { ChartData, Task, TaskStats } from '../hooks/types';
 
 export function calculateTaskStats(tasks: Task[]): TaskStats {
   const now = new Date();
@@ -20,4 +20,37 @@ export function calculateTaskStats(tasks: Task[]): TaskStats {
     pending,
     completionRate,
   };
+}
+
+export function calculateTaskChartData(tasks: Task[], days: number): ChartData {
+  const now = new Date();
+  const chartData = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = addUTCDays(now, -i);
+    const nextDate = addUTCDays(date, 1);
+
+    const totalTasks = tasks.filter(
+      (task) => new Date(task.createdAt) < nextDate
+    ).length;
+
+    const completedTasks = tasks.filter((task) => {
+      if (!task.completed) return false;
+      const updatedAt = new Date(task.updatedAt);
+      return updatedAt >= date && updatedAt < nextDate;
+    }).length;
+
+    const dateLabel =
+      days <= 7
+        ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
+        : `${date.getMonth() + 1}/${date.getDate()}`;
+
+    chartData.push({
+      date: dateLabel,
+      completionRate:
+        totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+    });
+  }
+
+  return chartData;
 }

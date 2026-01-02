@@ -6,9 +6,10 @@ export function useTaskChart(days: number = 7) {
   return useApiQuery(
     () => api.tasks.chart.$get({ query: { days: days.toString() } }),
     {
-      queryKey: [...TASK_QUERY_KEYS.chart, days],
+      queryKey: TASK_QUERY_KEYS.chartWithDays(days),
       select: (data) => data.chartData,
       errorMessage: 'Failed to fetch chart data',
+      placeholderData: (previousData) => previousData,
     }
   );
 }

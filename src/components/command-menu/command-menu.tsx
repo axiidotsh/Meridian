@@ -36,18 +36,18 @@ export const CommandMenu = () => {
     'mod+k',
     (e) => {
       e.preventDefault();
-      actions.setOpen((prev) => {
-        if (!prev) {
-          setTimeout(() => {
-            if (isCentered) {
-              dialogInputRef.current?.focus();
-            } else {
-              inputRef.current?.focus();
-            }
-          }, 0);
-        }
-        return !prev;
-      });
+      if (state.open) {
+        actions.setOpen(false);
+      } else {
+        actions.setOpen(true);
+        requestAnimationFrame(() => {
+          if (isCentered) {
+            dialogInputRef.current?.focus();
+          } else {
+            inputRef.current?.focus();
+          }
+        });
+      }
     },
     { enableOnFormTags: true }
   );
@@ -97,6 +97,33 @@ export const CommandMenu = () => {
       }
     },
     [actions]
+  );
+
+  const handleInputFocus = useCallback(() => {
+    if (!isCentered && state.searchValue === '' && !state.open) {
+      actions.setOpen(true);
+    }
+  }, [isCentered, state.searchValue, state.open, actions]);
+
+  const handleInputKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isCentered) {
+        if (e.key === 'Escape' && state.searchValue === '' && !state.open) {
+          inputRef.current?.blur();
+        }
+      }
+    },
+    [isCentered, state.searchValue, state.open]
+  );
+
+  const handleSearchValueChange = useCallback(
+    (value: string) => {
+      actions.setSearchValue(value);
+      if (!isCentered && value !== '' && !state.open) {
+        actions.setOpen(true);
+      }
+    },
+    [isCentered, state.open, actions]
   );
 
   const handleEscapeKeyDown = useCallback(
@@ -180,7 +207,7 @@ export const CommandMenu = () => {
   }
 
   return (
-    <Popover open={state.open} onOpenChange={handleOpenChange}>
+    <Popover modal={false} open={state.open} onOpenChange={handleOpenChange}>
       <Command
         className="bg-transparent **:data-[slot=command-input-wrapper]:flex-1 **:data-[slot=command-input-wrapper]:border-0 **:data-[slot=command-input-wrapper]:px-0"
         shouldFilter={true}
@@ -191,8 +218,10 @@ export const CommandMenu = () => {
           mode="popover"
           inputRef={inputRef}
           searchValue={state.searchValue}
-          onSearchValueChange={actions.setSearchValue}
-          onFocus={() => actions.setOpen(true)}
+          onSearchValueChange={handleSearchValueChange}
+          onFocus={handleInputFocus}
+          onKeyDown={handleInputKeyDown}
+          isOpen={state.open}
         />
         <CommandMenuContent
           mode="popover"

@@ -9,6 +9,8 @@ interface CommandMenuTriggerProps {
   searchValue: string;
   onSearchValueChange: (value: string) => void;
   onFocus: () => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  isOpen?: boolean;
 }
 
 export const CommandMenuTrigger = ({
@@ -17,6 +19,8 @@ export const CommandMenuTrigger = ({
   searchValue,
   onSearchValueChange,
   onFocus,
+  onKeyDown,
+  isOpen,
 }: CommandMenuTriggerProps) => {
   if (mode === 'dialog') {
     return (
@@ -36,12 +40,13 @@ export const CommandMenuTrigger = ({
   }
 
   return (
-    <PopoverAnchor asChild>
+    <PopoverAnchor>
       <div className="flex w-full items-center">
         <CommandInput
           ref={inputRef}
           placeholder="Search for items and commands..."
           onFocus={onFocus}
+          onKeyDown={onKeyDown}
           value={searchValue}
           onValueChange={onSearchValueChange}
         />

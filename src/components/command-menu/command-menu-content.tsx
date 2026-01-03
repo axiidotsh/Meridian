@@ -70,6 +70,26 @@ export const CommandMenuContent = ({
       sideOffset={20}
       onOpenAutoFocus={(e) => e.preventDefault()}
       onEscapeKeyDown={onEscapeKeyDown}
+      onInteractOutside={(e) => {
+        const target = e.target as HTMLElement;
+        if (
+          target.closest('[data-slot="command-input"]') ||
+          target.closest('[data-slot="command-input-wrapper"]') ||
+          target.closest('[data-slot="popover-anchor"]')
+        ) {
+          e.preventDefault();
+        }
+      }}
+      onPointerDownOutside={(e) => {
+        const target = e.target as HTMLElement;
+        if (
+          target.closest('[data-slot="command-input"]') ||
+          target.closest('[data-slot="command-input-wrapper"]') ||
+          target.closest('[data-slot="popover-anchor"]')
+        ) {
+          e.preventDefault();
+        }
+      }}
     >
       {children}
     </PopoverContent>

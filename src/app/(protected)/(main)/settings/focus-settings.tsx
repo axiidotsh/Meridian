@@ -1,6 +1,7 @@
 'use client';
 
 import { settingsAtom } from '@/atoms/settings-atoms';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -9,7 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/utils/utils';
 import { useAtom } from 'jotai';
+import { useEffect, useState } from 'react';
 import { SettingSection } from './setting-section';
 
 const DURATION_OPTIONS = [
@@ -19,13 +22,72 @@ const DURATION_OPTIONS = [
   { value: 90, label: '1.5 hours' },
 ];
 
+const MAX_DURATION_MINUTES = 480;
+
 export const FocusSettings = () => {
   const [settings, setSettings] = useAtom(settingsAtom);
 
-  function handleFocusDurationChange(duration: string) {
+  const isCustomDuration = !DURATION_OPTIONS.some(
+    (option) => option.value === settings.defaultFocusDuration
+  );
+
+  const [isCustomMode, setIsCustomMode] = useState(isCustomDuration);
+  const [customValue, setCustomValue] = useState(
+    isCustomDuration ? settings.defaultFocusDuration.toString() : ''
+  );
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isCustomDuration && !customValue) {
+      setCustomValue(settings.defaultFocusDuration.toString());
+      setIsCustomMode(true);
+    }
+  }, [isCustomDuration, settings.defaultFocusDuration, customValue]);
+
+  const selectValue =
+    isCustomMode || isCustomDuration
+      ? 'custom'
+      : settings.defaultFocusDuration.toString();
+
+  function handleFocusDurationChange(value: string) {
+    if (value === 'custom') {
+      setIsCustomMode(true);
+      setCustomValue(settings.defaultFocusDuration.toString());
+      setError('');
+    } else {
+      setIsCustomMode(false);
+      setSettings((prev) => ({
+        ...prev,
+        defaultFocusDuration: parseInt(value, 10),
+      }));
+      setError('');
+    }
+  }
+
+  function handleCustomDurationChange(value: string) {
+    setCustomValue(value);
+
+    const numValue = parseInt(value, 10);
+
+    if (!value || isNaN(numValue)) {
+      setError('');
+      return;
+    }
+
+    if (numValue < 1) {
+      setError('Duration must be at least 1 minute');
+      return;
+    }
+
+    if (numValue > MAX_DURATION_MINUTES) {
+      setError(`Duration cannot exceed ${MAX_DURATION_MINUTES / 60} hours`);
+      return;
+    }
+
+    setError('');
     setSettings((prev) => ({
       ...prev,
-      defaultFocusDuration: parseInt(duration, 10),
+      defaultFocusDuration: numValue,
     }));
   }
 
@@ -36,12 +98,15 @@ export const FocusSettings = () => {
     >
       <div className="max-w-xs space-y-2">
         <Label htmlFor="default-duration">Duration</Label>
-        <Select
-          value={settings.defaultFocusDuration.toString()}
-          onValueChange={handleFocusDurationChange}
-        >
+        <Select value={selectValue} onValueChange={handleFocusDurationChange}>
           <SelectTrigger id="default-duration" className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {isCustomMode || isCustomDuration
+                ? 'Custom'
+                : DURATION_OPTIONS.find(
+                    (opt) => opt.value === settings.defaultFocusDuration
+                  )?.label}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {DURATION_OPTIONS.map((option) => (
@@ -49,8 +114,30 @@ export const FocusSettings = () => {
                 {option.label}
               </SelectItem>
             ))}
+            <SelectItem value="custom">Custom</SelectItem>
           </SelectContent>
         </Select>
+
+        {selectValue === 'custom' && (
+          <div className="mt-4 space-y-1.5">
+            <Label htmlFor="custom-duration">Custom duration (minutes)</Label>
+            <Input
+              id="custom-duration"
+              type="number"
+              min={1}
+              max={MAX_DURATION_MINUTES}
+              value={customValue}
+              onChange={(e) => handleCustomDurationChange(e.target.value)}
+              placeholder="Enter duration in minutes"
+              className={cn(error && 'border-destructive')}
+            />
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            <p className="text-muted-foreground text-xs">
+              Maximum: {MAX_DURATION_MINUTES / 60} hours ({MAX_DURATION_MINUTES}{' '}
+              minutes)
+            </p>
+          </div>
+        )}
       </div>
     </SettingSection>
   );

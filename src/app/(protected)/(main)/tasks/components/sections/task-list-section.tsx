@@ -175,8 +175,9 @@ export const TaskListSection = ({
   return (
     <ContentCard
       title="Task List"
-      action={<TaskListActions />}
+      action={<TaskListActions isDashboard={isDashboard} />}
       headerClassName="max-sm:!flex-col max-sm:!items-start max-sm:!justify-start"
+      isDashboard={isDashboard}
     >
       {renderContent()}
     </ContentCard>

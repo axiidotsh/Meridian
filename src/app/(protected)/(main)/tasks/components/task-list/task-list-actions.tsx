@@ -39,7 +39,13 @@ import { useExistingTags } from '../../hooks/use-existing-tags';
 import { ProjectFilterMenu } from '../project-filter-menu';
 import { TagFilterMenu } from '../tag-filter-menu';
 
-export const TaskListActions = () => {
+interface TaskListActionsProps {
+  isDashboard?: boolean;
+}
+
+export const TaskListActions = ({
+  isDashboard = false,
+}: TaskListActionsProps = {}) => {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [selectedTags, setSelectedTags] = useAtom(selectedTagsAtom);
   const [selectedProjects, setSelectedProjects] = useAtom(selectedProjectsAtom);
@@ -67,7 +73,10 @@ export const TaskListActions = () => {
           placeholder="Search habits..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 w-full border shadow-xs sm:w-60"
+          className={cn(
+            'bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 w-full border shadow-xs sm:w-60',
+            isDashboard && 'lg:w-full xl:w-60'
+          )}
         />
         <ButtonGroup>
           <DropdownMenu>

@@ -19,7 +19,13 @@ import {
   statusFilterAtom,
 } from '../atoms/habit-atoms';
 
-export function HabitListActions() {
+interface HabitListActionsProps {
+  isDashboard?: boolean;
+}
+
+export function HabitListActions({
+  isDashboard = false,
+}: HabitListActionsProps = {}) {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [sortBy, setSortBy] = useAtom(sortByAtom);
   const [statusFilter, setStatusFilter] = useAtom(statusFilterAtom);
@@ -33,7 +39,10 @@ export function HabitListActions() {
         placeholder="Search habits..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 w-full border shadow-xs sm:w-60"
+        className={cn(
+          'bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 w-full border shadow-xs sm:w-60',
+          isDashboard && 'lg:w-full xl:w-60'
+        )}
       />
       <ButtonGroup>
         <DropdownMenu>

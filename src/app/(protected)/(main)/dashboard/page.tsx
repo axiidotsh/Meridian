@@ -24,7 +24,7 @@ export default function DashboardPage() {
         <DashboardMetrics />
         <div className="grid gap-4 lg:grid-cols-2">
           <TaskListSection isDashboard />
-          <HabitListSection />
+          <HabitListSection isDashboard />
         </div>
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="min-w-0">

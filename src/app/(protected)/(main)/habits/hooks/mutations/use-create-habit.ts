@@ -10,5 +10,7 @@ export function useCreateHabit() {
       HABITS_QUERY_KEYS.stats,
       DASHBOARD_QUERY_KEYS.metrics,
     ],
+    errorMessage: 'Failed to create habit',
+    successMessage: 'Habit created',
   });
 }

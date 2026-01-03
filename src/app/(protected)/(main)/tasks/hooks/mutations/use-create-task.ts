@@ -12,5 +12,7 @@ export function useCreateTask() {
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
     ],
+    errorMessage: 'Failed to create task',
+    successMessage: 'Task created',
   });
 }

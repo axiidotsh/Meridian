@@ -41,7 +41,6 @@ export function useCommandActions() {
         } else if (action.startsWith('start-')) {
           const duration = parseInt(action.replace('start-', ''), 10);
           start.mutate({ json: { durationMinutes: duration } });
-          router.push('/focus');
         }
         return;
       }

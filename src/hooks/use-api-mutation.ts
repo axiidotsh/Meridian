@@ -37,6 +37,7 @@ export function useApiMutation<
       context?: TContext
     ) => void;
     errorMessage?: string;
+    successMessage?: string;
     onMutate?: (
       variables: InferRequestType<TEndpoint>
     ) => Promise<TContext | void> | TContext | void;
@@ -63,6 +64,9 @@ export function useApiMutation<
       options?.invalidateKeys?.forEach((key) => {
         queryClient.invalidateQueries({ queryKey: key });
       });
+      if (options?.successMessage) {
+        toast.success(options.successMessage);
+      }
       options?.onSuccess?.(data);
     },
     onError: (error: Error & { status?: number }, variables, context) => {

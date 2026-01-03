@@ -8,6 +8,8 @@ export function useUpdateSession() {
   const queryClient = useQueryClient();
 
   return useApiMutation(api.focus.sessions[':id'].$patch, {
+    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession],
+    errorMessage: 'Failed to update focus session',
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
         queryKey: FOCUS_QUERY_KEYS.activeSession,
@@ -39,6 +41,5 @@ export function useUpdateSession() {
         );
       }
     },
-    invalidateKeys: [FOCUS_QUERY_KEYS.activeSession],
   });
 }

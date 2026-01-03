@@ -19,6 +19,8 @@ export function useEditSession() {
 
   return useApiMutation(api.focus.sessions[':id'].$patch, {
     invalidateKeys,
+    errorMessage: 'Failed to edit focus session',
+    successMessage: 'Focus session edited',
     onMutate: async (variables) => {
       const sessionId = variables.param.id;
       const updates = variables.json;

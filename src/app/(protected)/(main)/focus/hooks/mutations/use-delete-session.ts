@@ -51,6 +51,8 @@ export function useDeleteSession() {
 
   return useApiMutation(api.focus.sessions[':id'].$delete, {
     invalidateKeys,
+    errorMessage: 'Failed to delete focus session',
+    successMessage: 'Focus session deleted',
     onMutate: async (variables: { param: { id: string } }) => {
       const previousSessionData = updateSessionQueries(
         queryClient,

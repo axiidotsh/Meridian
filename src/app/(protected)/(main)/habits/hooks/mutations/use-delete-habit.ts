@@ -9,6 +9,15 @@ export function useDeleteHabit() {
   const queryClient = useQueryClient();
 
   return useApiMutation(api.habits[':id'].$delete, {
+    invalidateKeys: [
+      HABITS_QUERY_KEYS.list,
+      HABITS_QUERY_KEYS.stats,
+      DASHBOARD_QUERY_KEYS.metrics,
+      DASHBOARD_QUERY_KEYS.heatmap,
+      DASHBOARD_QUERY_KEYS.habitChart,
+    ],
+    errorMessage: 'Failed to delete habit',
+    successMessage: 'Habit deleted',
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: HABITS_QUERY_KEYS.list });
 
@@ -46,12 +55,5 @@ export function useDeleteHabit() {
         });
       }
     },
-    invalidateKeys: [
-      HABITS_QUERY_KEYS.list,
-      HABITS_QUERY_KEYS.stats,
-      DASHBOARD_QUERY_KEYS.metrics,
-      DASHBOARD_QUERY_KEYS.heatmap,
-      DASHBOARD_QUERY_KEYS.habitChart,
-    ],
   });
 }

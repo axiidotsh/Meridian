@@ -56,8 +56,11 @@ export const CommandMenu = () => {
     (command: CommandDefinition) => {
       command.handler();
       actions.reset();
+      if (!isCentered) {
+        inputRef.current?.blur();
+      }
     },
-    [actions]
+    [actions, isCentered]
   );
 
   const handleItemSelect = useCallback(
@@ -73,9 +76,12 @@ export const CommandMenu = () => {
       if (state.selectedItem) {
         handleAction(action, state.selectedItem);
         actions.reset();
+        if (!isCentered) {
+          inputRef.current?.blur();
+        }
       }
     },
-    [state.selectedItem, handleAction, actions]
+    [state.selectedItem, handleAction, actions, isCentered]
   );
 
   const handleDateSelect = useCallback(
@@ -83,9 +89,12 @@ export const CommandMenu = () => {
       if (state.selectedItem) {
         handleDateToggle(state.selectedItem, date);
         actions.reset();
+        if (!isCentered) {
+          inputRef.current?.blur();
+        }
       }
     },
-    [state.selectedItem, handleDateToggle, actions]
+    [state.selectedItem, handleDateToggle, actions, isCentered]
   );
 
   const handleOpenChange = useCallback(

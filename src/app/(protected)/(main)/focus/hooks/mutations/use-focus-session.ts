@@ -13,10 +13,13 @@ export function useFocusSession(sessionId?: string) {
       FOCUS_QUERY_KEYS.activeSession,
       DASHBOARD_QUERY_KEYS.metrics,
     ],
+    successMessage: 'Focus session started',
+    errorMessage: 'Failed to start focus session',
   });
 
   const pause = useApiMutation(api.focus.sessions[':id'].pause.$patch, {
     mutationKey: sessionId ? ['focusSession', 'pause', sessionId] : undefined,
+    errorMessage: 'Failed to pause focus session',
     onMutate: async () => {
       await queryClient.cancelQueries({
         queryKey: FOCUS_QUERY_KEYS.activeSession,
@@ -56,6 +59,7 @@ export function useFocusSession(sessionId?: string) {
 
   const resume = useApiMutation(api.focus.sessions[':id'].resume.$patch, {
     mutationKey: sessionId ? ['focusSession', 'resume', sessionId] : undefined,
+    errorMessage: 'Failed to resume focus session',
     onMutate: async () => {
       await queryClient.cancelQueries({
         queryKey: FOCUS_QUERY_KEYS.activeSession,
@@ -101,6 +105,8 @@ export function useFocusSession(sessionId?: string) {
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
     ],
+    errorMessage: 'Failed to complete focus session',
+    successMessage: 'Focus session completed',
   });
 
   const cancel = useApiMutation(api.focus.sessions[':id'].cancel.$patch, {
@@ -109,6 +115,7 @@ export function useFocusSession(sessionId?: string) {
       FOCUS_QUERY_KEYS.sessions,
       DASHBOARD_QUERY_KEYS.metrics,
     ],
+    errorMessage: 'Failed to cancel focus session',
   });
 
   const endEarly = useApiMutation(
@@ -121,6 +128,8 @@ export function useFocusSession(sessionId?: string) {
         DASHBOARD_QUERY_KEYS.metrics,
         DASHBOARD_QUERY_KEYS.heatmap,
       ],
+      errorMessage: 'Failed to end focus session early',
+      successMessage: 'Focus session ended early',
     }
   );
 

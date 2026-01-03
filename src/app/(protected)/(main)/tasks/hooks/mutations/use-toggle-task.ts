@@ -52,6 +52,7 @@ export function useToggleTask(taskId?: string) {
   return useApiMutation(api.tasks[':id'].toggle.$patch, {
     mutationKey: taskId ? ['toggleTask', taskId] : undefined,
     invalidateKeys,
+    errorMessage: 'Failed to toggle task',
     onMutate: async (variables) => {
       const queries = queryClient.getQueriesData<{ tasks: Task[] }>({
         queryKey: TASK_QUERY_KEYS.tasks,
@@ -136,6 +137,5 @@ export function useToggleTask(taskId?: string) {
         );
       }
     },
-    errorMessage: 'Failed to toggle task',
   });
 }

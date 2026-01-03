@@ -12,5 +12,7 @@ export function useBulkCreateTasks() {
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
     ],
+    errorMessage: 'Failed to create tasks',
+    successMessage: 'Tasks created',
   });
 }

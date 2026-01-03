@@ -9,6 +9,9 @@ export function useUpdateHabit() {
   const queryClient = useQueryClient();
 
   return useApiMutation(api.habits[':id'].$patch, {
+    invalidateKeys: [HABITS_QUERY_KEYS.list, DASHBOARD_QUERY_KEYS.metrics],
+    errorMessage: 'Failed to update habit',
+    successMessage: 'Habit updated',
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: HABITS_QUERY_KEYS.list });
 
@@ -48,6 +51,5 @@ export function useUpdateHabit() {
         });
       }
     },
-    invalidateKeys: [HABITS_QUERY_KEYS.list, DASHBOARD_QUERY_KEYS.metrics],
   });
 }

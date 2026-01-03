@@ -9,21 +9,12 @@ import {
   PaletteIcon,
   ShieldAlertIcon,
 } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { AppearanceSettings } from './appearance-settings';
 import { DangerZoneSettings } from './danger-zone-settings';
 import { FocusSettings } from './focus-settings';
 import { TasksSettings } from './tasks-settings';
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const tab = searchParams.get('tab') || 'appearance';
-
-  function handleTabChange(value: string) {
-    router.push(`/settings?tab=${value}`);
-  }
-
   const tabs = [
     {
       value: 'appearance',
@@ -55,8 +46,7 @@ export default function SettingsPage() {
     <div className="flex flex-col">
       <PageHeading>Settings</PageHeading>
       <Tabs
-        value={tab}
-        onValueChange={handleTabChange}
+        defaultValue="appearance"
         className="mt-4 flex flex-col md:flex-row md:items-start"
       >
         <TabsList className="h-full w-full shrink-0 flex-col items-stretch justify-start gap-1 rounded-lg bg-transparent md:w-48">

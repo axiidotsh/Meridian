@@ -15,7 +15,14 @@ export interface CommandDefinition {
   icon: ComponentType<{ className?: string }>;
   keywords?: string[];
   destructive?: boolean;
-  category: 'page' | 'focus' | 'create' | 'theme' | 'position' | 'account';
+  category:
+    | 'page'
+    | 'focus'
+    | 'create'
+    | 'theme'
+    | 'position'
+    | 'account'
+    | 'settings';
   handler: () => void | Promise<void>;
 }
 

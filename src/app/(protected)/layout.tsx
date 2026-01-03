@@ -1,3 +1,4 @@
+import { CustomDurationSettingsDialog } from '@/app/(protected)/(main)/focus/components/sessions/custom-duration-settings-dialog';
 import { FocusSessionCancelDialog } from '@/app/(protected)/(main)/focus/components/sessions/focus-session-cancel-dialog';
 import { FocusSessionCreateDialog } from '@/app/(protected)/(main)/focus/components/sessions/focus-session-create-dialog';
 import { FocusSessionDeleteDialog } from '@/app/(protected)/(main)/focus/components/sessions/focus-session-delete-dialog';
@@ -56,6 +57,7 @@ export default async function ProtectedLayout({
       <FocusSessionEditDialog />
       <FocusSessionDeleteDialog />
       <FocusSessionCreateDialog />
+      <CustomDurationSettingsDialog />
 
       {/* Task Dialogs */}
       <CreateTaskDialog />

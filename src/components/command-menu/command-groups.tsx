@@ -37,6 +37,9 @@ export const CommandGroups = ({
   const pageCommands = commands.filter((cmd) => cmd.category === 'page');
   const focusCommands = commands.filter((cmd) => cmd.category === 'focus');
   const createCommands = commands.filter((cmd) => cmd.category === 'create');
+  const settingsCommands = commands.filter(
+    (cmd) => cmd.category === 'settings'
+  );
   const themeCommands = commands.filter((cmd) => cmd.category === 'theme');
   const positionCommands = commands.filter(
     (cmd) => cmd.category === 'position'
@@ -99,6 +102,25 @@ export const CommandGroups = ({
           </CommandItem>
         ))}
       </CommandGroup>
+
+      {settingsCommands.length > 0 && (
+        <CommandGroup heading="Settings">
+          {settingsCommands.map((command) => (
+            <CommandItem
+              key={command.id}
+              value={[
+                command.id,
+                command.name,
+                ...(command.keywords ?? []),
+              ].join(' ')}
+              onSelect={() => onCommandSelect(command)}
+            >
+              <command.icon className="size-3.5" />
+              <span>{command.name}</span>
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      )}
 
       <CommandGroup heading="Theme">
         {themeCommands.map((command) => (

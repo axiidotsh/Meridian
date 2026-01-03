@@ -1,11 +1,19 @@
 'use client';
 
+import { settingsAtom } from '@/atoms/settings-atoms';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -14,10 +22,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { PlusIcon, XIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { bulkAddTasksSheetAtom } from '../../atoms/task-dialogs';
+import { PRIORITY_OPTIONS } from '../../constants';
 import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks';
 import { useProjects } from '../../hooks/queries/use-projects';
 import type { Project, TaskPriority } from '../../hooks/types';
@@ -32,6 +41,7 @@ interface PendingTask {
 
 export const BulkAddTasksSheet = () => {
   const [open, setOpen] = useAtom(bulkAddTasksSheetAtom);
+  const settings = useAtomValue(settingsAtom);
   const bulkCreateTasks = useBulkCreateTasks();
   const { data: projects = [] } = useProjects() as {
     data: Project[] | undefined;
@@ -40,14 +50,24 @@ export const BulkAddTasksSheet = () => {
 
   const [title, setTitle] = useState('');
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [priority, setPriority] = useState<string>(
+    settings.defaultTaskPriority
+  );
   const [projectId, setProjectId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
   const [pendingTasks, setPendingTasks] = useState<PendingTask[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (open) {
+      setPriority(settings.defaultTaskPriority);
+    }
+  }, [open, settings.defaultTaskPriority]);
+
   const resetForm = () => {
     setTitle('');
     setDueDate(undefined);
+    setPriority(settings.defaultTaskPriority);
     setProjectId('');
     setTags([]);
     setPendingTasks([]);
@@ -102,7 +122,7 @@ export const BulkAddTasksSheet = () => {
         json: {
           tasks: pendingTasks.map((task) => ({ title: task.title })),
           dueDate: normalizedDueDate,
-          priority: 'MEDIUM' as TaskPriority,
+          priority: priority as TaskPriority,
           projectId: projectId || undefined,
           tags,
         },
@@ -149,7 +169,7 @@ export const BulkAddTasksSheet = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Due Date</Label>
               <DatePicker
@@ -159,20 +179,35 @@ export const BulkAddTasksSheet = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="priority">Priority</Label>
+              <Select value={priority} onValueChange={setPriority}>
+                <SelectTrigger id="priority" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <TagInput
+                tags={tags}
+                onChange={setTags}
+                suggestions={existingTags}
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="project">Project</Label>
               <ProjectSelect
                 id="project"
                 projects={projects}
                 value={projectId}
                 onValueChange={setProjectId}
-              />
-            </div>
-            <div className="space-y-2 max-sm:col-span-2">
-              <Label>Tags</Label>
-              <TagInput
-                tags={tags}
-                onChange={setTags}
-                suggestions={existingTags}
               />
             </div>
           </div>

@@ -1,4 +1,5 @@
 import type { CommandMenuPosition } from '@/atoms/settings-atoms';
+import type { TaskPriority } from '@/server/db/generated/client';
 import {
   BrainIcon,
   CheckSquareIcon,
@@ -14,8 +15,12 @@ import {
   PanelTopIcon,
   PlusIcon,
   SettingsIcon,
+  SignalHighIcon,
+  SignalLowIcon,
+  SignalMediumIcon,
   SquareDashedIcon,
   SunIcon,
+  TimerIcon,
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 
@@ -40,6 +45,14 @@ export interface PositionItem extends CommandItemBase {
 
 export interface ActionCommand extends CommandItemBase {
   action: string;
+}
+
+export interface FocusDurationItem extends CommandItemBase {
+  value: number;
+}
+
+export interface TaskPriorityItem extends CommandItemBase {
+  value: TaskPriority;
 }
 
 export const PAGES: PageItem[] = [
@@ -151,5 +164,59 @@ export const CREATE_COMMANDS: ActionCommand[] = [
     action: 'new-chat',
     icon: MessageCirclePlusIcon,
     searchWords: ['start', 'conversation', 'ai', 'assistant'],
+  },
+];
+
+export const FOCUS_DURATION_SETTINGS: FocusDurationItem[] = [
+  {
+    name: 'Set default focus: 25 minutes',
+    value: 25,
+    icon: TimerIcon,
+    searchWords: ['duration', 'session', 'default', 'pomodoro'],
+  },
+  {
+    name: 'Set default focus: 45 minutes',
+    value: 45,
+    icon: TimerIcon,
+    searchWords: ['duration', 'session', 'default'],
+  },
+  {
+    name: 'Set default focus: 1 hour',
+    value: 60,
+    icon: TimerIcon,
+    searchWords: ['duration', 'session', 'default', '60 minutes'],
+  },
+  {
+    name: 'Set default focus: 1.5 hours',
+    value: 90,
+    icon: TimerIcon,
+    searchWords: ['duration', 'session', 'default', '90 minutes'],
+  },
+  {
+    name: 'Set default focus: Custom',
+    value: -1,
+    icon: TimerIcon,
+    searchWords: ['duration', 'session', 'default', 'custom', 'other'],
+  },
+];
+
+export const TASK_PRIORITY_SETTINGS: TaskPriorityItem[] = [
+  {
+    name: 'Set default priority: Low',
+    value: 'LOW',
+    icon: SignalLowIcon,
+    searchWords: ['priority', 'task', 'default'],
+  },
+  {
+    name: 'Set default priority: Medium',
+    value: 'MEDIUM',
+    icon: SignalMediumIcon,
+    searchWords: ['priority', 'task', 'default'],
+  },
+  {
+    name: 'Set default priority: High',
+    value: 'HIGH',
+    icon: SignalHighIcon,
+    searchWords: ['priority', 'task', 'default'],
   },
 ];

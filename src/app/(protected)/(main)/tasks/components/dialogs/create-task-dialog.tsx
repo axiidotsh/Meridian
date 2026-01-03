@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAtom, useAtomValue } from 'jotai';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createTaskDialogAtom } from '../../atoms/task-dialogs';
 import { PRIORITY_OPTIONS } from '../../constants';
 import { useCreateTask } from '../../hooks/mutations/use-create-task';
@@ -43,6 +43,12 @@ export const CreateTaskDialog = () => {
   );
   const [projectId, setProjectId] = useState<string>('');
   const [tags, setTags] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      setPriority(settings.defaultTaskPriority);
+    }
+  }, [open, settings.defaultTaskPriority]);
 
   const resetForm = () => {
     setTitle('');

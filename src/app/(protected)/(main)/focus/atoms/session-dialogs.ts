@@ -8,3 +8,4 @@ export const showDiscardDialogAtom = atom(false);
 export const editingSessionAtom = atom<FocusSession | null>(null);
 export const deletingSessionAtom = atom<FocusSession | null>(null);
 export const createCustomSessionAtom = atom(false);
+export const customDurationSettingsDialogAtom = atom(false);

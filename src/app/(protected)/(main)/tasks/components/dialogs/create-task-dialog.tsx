@@ -12,20 +12,13 @@ import {
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import { createTaskDialogAtom } from '../../atoms/task-dialogs';
-import { PRIORITY_OPTIONS } from '../../constants';
 import { useCreateTask } from '../../hooks/mutations/use-create-task';
 import { useProjects } from '../../hooks/queries/use-projects';
 import { useExistingTags } from '../../hooks/use-existing-tags';
+import { PrioritySelect } from '../priority-select';
 import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
@@ -116,18 +109,11 @@ export const CreateTaskDialog = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger id="priority" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRIORITY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <PrioritySelect
+                id="priority"
+                value={priority}
+                onValueChange={setPriority}
+              />
             </div>
           </div>
           <div className="space-y-2">

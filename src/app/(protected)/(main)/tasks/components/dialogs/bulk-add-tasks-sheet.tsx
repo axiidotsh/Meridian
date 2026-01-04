@@ -6,13 +6,6 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
@@ -26,12 +19,12 @@ import { PlusIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { bulkAddTasksSheetAtom } from '../../atoms/task-dialogs';
-import { PRIORITY_OPTIONS } from '../../constants';
 import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks';
 import { useProjects } from '../../hooks/queries/use-projects';
 import type { Project, TaskPriority } from '../../hooks/types';
 import { useExistingTags } from '../../hooks/use-existing-tags';
 import { TagBadge } from '../badges/tag-badge';
+import { PrioritySelect } from '../priority-select';
 import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
@@ -181,18 +174,11 @@ export const BulkAddTasksSheet = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>
-              <Select value={priority} onValueChange={setPriority}>
-                <SelectTrigger id="priority" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRIORITY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <PrioritySelect
+                id="priority"
+                value={priority}
+                onValueChange={setPriority}
+              />
             </div>
             <div className="space-y-2">
               <Label>Tags</Label>

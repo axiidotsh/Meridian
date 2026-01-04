@@ -9,7 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
-import { CheckIcon, SearchIcon } from 'lucide-react';
+import { cn } from '@/utils/utils';
+import { CheckIcon, ChevronsUpDownIcon, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
 import { DEFAULT_PROJECT_COLOR, MAX_DROPDOWN_HEIGHT } from '../constants';
 import type { Project } from '../hooks/types';
@@ -44,9 +45,17 @@ export const ProjectSelect = ({
         <Button
           id={id}
           variant="outline"
-          className="w-full justify-start font-normal"
+          className="w-full justify-between font-normal"
         >
-          {selectedProject ? selectedProject.name : placeholder}
+          <span
+            className={cn(
+              'truncate',
+              !selectedProject && 'text-muted-foreground'
+            )}
+          >
+            {selectedProject ? selectedProject.name : placeholder}
+          </span>
+          <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

@@ -1,0 +1,77 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/utils/utils';
+import { PRIORITY_OPTIONS } from '../constants';
+
+interface PrioritySelectProps {
+  id?: string;
+  value: string;
+  onValueChange: (value: string) => void;
+  className?: string;
+}
+
+function getPriorityCircleColor(priority: string) {
+  switch (priority) {
+    case 'LOW':
+      return 'bg-green-500';
+    case 'MEDIUM':
+      return 'bg-amber-500';
+    case 'HIGH':
+      return 'bg-red-500';
+    default:
+      return 'bg-gray-500';
+  }
+}
+
+function PriorityOption({
+  priority,
+  label,
+}: {
+  priority: string;
+  label: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className={cn('size-2 rounded-full', getPriorityCircleColor(priority))}
+      />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+export const PrioritySelect = ({
+  id,
+  value,
+  onValueChange,
+  className,
+}: PrioritySelectProps) => {
+  const selectedOption = PRIORITY_OPTIONS.find((opt) => opt.value === value);
+
+  return (
+    <Select value={value} onValueChange={onValueChange}>
+      <SelectTrigger id={id} className={cn('w-full', className)}>
+        <SelectValue>
+          {selectedOption && (
+            <PriorityOption
+              priority={selectedOption.value}
+              label={selectedOption.label}
+            />
+          )}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {PRIORITY_OPTIONS.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            <PriorityOption priority={option.value} label={option.label} />
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};

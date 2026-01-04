@@ -10,7 +10,6 @@ export function useUpdateTask() {
 
   return useApiMutation(api.tasks[':id'].$patch, {
     invalidateKeys: [
-      TASK_QUERY_KEYS.tasks,
       TASK_QUERY_KEYS.stats,
       TASK_QUERY_KEYS.chart,
       DASHBOARD_QUERY_KEYS.metrics,
@@ -18,28 +17,18 @@ export function useUpdateTask() {
     ],
     errorMessage: 'Failed to update task',
     successMessage: 'Task updated',
-    onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: TASK_QUERY_KEYS.tasks });
-
-      const previousData = queryClient.getQueryData(TASK_QUERY_KEYS.tasks);
-
-      queryClient.setQueryData(TASK_QUERY_KEYS.tasks, (old: unknown) => {
-        const data = old as { tasks: Task[] };
-        return {
-          ...data,
-          tasks: data.tasks.map((task) =>
-            task.id === variables.param.id
-              ? { ...task, ...variables.json }
-              : task
-          ),
-        };
-      });
-
-      return { previousData, snapshots: [] };
-    },
-    onError: (_error, _variables, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(TASK_QUERY_KEYS.tasks, context.previousData);
+    onSuccess: (data) => {
+      if ('task' in data) {
+        const updatedTask = data.task;
+        queryClient.setQueryData(TASK_QUERY_KEYS.tasks, (old: unknown) => {
+          const queryData = old as { tasks: Task[] };
+          return {
+            ...queryData,
+            tasks: queryData.tasks.map((task) =>
+              task.id === updatedTask.id ? updatedTask : task
+            ),
+          };
+        });
       }
     },
   });

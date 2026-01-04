@@ -10,7 +10,6 @@ export function useDeleteTask() {
 
   return useApiMutation(api.tasks[':id'].$delete, {
     invalidateKeys: [
-      TASK_QUERY_KEYS.tasks,
       TASK_QUERY_KEYS.stats,
       TASK_QUERY_KEYS.chart,
       DASHBOARD_QUERY_KEYS.metrics,
@@ -18,25 +17,16 @@ export function useDeleteTask() {
     ],
     errorMessage: 'Failed to delete task',
     successMessage: 'Task deleted',
-    onMutate: async (variables) => {
-      await queryClient.cancelQueries({ queryKey: TASK_QUERY_KEYS.tasks });
-
-      const previousData = queryClient.getQueryData(TASK_QUERY_KEYS.tasks);
-
+    onSuccess: (_data, variables) => {
       queryClient.setQueryData(TASK_QUERY_KEYS.tasks, (old: unknown) => {
-        const data = old as { tasks: Task[] };
+        const queryData = old as { tasks: Task[] };
         return {
-          ...data,
-          tasks: data.tasks.filter((task) => task.id !== variables.param.id),
+          ...queryData,
+          tasks: queryData.tasks.filter(
+            (task) => task.id !== variables.param.id
+          ),
         };
       });
-
-      return { previousData, snapshots: [] };
-    },
-    onError: (_error, _variables, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(TASK_QUERY_KEYS.tasks, context.previousData);
-      }
     },
   });
 }

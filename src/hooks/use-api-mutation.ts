@@ -30,7 +30,10 @@ export function useApiMutation<
   options?: {
     mutationKey?: QueryKey;
     invalidateKeys?: QueryKey[];
-    onSuccess?: (data: InferResponseType<TEndpoint>) => void;
+    onSuccess?: (
+      data: InferResponseType<TEndpoint>,
+      variables: InferRequestType<TEndpoint>
+    ) => void;
     onError?: (
       error: Error,
       variables: InferRequestType<TEndpoint>,
@@ -60,14 +63,14 @@ export function useApiMutation<
       return res.json() as Promise<InferResponseType<TEndpoint>>;
     },
     onMutate: options?.onMutate,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       options?.invalidateKeys?.forEach((key) => {
         queryClient.invalidateQueries({ queryKey: key });
       });
       if (options?.successMessage) {
         toast.success(options.successMessage);
       }
-      options?.onSuccess?.(data);
+      options?.onSuccess?.(data, variables);
     },
     onError: (error: Error & { status?: number }, variables, context) => {
       const isRateLimitError = error.status === 429;

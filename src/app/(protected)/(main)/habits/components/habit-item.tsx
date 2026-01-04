@@ -7,13 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/utils/utils';
 import { Flame } from 'lucide-react';
-
-function getStreakColor(streak: number): string {
-  if (streak >= 30) return 'text-purple-500';
-  if (streak >= 14) return 'text-yellow-500';
-  if (streak >= 7) return 'text-orange-500';
-  return 'text-muted-foreground';
-}
+import { getStreakColor } from '../utils/streak-helpers';
 
 interface HabitItemProps {
   habit: HabitWithMetrics;

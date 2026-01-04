@@ -14,11 +14,11 @@ export const HabitChartSection = () => {
 
   const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
 
-  const handlePeriodChange = (days: number) => {
+  function handlePeriodChange(days: number) {
     setPeriod(days);
-  };
+  }
 
-  const generateCompletionChartData = () => {
+  function generateCompletionChartData() {
     const today = new Date();
     const chartData = [];
 
@@ -48,7 +48,7 @@ export const HabitChartSection = () => {
     }
 
     return chartData;
-  };
+  }
 
   const chartData = generateCompletionChartData();
 

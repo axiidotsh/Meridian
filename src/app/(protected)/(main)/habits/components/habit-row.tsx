@@ -13,44 +13,28 @@ import { EllipsisIcon, FlameIcon, PencilIcon, Trash2Icon } from 'lucide-react';
 import { deletingHabitIdAtom, editingHabitIdAtom } from '../atoms/dialog-atoms';
 import { useToggleHabit } from '../hooks/mutations/use-toggle-habit';
 import type { HabitWithMetrics } from '../hooks/types';
-
-interface WeekDayToggleProps {
-  completionHistory: CompletionRecord[];
-  onToggleDay: (date: Date) => void;
-  disabled?: boolean;
-}
-
-interface CompletionRecord {
-  date: Date;
-  completed: boolean;
-}
+import { getStreakColor } from '../utils/streak-helpers';
+import { WeekDayToggle } from './week-day-toggle';
 
 interface HabitRowProps {
   habit: HabitWithMetrics;
-  WeekDayToggle: React.ComponentType<WeekDayToggleProps>;
 }
 
-function getStreakColor(streak: number): string {
-  if (streak >= 30) return 'text-purple-500';
-  if (streak >= 14) return 'text-yellow-500';
-  if (streak >= 7) return 'text-orange-500';
-  return 'text-muted-foreground';
-}
-
-export const HabitRow = ({ habit, WeekDayToggle }: HabitRowProps) => {
+export const HabitRow = ({ habit }: HabitRowProps) => {
   const setEditingHabitId = useSetAtom(editingHabitIdAtom);
   const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
   const { toggleDate } = useToggleHabit(habit.id);
 
-  const handleToggleDay = (date: Date) => {
-    const utcDate = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-    );
+  function handleToggleDay(date: Date) {
+    const localYear = date.getFullYear();
+    const localMonth = date.getMonth();
+    const localDay = date.getDate();
+    const utcDate = new Date(Date.UTC(localYear, localMonth, localDay));
     toggleDate.mutate({
       param: { id: habit.id },
       json: { date: utcDate.toISOString() },
     });
-  };
+  }
 
   return (
     <li className="border-border flex items-center gap-3 border-b pb-3 last:border-0 last:pb-0">
@@ -66,7 +50,10 @@ export const HabitRow = ({ habit, WeekDayToggle }: HabitRowProps) => {
         {habit.currentStreak > 0 && (
           <div className="mt-0.5">
             <span
-              className={`flex items-center gap-1 font-mono text-xs ${getStreakColor(habit.currentStreak)}`}
+              className={cn(
+                'flex items-center gap-1 font-mono text-xs',
+                getStreakColor(habit.currentStreak)
+              )}
             >
               <FlameIcon className="size-3" />
               {habit.currentStreak} day{habit.currentStreak !== 1 ? 's' : ''}

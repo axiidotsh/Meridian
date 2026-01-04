@@ -1,7 +1,6 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Command,
   CommandEmpty,
@@ -73,12 +72,11 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
+        <div
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="border-input bg-background ring-offset-background hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring flex w-full cursor-pointer items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden"
+          onClick={() => setOpen(!open)}
         >
           {tags.length > 0 ? (
             <div className="flex flex-wrap gap-1">
@@ -92,18 +90,16 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
                   }}
                 >
                   {tag}
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-3 p-0 hover:bg-transparent"
+                    className="inline-flex size-3 cursor-pointer items-center justify-center p-0 hover:opacity-70"
                     onClick={(e) => {
                       e.stopPropagation();
                       removeTag(tag);
                     }}
                   >
                     <XIcon className="size-3" />
-                  </Button>
+                  </button>
                 </Badge>
               ))}
             </div>
@@ -113,7 +109,7 @@ export const TagInput = ({ tags, onChange, suggestions }: TagInputProps) => {
             </span>
           )}
           <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
-        </Button>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         className="w-(--radix-popover-trigger-width) p-0"

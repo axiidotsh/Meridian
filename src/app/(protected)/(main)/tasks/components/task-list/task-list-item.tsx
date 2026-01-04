@@ -44,6 +44,9 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
     setDeletingTask(task);
   };
 
+  const formattedPriority =
+    task.priority.charAt(0) + task.priority.slice(1).toLowerCase();
+
   return (
     <li className="border-border flex items-start gap-3 border-b pb-3 last:border-0 last:pb-0">
       <Checkbox
@@ -64,6 +67,21 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
             {task.title}
           </p>
           <div className="flex flex-wrap items-center gap-1.5">
+            <Badge
+              variant={task.priority === 'HIGH' ? 'destructive' : 'secondary'}
+              className={cn(
+                'text-xs',
+                task.priority === 'LOW' &&
+                  'bg-green-500/10 text-green-700 dark:text-green-400',
+                task.priority === 'MEDIUM' &&
+                  'bg-amber-500/10 text-amber-700 dark:text-amber-400'
+              )}
+            >
+              {formattedPriority}
+            </Badge>
+            {(task.project || task.tags?.length || task.dueDate) && (
+              <DotIcon className="text-muted-foreground size-3" />
+            )}
             {task.project && (
               <>
                 <Badge

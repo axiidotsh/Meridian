@@ -23,6 +23,7 @@ import {
   formatTime,
   formatTimePreview,
 } from '../../utils/timer-calculations';
+import { DurationDropdown } from './duration-dropdown';
 import { TimerControls } from './timer-controls';
 import { TimerDisplay } from './timer-display';
 
@@ -120,42 +121,43 @@ export const FocusTimer = ({ activeSession }: FocusTimerProps) => {
       : 'idle';
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-center gap-8 py-10">
-        <TimerDisplay
-          progress={progress}
-          displayTime={displayTime}
-          isPaused={!!isPaused}
-          isCompleted={!!showCompletedUI}
-        />
-        <div className="w-full max-w-md">
-          <Input
-            placeholder="What are you focusing on? (optional)"
-            value={sessionTask}
-            onChange={(e) => handleTaskChange(e.target.value)}
-            className="resize-none rounded-none border-0 border-b bg-transparent! text-center shadow-none focus-visible:ring-0"
-          />
-        </div>
-        <TimerControls
-          state={controlState}
-          handlers={{
-            onStart: handleStart,
-            onPause: handlePauseResume,
-            onResume: handlePauseResume,
-            onComplete: handleComplete,
-            onEndEarly: () => setShowEndEarlyDialog(true),
-            onCancel: () => setShowCancelDialog(true),
-            onDiscard: () => setShowDiscardDialog(true),
-            onReset: handleReset,
-          }}
-          isPending={{
-            start: start.isPending,
-            pause: pause.isPending,
-            resume: resume.isPending,
-            complete: complete.isPending,
-          }}
+    <div className="flex flex-col items-center justify-center gap-4 py-4">
+      <TimerDisplay
+        progress={progress}
+        displayTime={displayTime}
+        isPaused={!!isPaused}
+        isCompleted={!!showCompletedUI}
+      />
+      <div className="flex w-full items-center justify-center">
+        <DurationDropdown hasActiveSession={hasActiveSession} />
+      </div>
+      <div className="w-full max-w-md">
+        <Input
+          placeholder="What are you focusing on?"
+          value={sessionTask}
+          onChange={(e) => handleTaskChange(e.target.value)}
+          className="rounded-none border-0 border-b bg-transparent! text-center shadow-none focus-visible:ring-0"
         />
       </div>
-    </>
+      <TimerControls
+        state={controlState}
+        handlers={{
+          onStart: handleStart,
+          onPause: handlePauseResume,
+          onResume: handlePauseResume,
+          onComplete: handleComplete,
+          onEndEarly: () => setShowEndEarlyDialog(true),
+          onCancel: () => setShowCancelDialog(true),
+          onDiscard: () => setShowDiscardDialog(true),
+          onReset: handleReset,
+        }}
+        isPending={{
+          start: start.isPending,
+          pause: pause.isPending,
+          resume: resume.isPending,
+          complete: complete.isPending,
+        }}
+      />
+    </div>
   );
 };

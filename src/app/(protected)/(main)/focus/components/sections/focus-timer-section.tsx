@@ -1,10 +1,8 @@
 'use client';
 
-import { ContentCard } from '@/app/(protected)/(main)/components/content-card';
 import { ErrorState } from '@/components/error-state';
 import { useActiveSession } from '../../hooks/queries/use-active-session';
 import { TimerSkeleton } from '../skeletons/timer-skeleton';
-import { DurationDropdown } from '../timer/duration-dropdown';
 import { FocusTimer } from '../timer/focus-timer';
 
 export const FocusTimerSection = () => {
@@ -14,9 +12,6 @@ export const FocusTimerSection = () => {
     isError,
     refetch,
   } = useActiveSession();
-
-  const hasActiveSession =
-    activeSession?.status === 'ACTIVE' || activeSession?.status === 'PAUSED';
 
   if (isError) {
     return (
@@ -28,16 +23,9 @@ export const FocusTimerSection = () => {
     );
   }
 
-  return (
-    <ContentCard
-      title="Focus Session"
-      action={<DurationDropdown hasActiveSession={hasActiveSession} />}
-    >
-      {isLoading ? (
-        <TimerSkeleton />
-      ) : (
-        <FocusTimer activeSession={activeSession} />
-      )}
-    </ContentCard>
-  );
+  if (isLoading) {
+    return <TimerSkeleton />;
+  }
+
+  return <FocusTimer activeSession={activeSession} />;
 };

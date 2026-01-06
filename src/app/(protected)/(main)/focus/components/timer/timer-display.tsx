@@ -19,14 +19,14 @@ export const TimerDisplay = ({
 
   return (
     <CircularProgress
-      size={isMobile ? 320 : 400}
+      size={isMobile ? 280 : 340}
       progress={progress}
       isPaused={isPaused}
       isCompleted={isCompleted}
     >
       <span
         className={cn(
-          'font-mono text-5xl font-bold tabular-nums sm:text-7xl',
+          'font-mono text-4xl font-bold tabular-nums sm:text-6xl',
           isPaused && !isCompleted && 'animate-pulse'
         )}
       >

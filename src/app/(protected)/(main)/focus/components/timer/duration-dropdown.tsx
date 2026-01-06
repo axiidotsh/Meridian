@@ -78,12 +78,16 @@ export const DurationDropdown = ({
           <span>
             <DropdownMenuTrigger asChild>
               <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1"
+                variant="outline"
+                className="gap-2"
                 disabled={hasActiveSession}
               >
-                {formatDurationLabel(selectedMinutes)}
+                <span className="text-muted-foreground text-sm">
+                  Selected duration:
+                </span>
+                <span className="font-medium">
+                  {formatDurationLabel(selectedMinutes)}
+                </span>
                 <ChevronDownIcon className="size-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -93,7 +97,7 @@ export const DurationDropdown = ({
           <TooltipContent>A session is active</TooltipContent>
         )}
       </Tooltip>
-      <DropdownMenuContent align="end" className="w-40">
+      <DropdownMenuContent align="end" className="w-50">
         <DropdownMenuLabel>Duration</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {DURATION_PRESETS.map((minutes) => (
@@ -113,6 +117,7 @@ export const DurationDropdown = ({
             placeholder="Custom (min)..."
             value={customMinutes}
             onChange={(e) => {
+              e.preventDefault();
               setIsCustomDuration(true);
               handleCustomMinutesChange(e.target.value);
             }}

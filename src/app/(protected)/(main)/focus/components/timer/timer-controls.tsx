@@ -86,7 +86,7 @@ export const TimerControls = ({
       </Button>
       <Button
         size="icon"
-        className="size-14 rounded-full"
+        className="size-12 rounded-full"
         tooltip={state === 'paused' ? 'Resume' : 'Pause'}
         onClick={state === 'paused' ? handlers.onResume : handlers.onPause}
         disabled={isPending.pause || isPending.resume}

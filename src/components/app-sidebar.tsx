@@ -40,6 +40,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Skeleton } from './ui/skeleton';
 
 const navItems = [
@@ -74,6 +75,7 @@ export function AppSidebar() {
   const { setTheme } = useTheme();
   const { user, isPending } = useUser();
   const setLogoutDialogOpen = useSetAtom(logoutDialogOpenAtom);
+  const pathname = usePathname();
 
   return (
     <Sidebar collapsible="icon">
@@ -84,16 +86,24 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                const isActive = pathname === item.url;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

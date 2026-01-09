@@ -48,6 +48,13 @@ export const FocusSessionCreateDialog = () => {
     );
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && durationMinutes.length > 0 && !start.isPending) {
+      e.preventDefault();
+      handleCreate();
+    }
+  }
+
   return (
     <ResponsiveDialog open={open} onOpenChange={setOpen}>
       <ResponsiveDialogContent>
@@ -71,6 +78,7 @@ export const FocusSessionCreateDialog = () => {
               max={MAX_DURATION}
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className="space-y-2">
@@ -80,6 +88,7 @@ export const FocusSessionCreateDialog = () => {
               placeholder="What will you work on?"
               value={task}
               onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
         </div>

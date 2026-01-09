@@ -47,6 +47,13 @@ export const CreateHabitDialog = () => {
     );
   };
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && title.trim() && !createHabit.isPending) {
+      e.preventDefault();
+      handleCreate();
+    }
+  }
+
   return (
     <ResponsiveDialog open={open} onOpenChange={setOpen}>
       <ResponsiveDialogContent>
@@ -63,6 +70,7 @@ export const CreateHabitDialog = () => {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="e.g., Morning meditation"
               maxLength={100}
             />
@@ -83,6 +91,7 @@ export const CreateHabitDialog = () => {
               id="category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="e.g., wellness, health, learning"
               maxLength={50}
             />

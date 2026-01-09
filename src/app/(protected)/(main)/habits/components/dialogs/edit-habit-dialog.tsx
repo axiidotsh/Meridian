@@ -59,6 +59,13 @@ export const EditHabitDialog = () => {
     );
   };
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && title.trim() && !updateHabit.isPending) {
+      e.preventDefault();
+      handleSave();
+    }
+  }
+
   return (
     <ResponsiveDialog
       open={!!editingHabitId}
@@ -78,6 +85,7 @@ export const EditHabitDialog = () => {
               id="edit-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
               maxLength={100}
             />
           </div>
@@ -96,6 +104,7 @@ export const EditHabitDialog = () => {
               id="edit-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
+              onKeyDown={handleKeyDown}
               maxLength={50}
             />
           </div>

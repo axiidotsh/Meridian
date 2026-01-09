@@ -83,6 +83,13 @@ export const CustomDurationSettingsDialog = () => {
     setOpen(newOpen);
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' && isValid) {
+      e.preventDefault();
+      handleSave();
+    }
+  }
+
   const isValid =
     durationMinutes.length > 0 &&
     !error &&
@@ -108,6 +115,7 @@ export const CustomDurationSettingsDialog = () => {
             max={MAX_DURATION}
             value={durationMinutes}
             onChange={(e) => handleDurationChange(e.target.value)}
+            onKeyDown={handleKeyDown}
             className={cn(error && 'border-destructive')}
           />
           {error && <p className="text-destructive text-sm">{error}</p>}

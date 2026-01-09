@@ -162,6 +162,24 @@ export const CommandActionsView = ({
       );
     }
 
+    if (item.type === 'project') {
+      return (
+        <>
+          <CommandItem onSelect={() => onAction('edit')}>
+            <PencilIcon className="size-4" />
+            <span>Edit</span>
+          </CommandItem>
+          <CommandItem
+            onSelect={() => onAction('delete')}
+            className="text-destructive!"
+          >
+            <TrashIcon className={cn('size-4', 'text-destructive!')} />
+            <span>Delete</span>
+          </CommandItem>
+        </>
+      );
+    }
+
     if (item.type === 'habit') {
       return (
         <>

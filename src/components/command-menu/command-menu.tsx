@@ -193,6 +193,7 @@ export const CommandMenu = () => {
                 <CommandPalette
                   commands={commands}
                   todos={items.todos}
+                  projects={items.projects}
                   habits={items.habits}
                   sessions={items.sessions}
                   showStartFocusItem={showStartFocusItem}
@@ -242,6 +243,7 @@ export const CommandMenu = () => {
               <CommandPalette
                 commands={commands}
                 todos={items.todos}
+                projects={items.projects}
                 habits={items.habits}
                 sessions={items.sessions}
                 showStartFocusItem={showStartFocusItem}

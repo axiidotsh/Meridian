@@ -6,6 +6,7 @@ import { CommandMenuEmpty } from './command-menu-empty';
 interface CommandPaletteProps {
   commands: CommandDefinition[];
   todos: CommandMenuItem[];
+  projects: CommandMenuItem[];
   habits: CommandMenuItem[];
   sessions: CommandMenuItem[];
   showStartFocusItem: boolean;
@@ -16,6 +17,7 @@ interface CommandPaletteProps {
 export const CommandPalette = ({
   commands,
   todos,
+  projects,
   habits,
   sessions,
   showStartFocusItem,
@@ -28,6 +30,7 @@ export const CommandPalette = ({
       <CommandGroups
         commands={commands}
         todos={todos}
+        projects={projects}
         habits={habits}
         sessions={sessions}
         showStartFocusItem={showStartFocusItem}

@@ -155,6 +155,12 @@ export const CREATE_COMMANDS: ActionCommand[] = [
     searchWords: ['add', 'multiple', 'tasks', 'batch', 'bulk'],
   },
   {
+    name: 'Create new project',
+    action: 'add-project',
+    icon: SquareDashedIcon,
+    searchWords: ['add', 'new', 'folder', 'category'],
+  },
+  {
     name: 'Create new habit',
     action: 'add-habit',
     icon: CheckSquareIcon,

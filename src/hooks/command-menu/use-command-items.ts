@@ -2,8 +2,9 @@ import { useRecentSessions } from '@/app/(protected)/(main)/focus/hooks/queries/
 import type { FocusSession } from '@/app/(protected)/(main)/focus/hooks/types';
 import { useHabits } from '@/app/(protected)/(main)/habits/hooks/queries/use-habits';
 import type { Habit } from '@/app/(protected)/(main)/habits/hooks/types';
+import { useProjects } from '@/app/(protected)/(main)/tasks/hooks/queries/use-projects';
 import { useTasks } from '@/app/(protected)/(main)/tasks/hooks/queries/use-tasks';
-import type { Task } from '@/app/(protected)/(main)/tasks/hooks/types';
+import type { Project, Task } from '@/app/(protected)/(main)/tasks/hooks/types';
 import type { CommandMenuItem } from '@/hooks/command-menu/types';
 import { useMemo } from 'react';
 
@@ -11,6 +12,7 @@ const ITEM_LIMIT = 10;
 
 export function useCommandItems() {
   const { data: tasks = [] } = useTasks();
+  const { data: projects = [] } = useProjects();
   const { data: habits = [] } = useHabits();
   const { data: recentSessions = [] } = useRecentSessions(ITEM_LIMIT);
 
@@ -19,6 +21,9 @@ export function useCommandItems() {
       todos: tasks
         .slice(0, ITEM_LIMIT)
         .map((task) => ({ type: 'todo' as const, data: task })),
+      projects: projects
+        .slice(0, ITEM_LIMIT)
+        .map((project) => ({ type: 'project' as const, data: project })),
       habits: habits
         .slice(0, ITEM_LIMIT)
         .map((habit) => ({ type: 'habit' as const, data: habit })),
@@ -26,14 +31,15 @@ export function useCommandItems() {
         type: 'session' as const,
         data: session,
       })),
-      itemsMap: createItemsMap(tasks, habits, recentSessions),
+      itemsMap: createItemsMap(tasks, projects, habits, recentSessions),
     }),
-    [tasks, habits, recentSessions]
+    [tasks, projects, habits, recentSessions]
   );
 }
 
 function createItemsMap(
   tasks: Task[],
+  projects: Project[],
   habits: Habit[],
   sessions: FocusSession[]
 ) {
@@ -41,6 +47,10 @@ function createItemsMap(
 
   tasks.slice(0, ITEM_LIMIT).forEach((task) => {
     map.set(`todo ${task.title}`, { type: 'todo', data: task });
+  });
+
+  projects.slice(0, ITEM_LIMIT).forEach((project) => {
+    map.set(`project ${project.name}`, { type: 'project', data: project });
   });
 
   habits.slice(0, ITEM_LIMIT).forEach((habit) => {

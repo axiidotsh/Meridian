@@ -10,6 +10,7 @@ import { createDialogOpenAtom } from '@/app/(protected)/(main)/habits/atoms/dial
 import { useUpdateSettings } from '@/app/(protected)/(main)/settings/hooks/mutations/use-update-settings';
 import {
   bulkAddTasksSheetAtom,
+  createProjectDialogAtom,
   createTaskDialogAtom,
 } from '@/app/(protected)/(main)/tasks/atoms/task-dialogs';
 import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
@@ -36,6 +37,7 @@ export function useCommandRegistry() {
 
   const setCreateTaskDialogOpen = useSetAtom(createTaskDialogAtom);
   const setBulkAddTasksSheetOpen = useSetAtom(bulkAddTasksSheetAtom);
+  const setCreateProjectDialogOpen = useSetAtom(createProjectDialogAtom);
   const setCreateHabitDialogOpen = useSetAtom(createDialogOpenAtom);
   const setLogoutDialogOpen = useSetAtom(logoutDialogOpenAtom);
   const setShowCancel = useSetAtom(showCancelDialogAtom);
@@ -169,6 +171,9 @@ export function useCommandRegistry() {
             case 'bulk-add-tasks':
               setBulkAddTasksSheetOpen(true);
               break;
+            case 'add-project':
+              setCreateProjectDialogOpen(true);
+              break;
             case 'add-habit':
               setCreateHabitDialogOpen(true);
               break;
@@ -218,6 +223,7 @@ export function useCommandRegistry() {
       updateSettings,
       setCreateTaskDialogOpen,
       setBulkAddTasksSheetOpen,
+      setCreateProjectDialogOpen,
       setCreateHabitDialogOpen,
       setLogoutDialogOpen,
     ]

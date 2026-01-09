@@ -11,6 +11,7 @@ import {
   CheckCircle2Icon,
   CircleIcon,
   ClockPlusIcon,
+  FolderIcon,
   PlayIcon,
   SignalIcon,
   TimerIcon,
@@ -19,6 +20,7 @@ import {
 interface CommandGroupsProps {
   commands: CommandDefinition[];
   todos: CommandMenuItem[];
+  projects: CommandMenuItem[];
   habits: CommandMenuItem[];
   sessions: CommandMenuItem[];
   showStartFocusItem: boolean;
@@ -29,6 +31,7 @@ interface CommandGroupsProps {
 export const CommandGroups = ({
   commands,
   todos,
+  projects,
   habits,
   sessions,
   showStartFocusItem,
@@ -242,6 +245,27 @@ export const CommandGroups = ({
                 >
                   {item.data.title}
                 </span>
+                <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
+                  Actions
+                  <Kbd>↵</Kbd>
+                </span>
+              </CommandItem>
+            ))}
+        </CommandGroup>
+      )}
+
+      {projects.length > 0 && (
+        <CommandGroup heading="Projects">
+          {projects
+            .filter((item) => item.type === 'project')
+            .map((item) => (
+              <CommandItem
+                key={`project:${item.data.id}`}
+                value={`project:${item.data.id}:${item.data.name}`}
+                onSelect={() => onItemSelect(item)}
+              >
+                <FolderIcon className="size-3.5" />
+                <span className="line-clamp-2">{item.data.name}</span>
                 <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                   Actions
                   <Kbd>↵</Kbd>

@@ -12,7 +12,9 @@ import {
 import { useToggleHabit } from '@/app/(protected)/(main)/habits/hooks/mutations/use-toggle-habit';
 import { useUpdateSettings } from '@/app/(protected)/(main)/settings/hooks/mutations/use-update-settings';
 import {
+  deletingProjectAtom,
   deletingTaskAtom,
+  editingProjectAtom,
   editingTaskAtom,
 } from '@/app/(protected)/(main)/tasks/atoms/task-dialogs';
 import { useToggleTask } from '@/app/(protected)/(main)/tasks/hooks/mutations/use-toggle-task';
@@ -24,6 +26,8 @@ import { toast } from 'sonner';
 export function useCommandActions() {
   const setEditingTask = useSetAtom(editingTaskAtom);
   const setDeletingTask = useSetAtom(deletingTaskAtom);
+  const setEditingProject = useSetAtom(editingProjectAtom);
+  const setDeletingProject = useSetAtom(deletingProjectAtom);
   const setEditingHabitId = useSetAtom(editingHabitIdAtom);
   const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
   const setEditingSession = useSetAtom(editingSessionAtom);
@@ -91,11 +95,13 @@ export function useCommandActions() {
           break;
         case 'edit':
           if (item.type === 'todo') setEditingTask(item.data);
+          if (item.type === 'project') setEditingProject(item.data);
           if (item.type === 'habit') setEditingHabitId(item.data.id);
           if (item.type === 'session') setEditingSession(item.data);
           break;
         case 'delete':
           if (item.type === 'todo') setDeletingTask(item.data);
+          if (item.type === 'project') setDeletingProject(item.data);
           if (item.type === 'habit') setDeletingHabitId(item.data.id);
           if (item.type === 'session') setDeletingSession(item.data);
           break;
@@ -105,6 +111,8 @@ export function useCommandActions() {
       toggleTask,
       setEditingTask,
       setDeletingTask,
+      setEditingProject,
+      setDeletingProject,
       setEditingHabitId,
       setDeletingHabitId,
       setEditingSession,

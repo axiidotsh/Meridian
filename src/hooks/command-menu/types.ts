@@ -1,10 +1,11 @@
 import type { FocusSession } from '@/app/(protected)/(main)/focus/hooks/types';
 import type { Habit } from '@/app/(protected)/(main)/habits/hooks/types';
-import type { Task } from '@/app/(protected)/(main)/tasks/hooks/types';
+import type { Project, Task } from '@/app/(protected)/(main)/tasks/hooks/types';
 import type { ComponentType } from 'react';
 
 export type CommandMenuItem =
   | { type: 'todo'; data: Task }
+  | { type: 'project'; data: Project }
   | { type: 'habit'; data: Habit }
   | { type: 'session'; data: FocusSession }
   | { type: 'focus-start' }

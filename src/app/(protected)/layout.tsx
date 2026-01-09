@@ -11,6 +11,7 @@ import { EditHabitDialog } from '@/app/(protected)/(main)/habits/components/dial
 import { BulkAddTasksSheet } from '@/app/(protected)/(main)/tasks/components/dialogs/bulk-add-tasks-sheet';
 import { CreateProjectDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/create-project-dialog';
 import { CreateTaskDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/create-task-dialog';
+import { DeleteProjectDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/delete-project-dialog';
 import { DeleteTaskDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/delete-task-dialog';
 import { EditProjectDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/edit-project-dialog';
 import { EditTaskDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/edit-task-dialog';
@@ -68,6 +69,7 @@ export default async function ProtectedLayout({
       {/* Project Dialogs */}
       <CreateProjectDialog />
       <EditProjectDialog />
+      <DeleteProjectDialog />
 
       {/* Habit Dialogs */}
       <CreateHabitDialog />

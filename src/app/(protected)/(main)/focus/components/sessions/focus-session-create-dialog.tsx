@@ -13,7 +13,6 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createCustomSessionAtom } from '../../atoms/session-dialogs';
 import { MAX_DURATION, MIN_DURATION } from '../../constants';
@@ -22,7 +21,6 @@ import { useFocusSession } from '../../hooks/mutations/use-focus-session';
 export const FocusSessionCreateDialog = () => {
   const [open, setOpen] = useAtom(createCustomSessionAtom);
   const { start } = useFocusSession();
-  const router = useRouter();
   const [task, setTask] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
 

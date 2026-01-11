@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -27,13 +28,53 @@ import { formatSessionDateTime } from '../utils/session-metrics';
 interface SessionsTableProps {
   sessions: FocusSession[];
   isLoading?: boolean;
+  isFetchingNextPage?: boolean;
+  sentinelRef?: (node?: Element | null) => void;
 }
 
-export const SessionsTable = ({ sessions, isLoading }: SessionsTableProps) => {
+export const SessionsTable = ({
+  sessions,
+  isLoading,
+  isFetchingNextPage,
+  sentinelRef,
+}: SessionsTableProps) => {
   if (isLoading) {
     return (
-      <div className="text-muted-foreground flex items-center justify-center py-24 text-center">
-        <p className="text-sm">Loading sessions...</p>
+      <div className="w-full">
+        <Table>
+          <TableHeader className="bg-background sticky top-0 z-10">
+            <TableRow>
+              <TableHead className="text-muted-foreground max-w-[400px] min-w-[250px] text-xs font-normal">
+                Task
+              </TableHead>
+              <TableHead className="text-muted-foreground w-[200px] text-xs font-normal">
+                Started At
+              </TableHead>
+              <TableHead className="text-muted-foreground w-[120px] text-xs font-normal">
+                Duration
+              </TableHead>
+              <TableHead className="w-12"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell className="max-w-[400px]">
+                  <Skeleton className="h-5 w-48" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5 w-16" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="size-8" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     );
   }
@@ -69,6 +110,17 @@ export const SessionsTable = ({ sessions, isLoading }: SessionsTableProps) => {
           {sessions.map((session) => (
             <SessionTableRow key={session.id} session={session} />
           ))}
+          {sentinelRef && (
+            <TableRow ref={sentinelRef} className="h-4 hover:bg-transparent">
+              <TableCell colSpan={4}>
+                {isFetchingNextPage && (
+                  <div className="text-muted-foreground flex justify-center py-2">
+                    <p className="text-xs">Loading more...</p>
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </div>

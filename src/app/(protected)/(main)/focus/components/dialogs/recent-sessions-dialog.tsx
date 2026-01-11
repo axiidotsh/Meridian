@@ -1,12 +1,23 @@
 'use client';
 
+import { SearchBar } from '@/components/search-bar';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   ResponsiveDialog,
   ResponsiveDialogContent,
   ResponsiveDialogHeader,
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
-import { useRecentSessions } from '../../hooks/queries/use-recent-sessions';
+import { ArrowDownUpIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { useInfiniteRecentSessions } from '../../hooks/queries/use-infinite-recent-sessions';
 import { SessionsTable } from '../sessions-table';
 
 interface RecentSessionsDialogProps {
@@ -18,7 +29,29 @@ export const RecentSessionsDialog = ({
   open,
   onOpenChange,
 }: RecentSessionsDialogProps) => {
-  const { data: recentSessions = [], isLoading } = useRecentSessions(20);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'duration' | 'date'>('date');
+
+  const {
+    sessions,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteRecentSessions({
+    search: searchQuery || undefined,
+    sortBy,
+    sortOrder: 'desc',
+  });
+
+  const { ref: sentinelRef } = useInView({
+    onChange: (inView) => {
+      if (inView && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    threshold: 0,
+  });
 
   return (
     <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
@@ -26,8 +59,54 @@ export const RecentSessionsDialog = ({
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Recent Sessions</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <div className="max-h-[60vh] overflow-y-auto">
-          <SessionsTable sessions={recentSessions} isLoading={isLoading} />
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <SearchBar
+              placeholder="Search sessions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 flex-1 border"
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="icon-sm"
+                  variant="outline"
+                  tooltip="Sort sessions"
+                >
+                  <ArrowDownUpIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuCheckboxItem
+                  checked={sortBy === 'date'}
+                  onCheckedChange={() => setSortBy('date')}
+                >
+                  Sort by date
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={sortBy === 'name'}
+                  onCheckedChange={() => setSortBy('name')}
+                >
+                  Sort by name
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={sortBy === 'duration'}
+                  onCheckedChange={() => setSortBy('duration')}
+                >
+                  Sort by duration
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="h-[60vh] overflow-y-auto">
+            <SessionsTable
+              sessions={sessions}
+              isLoading={isLoading}
+              isFetchingNextPage={isFetchingNextPage}
+              sentinelRef={sentinelRef}
+            />
+          </div>
         </div>
       </ResponsiveDialogContent>
     </ResponsiveDialog>

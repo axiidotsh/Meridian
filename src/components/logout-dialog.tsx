@@ -1,6 +1,6 @@
 'use client';
 
-import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
+import { logoutDialogOpenAtom, sessionKeyAtom } from '@/atoms/ui-atoms';
 import {
   ResponsiveDialog,
   ResponsiveDialogClose,
@@ -11,7 +11,8 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { signOut } from '@/lib/auth-client';
-import { useAtom } from 'jotai';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAtom, useSetAtom } from 'jotai';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -20,7 +21,9 @@ import { Button } from './ui/button';
 export function LogoutDialog() {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useAtom(logoutDialogOpenAtom);
+  const setSessionKey = useSetAtom(sessionKeyAtom);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleLogout = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -31,6 +34,10 @@ export function LogoutDialog() {
         fetchOptions: {
           onSuccess: () => {
             router.push('/sign-in');
+            setOpen(false);
+            setSessionKey((k) => k + 1);
+            queryClient.clear();
+            localStorage.clear();
           },
         },
       });

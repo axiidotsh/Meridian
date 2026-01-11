@@ -1,7 +1,8 @@
 'use client';
 
+import { sessionKeyAtom } from '@/atoms/ui-atoms';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Provider as JotaiProvider } from 'jotai';
+import { Provider as JotaiProvider, useAtomValue } from 'jotai';
 import {
   CircleCheckIcon,
   CircleXIcon,
@@ -25,10 +26,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
       })
   );
+  const sessionKey = useAtomValue(sessionKeyAtom);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <JotaiProvider>
+      <JotaiProvider key={sessionKey}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

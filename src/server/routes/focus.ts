@@ -25,19 +25,27 @@ export const focusRouter = new Hono()
     zValidator(
       'query',
       z.object({
-        limit: z.coerce.number().min(1).max(100).default(20),
-        cursor: z.string().optional(),
+        limit: z.coerce.number().min(1).max(100).default(50),
+        offset: z.coerce.number().min(0).default(0),
         days: z.coerce.number().min(1).max(365).optional(),
+        search: z.string().optional(),
+        sortBy: z.enum(['name', 'duration', 'date']).optional(),
+        sortOrder: z.enum(['asc', 'desc']).default('desc'),
       })
     ),
     async (c) => {
       const user = c.get('user');
-      const { limit, cursor, days } = c.req.valid('query');
+      const { limit, offset, days, search, sortBy, sortOrder } =
+        c.req.valid('query');
 
-      const whereClause = {
+      const whereClause: {
+        userId: string;
+        status: 'COMPLETED';
+        startedAt?: { gte?: Date };
+        task?: { contains: string; mode: 'insensitive' };
+      } = {
         userId: user.id,
-        status: 'COMPLETED' as const,
-        startedAt: undefined as { lt?: Date; gte?: Date } | undefined,
+        status: 'COMPLETED',
       };
 
       if (days) {
@@ -54,27 +62,36 @@ export const focusRouter = new Hono()
           )
         );
         whereClause.startedAt = { gte: cutoffDate };
-      } else if (cursor) {
-        whereClause.startedAt = { lt: new Date(cursor) };
       }
+
+      if (search) {
+        whereClause.task = { contains: search, mode: 'insensitive' };
+      }
+
+      const orderByClause = (() => {
+        switch (sortBy) {
+          case 'name':
+            return { task: sortOrder };
+          case 'duration':
+            return { durationMinutes: sortOrder };
+          case 'date':
+          default:
+            return { startedAt: sortOrder };
+        }
+      })();
 
       const sessions = await db.focusSession.findMany({
         where: whereClause,
-        orderBy: { startedAt: 'desc' },
-        ...(days ? {} : { take: limit + 1 }),
+        orderBy: orderByClause,
+        skip: offset,
+        take: limit + 1,
       });
-
-      if (days) {
-        return c.json({ sessions, nextCursor: null });
-      }
 
       const hasMore = sessions.length > limit;
       const items = hasMore ? sessions.slice(0, limit) : sessions;
-      const nextCursor = hasMore
-        ? items[items.length - 1].startedAt.toISOString()
-        : null;
+      const nextOffset = hasMore ? offset + limit : null;
 
-      return c.json({ sessions: items, nextCursor });
+      return c.json({ sessions: items, nextOffset });
     }
   )
   .get('/stats', async (c) => {

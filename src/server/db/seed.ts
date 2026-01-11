@@ -3,7 +3,7 @@ import { env as serverEnv } from '@/lib/config/env/server';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { admin } from 'better-auth/plugins';
-import { Role } from './generated/client';
+import { FocusSessionStatus, Role } from './generated/client';
 import { db } from './index';
 
 const auth = betterAuth({
@@ -112,8 +112,8 @@ async function createUsers() {
   console.log('   Password for all users: password123');
 }
 
-async function createTasksAndHabits() {
-  console.log('📝 Creating tasks and habits...');
+async function createTasks() {
+  console.log('📝 Creating tasks...');
 
   const users = await db.user.findMany({
     where: {
@@ -151,6 +151,23 @@ async function createTasksAndHabits() {
 
     await db.task.createMany({ data: tasks });
 
+    console.log(`   ✅ Created 75 tasks for ${user.name || user.email}`);
+  }
+
+  console.log('✅ Tasks created');
+}
+
+async function createHabits() {
+  console.log('📝 Creating habits...');
+
+  const users = await db.user.findMany({
+    where: {
+      role: Role.USER,
+      banned: false,
+    },
+  });
+
+  for (const user of users) {
     const habits = [];
     for (let i = 1; i <= 75; i++) {
       habits.push({
@@ -163,12 +180,51 @@ async function createTasksAndHabits() {
 
     await db.habit.createMany({ data: habits });
 
+    console.log(`   ✅ Created 75 habits for ${user.name || user.email}`);
+  }
+
+  console.log('✅ Habits created');
+}
+
+async function createFocusSessions() {
+  console.log('🎯 Creating focus sessions...');
+
+  const users = await db.user.findMany({
+    where: {
+      role: Role.USER,
+      banned: false,
+    },
+  });
+
+  for (const user of users) {
+    const sessions = [];
+    for (let i = 1; i <= 75; i++) {
+      const durationMinutes = [25, 45, 60, 90][i % 4];
+      const daysAgo = Math.floor(i / 2);
+      const startedAt = new Date(Date.now() - daysAgo * 86400000);
+      const completedAt = new Date(
+        startedAt.getTime() + durationMinutes * 60000
+      );
+
+      sessions.push({
+        userId: user.id,
+        durationMinutes,
+        task: `Focus Session ${i}`,
+        startedAt,
+        completedAt,
+        status: FocusSessionStatus.COMPLETED,
+        totalPausedSeconds: i % 5 === 0 ? 120 : 0,
+      });
+    }
+
+    await db.focusSession.createMany({ data: sessions });
+
     console.log(
-      `   ✅ Created 75 tasks and 75 habits for ${user.name || user.email}`
+      `   ✅ Created 75 focus sessions for ${user.name || user.email}`
     );
   }
 
-  console.log('✅ Tasks and habits created');
+  console.log('✅ Focus sessions created');
 }
 
 async function main() {
@@ -182,7 +238,9 @@ async function main() {
   try {
     await clearDatabase();
     await createUsers();
-    await createTasksAndHabits();
+    await createTasks();
+    await createHabits();
+    await createFocusSessions();
     console.log('\n✅ Database seeded successfully!');
   } catch (error) {
     console.error('❌ Error seeding database:', error);

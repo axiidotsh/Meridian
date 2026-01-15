@@ -61,9 +61,10 @@ export const TaskListItem = ({ task }: TaskListItemProps) => {
           </p>
           <div className="flex flex-wrap items-center gap-1.5">
             <PriorityBadge priority={task.priority} />
-            {(task.project || task.tags?.length || task.dueDate) && (
-              <DotIcon className="text-muted-foreground size-3" />
-            )}
+            {task.priority !== 'NO_PRIORITY' &&
+              (task.project || task.tags?.length || task.dueDate) && (
+                <DotIcon className="text-muted-foreground size-3" />
+              )}
             {task.project && (
               <>
                 <ProjectBadge project={task.project} />

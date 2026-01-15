@@ -8,7 +8,7 @@ type StatsResponse = InferResponseType<typeof api.habits.stats.$get>;
 export type HabitStats = StatsResponse['stats'];
 
 export interface CompletionRecord {
-  date: Date;
+  date: Date | string;
   completed: boolean;
 }
 

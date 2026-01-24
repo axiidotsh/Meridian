@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -23,6 +22,7 @@ import {
   selectedProjectsAtom,
   selectedTagsAtom,
   sortByAtom,
+  sortOrderAtom,
 } from '../../atoms/task-atoms';
 import {
   bulkAddTasksSheetAtom,
@@ -34,11 +34,13 @@ import { useTaskTags } from '../../hooks/queries/use-task-tags';
 import type { Project } from '../../hooks/types';
 import { ProjectFilterMenu } from '../project-filter-menu';
 import { TagFilterMenu } from '../tag-filter-menu';
+import { TaskSortingMenu } from './task-sorting-menu';
 
 export const TaskListActions = () => {
   const [selectedTags, setSelectedTags] = useAtom(selectedTagsAtom);
   const [selectedProjects, setSelectedProjects] = useAtom(selectedProjectsAtom);
   const [sortBy, setSortBy] = useAtom(sortByAtom);
+  const [sortOrder, setSortOrder] = useAtom(sortOrderAtom);
   const setCreateTaskDialog = useSetAtom(createTaskDialogAtom);
   const setCreateProjectDialog = useSetAtom(createProjectDialogAtom);
   const setBulkAddTasksSheet = useSetAtom(bulkAddTasksSheetAtom);
@@ -101,37 +103,77 @@ export const TaskListActions = () => {
               <ArrowDownUpIcon />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'dueDate'}
-              onCheckedChange={() => setSortBy('dueDate')}
-            >
-              Sort by due date
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'priority'}
-              onCheckedChange={() => setSortBy('priority')}
-            >
-              Sort by priority
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'title'}
-              onCheckedChange={() => setSortBy('title')}
-            >
-              Sort by title
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'completed'}
-              onCheckedChange={() => setSortBy('completed')}
-            >
-              Sort by status
-            </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem
-              checked={sortBy === 'createdAt'}
-              onCheckedChange={() => setSortBy('createdAt')}
-            >
-              Sort by created date
-            </DropdownMenuCheckboxItem>
+          <DropdownMenuContent align="end" className="w-44">
+            <TaskSortingMenu
+              title="Due date"
+              sortKey="dueDate"
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              onChange={(by, order) => {
+                setSortBy(by);
+                setSortOrder(order);
+              }}
+              options={[
+                { label: 'Earliest → Latest', order: 'asc' },
+                { label: 'Latest → Earliest', order: 'desc' },
+              ]}
+            />
+            <TaskSortingMenu
+              title="Priority"
+              sortKey="priority"
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              onChange={(by, order) => {
+                setSortBy(by);
+                setSortOrder(order);
+              }}
+              options={[
+                { label: 'High → Low', order: 'asc' },
+                { label: 'Low → High', order: 'desc' },
+              ]}
+            />
+            <TaskSortingMenu
+              title="Created"
+              sortKey="createdAt"
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              onChange={(by, order) => {
+                setSortBy(by);
+                setSortOrder(order);
+              }}
+              options={[
+                { label: 'Newest → Oldest', order: 'desc' },
+                { label: 'Oldest → Newest', order: 'asc' },
+              ]}
+            />
+            <TaskSortingMenu
+              title="Status"
+              sortKey="completed"
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              onChange={(by, order) => {
+                setSortBy(by);
+                setSortOrder(order);
+              }}
+              options={[
+                { label: 'Incomplete first', order: 'asc' },
+                { label: 'Complete first', order: 'desc' },
+              ]}
+            />
+            <TaskSortingMenu
+              title="Title"
+              sortKey="title"
+              currentSortBy={sortBy}
+              currentSortOrder={sortOrder}
+              onChange={(by, order) => {
+                setSortBy(by);
+                setSortOrder(order);
+              }}
+              options={[
+                { label: 'A → Z', order: 'asc' },
+                { label: 'Z → A', order: 'desc' },
+              ]}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>

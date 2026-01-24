@@ -19,6 +19,7 @@ import {
   selectedProjectsAtom,
   selectedTagsAtom,
   sortByAtom,
+  sortOrderAtom,
 } from '../atoms/task-atoms';
 import { createTaskDialogAtom } from '../atoms/task-dialogs';
 import { useInfiniteTasks } from '../hooks/queries/use-infinite-tasks';
@@ -29,6 +30,7 @@ export const TasksTable = () => {
   const selectedTags = useAtomValue(selectedTagsAtom);
   const selectedProjects = useAtomValue(selectedProjectsAtom);
   const sortBy = useAtomValue(sortByAtom);
+  const sortOrder = useAtomValue(sortOrderAtom);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const setCreateTaskDialog = useSetAtom(createTaskDialogAtom);
@@ -37,7 +39,7 @@ export const TasksTable = () => {
     useInfiniteTasks({
       search: debouncedSearchQuery || undefined,
       sortBy,
-      sortOrder: sortBy === 'priority' ? 'desc' : 'asc',
+      sortOrder,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       projectIds: selectedProjects.length > 0 ? selectedProjects : undefined,
     });

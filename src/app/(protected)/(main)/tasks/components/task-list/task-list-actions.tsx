@@ -126,6 +126,12 @@ export const TaskListActions = () => {
             >
               Sort by status
             </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem
+              checked={sortBy === 'createdAt'}
+              onCheckedChange={() => setSortBy('createdAt')}
+            >
+              Sort by created date
+            </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>

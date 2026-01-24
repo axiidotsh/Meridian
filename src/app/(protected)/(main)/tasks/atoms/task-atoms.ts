@@ -1,6 +1,11 @@
 import { atom } from 'jotai';
 
-export type SortOption = 'dueDate' | 'priority' | 'title' | 'completed';
+export type SortOption =
+  | 'dueDate'
+  | 'priority'
+  | 'title'
+  | 'completed'
+  | 'createdAt';
 
 export const sortByAtom = atom<SortOption>('dueDate');
 export const searchQueryAtom = atom('');

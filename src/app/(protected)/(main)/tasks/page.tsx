@@ -26,7 +26,7 @@ export default function TasksPage() {
   const { tasks, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteTasks({
       search: debouncedSearchQuery || undefined,
-      sortBy: sortBy === 'completed' ? 'createdAt' : sortBy,
+      sortBy,
       sortOrder: sortBy === 'priority' ? 'desc' : 'asc',
       tags: selectedTags.length > 0 ? selectedTags : undefined,
       projectIds: selectedProjects.length > 0 ? selectedProjects : undefined,

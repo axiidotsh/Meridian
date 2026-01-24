@@ -7,7 +7,7 @@ interface UseInfiniteTasksOptions {
   projectIds?: string[];
   tags?: string[];
   completed?: boolean;
-  sortBy?: 'dueDate' | 'priority' | 'title' | 'createdAt';
+  sortBy?: 'dueDate' | 'priority' | 'title' | 'createdAt' | 'completed';
   sortOrder?: 'asc' | 'desc';
   limit?: number;
 }

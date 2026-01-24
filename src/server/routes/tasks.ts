@@ -3,6 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db';
+import { Prisma, TaskPriority } from '../db/generated/client';
 import { authMiddleware } from '../middleware/auth';
 
 const createTaskSchema = z.object({
@@ -44,7 +45,9 @@ const listTasksSchema = z.object({
     .string()
     .transform((v) => v === 'true')
     .optional(),
-  sortBy: z.enum(['dueDate', 'priority', 'title', 'createdAt']).optional(),
+  sortBy: z
+    .enum(['dueDate', 'priority', 'title', 'createdAt', 'completed'])
+    .optional(),
   sortOrder: z.enum(['asc', 'desc']).default('asc'),
   limit: z.coerce.number().min(1).max(100).default(50),
   offset: z.coerce.number().min(0).default(0),
@@ -56,21 +59,18 @@ const chartQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(365).default(7),
 });
 
-const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2, NO_PRIORITY: 3 };
-
 export const tasksRouter = new Hono()
   .use(authMiddleware)
   .get('/tags', async (c) => {
     const user = c.get('user');
 
-    const tasks = await db.task.findMany({
+    const tags = await db.tag.findMany({
       where: { userId: user.id },
-      select: { tags: true },
+      select: { name: true },
+      orderBy: { name: 'asc' },
     });
 
-    const tags = Array.from(new Set(tasks.flatMap((t) => t.tags))).sort();
-
-    return c.json({ tags });
+    return c.json({ tags: tags.map((t) => t.name) });
   })
   .get('/stats', async (c) => {
     const user = c.get('user');
@@ -117,39 +117,42 @@ export const tasksRouter = new Hono()
     const { days } = c.req.valid('query');
 
     const now = new Date();
-    const chartData = [];
 
-    for (let i = days - 1; i >= 0; i--) {
-      const date = addUTCDays(now, -i);
-      const nextDate = addUTCDays(date, 1);
+    const chartData = await Promise.all(
+      Array.from({ length: days }, (_, i) => {
+        const date = addUTCDays(now, -(days - 1 - i));
+        const nextDate = addUTCDays(date, 1);
 
-      const [totalTasks, completedTasks] = await Promise.all([
-        db.task.count({
-          where: {
-            userId: user.id,
-            createdAt: { lt: nextDate },
-          },
-        }),
-        db.task.count({
-          where: {
-            userId: user.id,
-            completed: true,
-            updatedAt: { gte: date, lt: nextDate },
-          },
-        }),
-      ]);
+        return Promise.all([
+          db.task.count({
+            where: {
+              userId: user.id,
+              createdAt: { lt: nextDate },
+            },
+          }),
+          db.task.count({
+            where: {
+              userId: user.id,
+              completed: true,
+              updatedAt: { gte: date, lt: nextDate },
+            },
+          }),
+        ]).then(([totalTasks, completedTasks]) => {
+          const dateLabel =
+            days <= 7
+              ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
+              : `${date.getMonth() + 1}/${date.getDate()}`;
 
-      const dateLabel =
-        days <= 7
-          ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()]
-          : `${date.getMonth() + 1}/${date.getDate()}`;
-
-      chartData.push({
-        date: dateLabel,
-        completionRate:
-          totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
-      });
-    }
+          return {
+            date: dateLabel,
+            completionRate:
+              totalTasks > 0
+                ? Math.round((completedTasks / totalTasks) * 100)
+                : 0,
+          };
+        });
+      })
+    );
 
     return c.json({ chartData });
   })
@@ -180,32 +183,75 @@ export const tasksRouter = new Hono()
     if (tags) where.tags = { hasSome: tags.split(',') };
 
     if (sortBy === 'priority') {
-      const allTasks = await db.task.findMany({
-        where,
-        orderBy: [{ createdAt: 'desc' }],
-        include: {
-          project: {
-            select: { id: true, name: true, color: true },
-          },
-        },
-      });
+      const conditions: Prisma.Sql[] = [Prisma.sql`t."userId" = ${user.id}`];
 
-      const sortedTasks = allTasks.sort((a, b) => {
-        const priorityDiff =
-          PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-        if (priorityDiff !== 0) {
-          return sortOrder === 'asc' ? priorityDiff : -priorityDiff;
-        }
-        return sortOrder === 'asc'
-          ? a.id.localeCompare(b.id)
-          : b.id.localeCompare(a.id);
-      });
+      if (where.projectId) {
+        conditions.push(Prisma.sql`t."projectId" = ANY(${where.projectId.in})`);
+      }
+      if (where.completed !== undefined) {
+        conditions.push(Prisma.sql`t.completed = ${where.completed}`);
+      }
+      if (where.title) {
+        conditions.push(
+          Prisma.sql`t.title ILIKE ${`%${where.title.contains}%`}`
+        );
+      }
+      if (where.tags) {
+        conditions.push(Prisma.sql`t.tags && ${where.tags.hasSome}`);
+      }
 
-      const items = sortedTasks.slice(offset, offset + limit);
-      const hasMore = sortedTasks.length > offset + limit;
+      const whereClause = Prisma.join(conditions, ' AND ');
+      const orderDirection = Prisma.raw(sortOrder === 'asc' ? 'ASC' : 'DESC');
+
+      const [tasks, countResult] = await Promise.all([
+        db.$queryRaw<
+          {
+            id: string;
+            userId: string;
+            projectId: string | null;
+            title: string;
+            completed: boolean;
+            dueDate: Date | null;
+            priority: TaskPriority;
+            tags: string[];
+            createdAt: Date;
+            updatedAt: Date;
+            project: { id: string; name: string; color: string | null } | null;
+          }[]
+        >`
+          SELECT
+            t.id, t."userId", t."projectId", t.title, t.completed,
+            t."dueDate", t.priority, t.tags, t."createdAt", t."updatedAt",
+            CASE
+              WHEN p.id IS NOT NULL THEN json_build_object('id', p.id, 'name', p.name, 'color', p.color)
+              ELSE NULL
+            END as project
+          FROM tasks t
+          LEFT JOIN projects p ON t."projectId" = p.id
+          WHERE ${whereClause}
+          ORDER BY
+            CASE t.priority
+              WHEN 'HIGH' THEN 0
+              WHEN 'MEDIUM' THEN 1
+              WHEN 'LOW' THEN 2
+              WHEN 'NO_PRIORITY' THEN 3
+            END ${orderDirection},
+            t.id ${orderDirection}
+          LIMIT ${limit}
+          OFFSET ${offset}
+        `,
+        db.$queryRaw<[{ count: bigint }]>`
+          SELECT COUNT(*) as count
+          FROM tasks t
+          WHERE ${whereClause}
+        `,
+      ]);
+
+      const totalCount = Number(countResult[0].count);
+      const hasMore = offset + limit < totalCount;
       const nextOffset = hasMore ? offset + limit : null;
 
-      return c.json({ tasks: items, nextOffset });
+      return c.json({ tasks, nextOffset });
     }
 
     const orderBy: Record<string, 'asc' | 'desc'>[] = sortBy
@@ -236,21 +282,30 @@ export const tasksRouter = new Hono()
     const user = c.get('user');
     const { title, projectId, dueDate, priority, tags } = c.req.valid('json');
 
-    const task = await db.task.create({
-      data: {
-        userId: user.id,
-        title,
-        projectId: projectId || null,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        priority,
-        tags,
-      },
-      include: {
-        project: {
-          select: { id: true, name: true, color: true },
+    const [task] = await Promise.all([
+      db.task.create({
+        data: {
+          userId: user.id,
+          title,
+          projectId: projectId || null,
+          dueDate: dueDate ? new Date(dueDate) : null,
+          priority,
+          tags,
         },
-      },
-    });
+        include: {
+          project: {
+            select: { id: true, name: true, color: true },
+          },
+        },
+      }),
+      ...tags.map((tag) =>
+        db.tag.upsert({
+          where: { userId_name: { userId: user.id, name: tag } },
+          create: { userId: user.id, name: tag },
+          update: {},
+        })
+      ),
+    ]);
 
     return c.json({ task }, 201);
   })
@@ -269,16 +324,25 @@ export const tasksRouter = new Hono()
       })),
     });
 
-    const tasksWithProjects = await db.task.findMany({
-      where: {
-        id: { in: createdTasks.map((t) => t.id) },
-      },
-      include: {
-        project: {
-          select: { id: true, name: true, color: true },
+    const [tasksWithProjects] = await Promise.all([
+      db.task.findMany({
+        where: {
+          id: { in: createdTasks.map((t) => t.id) },
         },
-      },
-    });
+        include: {
+          project: {
+            select: { id: true, name: true, color: true },
+          },
+        },
+      }),
+      ...tags.map((tag) =>
+        db.tag.upsert({
+          where: { userId_name: { userId: user.id, name: tag } },
+          create: { userId: user.id, name: tag },
+          update: {},
+        })
+      ),
+    ]);
 
     return c.json({ tasks: tasksWithProjects }, 201);
   })
@@ -295,24 +359,38 @@ export const tasksRouter = new Hono()
       return c.json({ error: 'Task not found' }, 404);
     }
 
-    const task = await db.task.update({
-      where: { id },
-      data: {
-        ...(data.title !== undefined && { title: data.title }),
-        ...(data.projectId !== undefined && { projectId: data.projectId }),
-        ...(data.dueDate !== undefined && {
-          dueDate: data.dueDate ? new Date(data.dueDate) : null,
-        }),
-        ...(data.priority !== undefined && { priority: data.priority }),
-        ...(data.tags !== undefined && { tags: data.tags }),
-        ...(data.completed !== undefined && { completed: data.completed }),
-      },
-      include: {
-        project: {
-          select: { id: true, name: true, color: true },
+    const tagUpserts =
+      data.tags && data.tags.length > 0
+        ? data.tags.map((tag) =>
+            db.tag.upsert({
+              where: { userId_name: { userId: user.id, name: tag } },
+              create: { userId: user.id, name: tag },
+              update: {},
+            })
+          )
+        : [];
+
+    const [task] = await Promise.all([
+      db.task.update({
+        where: { id },
+        data: {
+          ...(data.title !== undefined && { title: data.title }),
+          ...(data.projectId !== undefined && { projectId: data.projectId }),
+          ...(data.dueDate !== undefined && {
+            dueDate: data.dueDate ? new Date(data.dueDate) : null,
+          }),
+          ...(data.priority !== undefined && { priority: data.priority }),
+          ...(data.tags !== undefined && { tags: data.tags }),
+          ...(data.completed !== undefined && { completed: data.completed }),
         },
-      },
-    });
+        include: {
+          project: {
+            select: { id: true, name: true, color: true },
+          },
+        },
+      }),
+      ...tagUpserts,
+    ]);
 
     return c.json({ task });
   })

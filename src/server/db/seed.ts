@@ -123,6 +123,16 @@ async function createTasks() {
   });
 
   const priorities = ['NO_PRIORITY', 'LOW', 'MEDIUM', 'HIGH'] as const;
+  const allTags = [
+    'important',
+    'urgent',
+    'bug',
+    'feature',
+    'review',
+    'blocked',
+    'quick-win',
+    'research',
+  ];
 
   for (const user of users) {
     const projects = await db.project.createManyAndReturn({
@@ -133,15 +143,29 @@ async function createTasks() {
       ],
     });
 
+    await db.tag.createMany({
+      data: allTags.map((tag) => ({
+        userId: user.id,
+        name: tag,
+      })),
+    });
+
     const tasks = [];
     for (let i = 1; i <= 75; i++) {
+      const numTags = i % 4;
+      const taskTags: string[] = [];
+      if (numTags > 0) {
+        const shuffled = [...allTags].sort(() => Math.random() - 0.5);
+        taskTags.push(...shuffled.slice(0, numTags));
+      }
+
       tasks.push({
         userId: user.id,
         title: `Task ${i}`,
         projectId: projects[i % 3].id,
         priority: priorities[i % 4],
         completed: i % 5 === 0,
-        tags: i % 3 === 0 ? ['important'] : [],
+        tags: taskTags,
         dueDate:
           i % 4 === 0
             ? new Date(Date.now() + (i % 2 === 0 ? 1 : -1) * i * 86400000)

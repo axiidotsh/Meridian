@@ -2,44 +2,14 @@
 
 import { PageHeading } from '@/components/page-heading';
 import { SearchBar } from '@/components/search-bar';
-import { useDebounce } from '@/hooks/use-debounce';
-import { useAtom, useAtomValue } from 'jotai';
-import { useInView } from 'react-intersection-observer';
-import {
-  searchQueryAtom,
-  selectedProjectsAtom,
-  selectedTagsAtom,
-  sortByAtom,
-} from './atoms/task-atoms';
+import { useAtom } from 'jotai';
+import { searchQueryAtom } from './atoms/task-atoms';
 import { TaskMetricsBadges } from './components/sections/task-metrics-badges';
 import { TaskListActions } from './components/task-list/task-list-actions';
 import { TasksTable } from './components/tasks-table';
-import { useInfiniteTasks } from './hooks/queries/use-infinite-tasks';
 
 export default function TasksPage() {
-  const sortBy = useAtomValue(sortByAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
-  const selectedTags = useAtomValue(selectedTagsAtom);
-  const selectedProjects = useAtomValue(selectedProjectsAtom);
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
-  const { tasks, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useInfiniteTasks({
-      search: debouncedSearchQuery || undefined,
-      sortBy,
-      sortOrder: sortBy === 'priority' ? 'desc' : 'asc',
-      tags: selectedTags.length > 0 ? selectedTags : undefined,
-      projectIds: selectedProjects.length > 0 ? selectedProjects : undefined,
-    });
-
-  const { ref: sentinelRef } = useInView({
-    onChange: (inView) => {
-      if (inView && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    threshold: 0,
-  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,12 +30,7 @@ export default function TasksPage() {
           </div>
         </div>
       </div>
-      <TasksTable
-        tasks={tasks}
-        isLoading={isLoading}
-        isFetchingNextPage={isFetchingNextPage}
-        sentinelRef={sentinelRef}
-      />
+      <TasksTable />
     </div>
   );
 }

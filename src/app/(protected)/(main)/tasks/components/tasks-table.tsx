@@ -10,26 +10,46 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useSetAtom } from 'jotai';
+import { useDebounce } from '@/hooks/use-debounce';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { ClipboardCheckIcon } from 'lucide-react';
+import { useInView } from 'react-intersection-observer';
+import {
+  searchQueryAtom,
+  selectedProjectsAtom,
+  selectedTagsAtom,
+  sortByAtom,
+} from '../atoms/task-atoms';
 import { createTaskDialogAtom } from '../atoms/task-dialogs';
-import type { Task } from '../hooks/types';
+import { useInfiniteTasks } from '../hooks/queries/use-infinite-tasks';
 import { TaskTableRow } from './task-table-row';
 
-interface TasksTableProps {
-  tasks: Task[];
-  isLoading?: boolean;
-  isFetchingNextPage?: boolean;
-  sentinelRef?: (node?: Element | null) => void;
-}
+export const TasksTable = () => {
+  const searchQuery = useAtomValue(searchQueryAtom);
+  const selectedTags = useAtomValue(selectedTagsAtom);
+  const selectedProjects = useAtomValue(selectedProjectsAtom);
+  const sortBy = useAtomValue(sortByAtom);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-export const TasksTable = ({
-  tasks,
-  isLoading,
-  isFetchingNextPage,
-  sentinelRef,
-}: TasksTableProps) => {
   const setCreateTaskDialog = useSetAtom(createTaskDialogAtom);
+
+  const { tasks, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteTasks({
+      search: debouncedSearchQuery || undefined,
+      sortBy,
+      sortOrder: sortBy === 'priority' ? 'desc' : 'asc',
+      tags: selectedTags.length > 0 ? selectedTags : undefined,
+      projectIds: selectedProjects.length > 0 ? selectedProjects : undefined,
+    });
+
+  const { ref: sentinelRef } = useInView({
+    onChange: (inView) => {
+      if (inView && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    threshold: 0,
+  });
 
   if (isLoading) {
     return (
@@ -148,7 +168,7 @@ export const TasksTable = ({
           )}
         </TableBody>
       </Table>
-      {sentinelRef && <div ref={sentinelRef} className="h-px" />}
+      <div ref={sentinelRef} className="h-px" />
     </div>
   );
 };

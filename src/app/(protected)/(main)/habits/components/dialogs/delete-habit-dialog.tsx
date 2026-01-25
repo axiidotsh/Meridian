@@ -10,17 +10,14 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
-import { useMemo } from 'react';
 import { deletingHabitIdAtom } from '../../atoms/dialog-atoms';
 import { useDeleteHabit } from '../../hooks/mutations/use-delete-habit';
 import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
-import { enrichHabitsWithMetrics } from '../../utils/habit-calculations';
 
 export const DeleteHabitDialog = () => {
   const [deletingHabitId, setDeletingHabitId] = useAtom(deletingHabitIdAtom);
 
-  const { habits: rawHabits } = useInfiniteHabits({ days: 7 });
-  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
+  const { habits } = useInfiniteHabits({ days: 7 });
   const habit = habits.find((h) => h.id === deletingHabitId) || null;
 
   const deleteHabit = useDeleteHabit();

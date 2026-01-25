@@ -1,5 +1,3 @@
-import type { CompletionRecord, Habit, HabitWithMetrics } from '../hooks/types';
-
 export function calculateCurrentStreak(
   completions: { date: Date | string }[]
 ): number {
@@ -80,66 +78,4 @@ export function calculateBestStreak(
   }
 
   return maxStreak;
-}
-
-export function enrichHabitsWithMetrics(habits: Habit[]): HabitWithMetrics[] {
-  return habits.map((habit) => {
-    const completions = habit.completions || [];
-    const totalCompletions = completions.length;
-
-    const completionHistory: CompletionRecord[] = completions.map((c) => ({
-      date: new Date(c.date),
-      completed: true,
-    }));
-
-    return {
-      ...habit,
-      totalCompletions,
-      completionHistory,
-    };
-  });
-}
-
-export function filterHabits(
-  habits: HabitWithMetrics[],
-  searchQuery: string,
-  statusFilter: 'all' | 'completed' | 'pending'
-): HabitWithMetrics[] {
-  let filtered = habits;
-
-  if (searchQuery.trim()) {
-    const lowerQuery = searchQuery.toLowerCase();
-    filtered = filtered.filter((habit) =>
-      habit.title.toLowerCase().includes(lowerQuery)
-    );
-  }
-
-  if (statusFilter === 'completed') {
-    filtered = filtered.filter((habit) => habit.completed);
-  } else if (statusFilter === 'pending') {
-    filtered = filtered.filter((habit) => !habit.completed);
-  }
-
-  return filtered;
-}
-
-export function sortHabits(
-  habits: HabitWithMetrics[],
-  sortBy: 'streak' | 'title'
-): HabitWithMetrics[] {
-  return [...habits].sort((a, b) => {
-    let comparison = 0;
-
-    if (sortBy === 'streak') {
-      comparison = b.currentStreak - a.currentStreak;
-    } else if (sortBy === 'title') {
-      comparison = a.title.localeCompare(b.title);
-    }
-
-    if (comparison === 0) {
-      return a.id.localeCompare(b.id);
-    }
-
-    return comparison;
-  });
 }

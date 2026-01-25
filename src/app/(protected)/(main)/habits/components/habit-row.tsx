@@ -9,13 +9,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/utils/utils';
 import { EllipsisIcon, FlameIcon, PencilIcon, Trash2Icon } from 'lucide-react';
-import type { HabitWithMetrics } from '../hooks/types';
+import type { Habit } from '../hooks/types';
 import { useHabitActions } from '../hooks/use-habit-actions';
 import { getStreakColor } from '../utils/streak-helpers';
 import { WeekDayToggle } from './week-day-toggle';
 
 interface HabitRowProps {
-  habit: HabitWithMetrics;
+  habit: Habit;
 }
 
 export const HabitRow = ({ habit }: HabitRowProps) => {
@@ -52,7 +52,7 @@ export const HabitRow = ({ habit }: HabitRowProps) => {
         )}
       </div>
       <WeekDayToggle
-        completionHistory={habit.completionHistory}
+        completions={habit.completions}
         onToggleDay={handleToggleDay}
         disabled={isToggling}
       />

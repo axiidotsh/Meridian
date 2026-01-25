@@ -6,25 +6,22 @@ import {
 import { formatFullDate } from '@/utils/date-format';
 import { getLast7DaysUTC, isSameDayUTC, isTodayUTC } from '@/utils/date-utc';
 import { cn } from '@/utils/utils';
-import type { CompletionRecord } from '../hooks/types';
 
 interface WeekDayToggleProps {
-  completionHistory: CompletionRecord[];
+  completions: { date: Date | string }[];
   onToggleDay: (date: Date) => void;
   disabled?: boolean;
 }
 
 export const WeekDayToggle = ({
-  completionHistory,
+  completions,
   onToggleDay,
   disabled = false,
 }: WeekDayToggleProps) => {
   const days = getLast7DaysUTC();
 
   function isCompleted(date: Date): boolean {
-    return completionHistory.some(
-      (record) => isSameDayUTC(new Date(record.date), date) && record.completed
-    );
+    return completions.some((c) => isSameDayUTC(new Date(c.date), date));
   }
 
   return (

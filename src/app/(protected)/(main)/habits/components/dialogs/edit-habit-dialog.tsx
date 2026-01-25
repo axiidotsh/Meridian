@@ -13,19 +13,17 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useAtom } from 'jotai';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { editingHabitIdAtom } from '../../atoms/dialog-atoms';
 import { useUpdateHabit } from '../../hooks/mutations/use-update-habit';
 import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
 import { useHabitForm } from '../../hooks/use-habit-form';
-import { enrichHabitsWithMetrics } from '../../utils/habit-calculations';
 
 export const EditHabitDialog = () => {
   const [editingHabitId, setEditingHabitId] = useAtom(editingHabitIdAtom);
   const form = useHabitForm();
 
-  const { habits: rawHabits } = useInfiniteHabits({ days: 7 });
-  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
+  const { habits } = useInfiniteHabits({ days: 7 });
   const habit = habits.find((h) => h.id === editingHabitId) || null;
 
   const updateHabit = useUpdateHabit();

@@ -10,13 +10,13 @@ import {
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/utils/utils';
 import { EllipsisIcon, FlameIcon, PencilIcon, Trash2Icon } from 'lucide-react';
-import type { HabitWithMetrics } from '../hooks/types';
+import type { Habit } from '../hooks/types';
 import { useHabitActions } from '../hooks/use-habit-actions';
 import { getStreakColor } from '../utils/streak-helpers';
 import { WeekDayToggle } from './week-day-toggle';
 
 interface HabitTableRowProps {
-  habit: HabitWithMetrics;
+  habit: Habit;
 }
 
 export const HabitTableRow = ({ habit }: HabitTableRowProps) => {
@@ -42,7 +42,7 @@ export const HabitTableRow = ({ habit }: HabitTableRowProps) => {
       <TableCell>
         <div className="flex items-center justify-center">
           <WeekDayToggle
-            completionHistory={habit.completionHistory}
+            completions={habit.completions}
             onToggleDay={handleToggleDay}
             disabled={isToggling}
           />

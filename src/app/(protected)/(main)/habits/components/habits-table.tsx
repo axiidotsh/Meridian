@@ -16,7 +16,6 @@ import { getLast7DaysUTC, isTodayUTC } from '@/utils/date-utc';
 import { cn } from '@/utils/utils';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { TargetIcon } from 'lucide-react';
-import { useMemo } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { createDialogOpenAtom } from '../atoms/dialog-atoms';
 import {
@@ -26,7 +25,6 @@ import {
   statusFilterAtom,
 } from '../atoms/habit-atoms';
 import { useInfiniteHabits } from '../hooks/queries/use-infinite-habits';
-import { enrichHabitsWithMetrics } from '../utils/habit-calculations';
 import { HabitTableRow } from './habit-table-row';
 
 export const HabitsTable = () => {
@@ -38,18 +36,13 @@ export const HabitsTable = () => {
 
   const setCreateDialogOpen = useSetAtom(createDialogOpenAtom);
 
-  const {
-    habits: rawHabits,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteHabits({
-    search: debouncedSearchQuery || undefined,
-    sortBy,
-    sortOrder,
-    status: statusFilter,
-  });
+  const { habits, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteHabits({
+      search: debouncedSearchQuery || undefined,
+      sortBy,
+      sortOrder,
+      status: statusFilter,
+    });
 
   const { ref: sentinelRef } = useInView({
     onChange: (inView) => {
@@ -59,8 +52,6 @@ export const HabitsTable = () => {
     },
     threshold: 0,
   });
-
-  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
 
   const days = getLast7DaysUTC();
 

@@ -40,7 +40,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(
           type="text"
           placeholder={placeholder}
           className={cn(
-            'placeholder:text-muted-foreground h-8 w-full rounded-md border-0 bg-transparent pr-3 pl-8 text-sm shadow-none ring-0 transition-all outline-none',
+            'placeholder:text-muted-foreground h-[30px] w-full rounded-md border-0 bg-transparent pr-3 pl-8 text-sm shadow-none ring-0 transition-all outline-none',
             expandOnFocus && 'focus:bg-accent/50',
             expandOnFocus && maxWidth && `focus:${maxWidth}`,
             inputClassName

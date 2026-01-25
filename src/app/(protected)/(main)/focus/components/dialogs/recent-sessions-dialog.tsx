@@ -1,10 +1,10 @@
 'use client';
 
 import { SearchBar } from '@/components/search-bar';
+import { SortingMenu } from '@/components/sorting-menu';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -27,6 +27,7 @@ export const RecentSessionsDialog = () => {
   const [open, setOpen] = useAtom(showSessionsDialogAtom);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'duration' | 'date'>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const {
@@ -38,7 +39,7 @@ export const RecentSessionsDialog = () => {
   } = useInfiniteRecentSessions({
     search: debouncedSearchQuery || undefined,
     sortBy,
-    sortOrder: 'desc',
+    sortOrder,
   });
 
   const { ref: sentinelRef } = useInView({
@@ -74,25 +75,49 @@ export const RecentSessionsDialog = () => {
                   <ArrowDownUpIcon />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuCheckboxItem
-                  checked={sortBy === 'date'}
-                  onCheckedChange={() => setSortBy('date')}
-                >
-                  Sort by date
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={sortBy === 'name'}
-                  onCheckedChange={() => setSortBy('name')}
-                >
-                  Sort by name
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={sortBy === 'duration'}
-                  onCheckedChange={() => setSortBy('duration')}
-                >
-                  Sort by duration
-                </DropdownMenuCheckboxItem>
+              <DropdownMenuContent align="end" className="w-44">
+                <SortingMenu
+                  title="Date"
+                  sortKey="date"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onChange={(by, order) => {
+                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortOrder(order);
+                  }}
+                  options={[
+                    { label: 'Newest → Oldest', order: 'desc' },
+                    { label: 'Oldest → Newest', order: 'asc' },
+                  ]}
+                />
+                <SortingMenu
+                  title="Name"
+                  sortKey="name"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onChange={(by, order) => {
+                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortOrder(order);
+                  }}
+                  options={[
+                    { label: 'A → Z', order: 'asc' },
+                    { label: 'Z → A', order: 'desc' },
+                  ]}
+                />
+                <SortingMenu
+                  title="Duration"
+                  sortKey="duration"
+                  currentSortBy={sortBy}
+                  currentSortOrder={sortOrder}
+                  onChange={(by, order) => {
+                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortOrder(order);
+                  }}
+                  options={[
+                    { label: 'Longest → Shortest', order: 'desc' },
+                    { label: 'Shortest → Longest', order: 'asc' },
+                  ]}
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

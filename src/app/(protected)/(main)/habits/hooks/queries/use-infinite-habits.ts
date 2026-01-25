@@ -1,11 +1,6 @@
 import { useApiInfiniteQuery } from '@/hooks/use-api-infinite-query';
 import { api } from '@/lib/rpc';
-import type { InferResponseType } from 'hono/client';
-import { useMemo } from 'react';
 import { HABITS_QUERY_KEYS } from '../habit-query-keys';
-
-type HabitsResponse = InferResponseType<typeof api.habits.$get>;
-type Habit = HabitsResponse['habits'][number];
 
 interface UseInfiniteHabitsOptions {
   search?: string;
@@ -39,10 +34,7 @@ export function useInfiniteHabits(options: UseInfiniteHabitsOptions = {}) {
     errorMessage: 'Failed to fetch habits',
   });
 
-  const habits = useMemo<Habit[]>(
-    () => query.data?.pages.flatMap((page) => page.habits) ?? [],
-    [query.data]
-  );
+  const habits = query.data?.pages.flatMap((page) => page.habits) ?? [];
 
   return {
     ...query,

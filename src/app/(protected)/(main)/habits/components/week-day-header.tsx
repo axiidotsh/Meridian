@@ -1,8 +1,9 @@
+import { formatDayLabel } from '@/utils/date-format';
+import { getLast7DaysUTC, isTodayUTC } from '@/utils/date-utc';
 import { cn } from '@/utils/utils';
-import { formatDayLabel, getLast7Days, isToday } from '../utils/date-helpers';
 
 export const WeekDayHeader = () => {
-  const days = getLast7Days();
+  const days = getLast7DaysUTC();
 
   return (
     <div className="flex gap-1">
@@ -11,7 +12,7 @@ export const WeekDayHeader = () => {
           key={index}
           className={cn(
             'text-muted-foreground w-3.5 text-center text-[9px] font-medium',
-            isToday(day) && 'text-foreground font-semibold'
+            isTodayUTC(day) && 'text-foreground font-semibold'
           )}
         >
           {formatDayLabel(day)}

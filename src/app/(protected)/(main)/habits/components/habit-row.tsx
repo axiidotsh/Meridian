@@ -8,11 +8,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/utils/utils';
-import { useSetAtom } from 'jotai';
 import { EllipsisIcon, FlameIcon, PencilIcon, Trash2Icon } from 'lucide-react';
-import { deletingHabitIdAtom, editingHabitIdAtom } from '../atoms/dialog-atoms';
-import { useToggleHabit } from '../hooks/mutations/use-toggle-habit';
 import type { HabitWithMetrics } from '../hooks/types';
+import { useHabitActions } from '../hooks/use-habit-actions';
 import { getStreakColor } from '../utils/streak-helpers';
 import { WeekDayToggle } from './week-day-toggle';
 
@@ -21,19 +19,11 @@ interface HabitRowProps {
 }
 
 export const HabitRow = ({ habit }: HabitRowProps) => {
-  const setEditingHabitId = useSetAtom(editingHabitIdAtom);
-  const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
-  const { toggleDate } = useToggleHabit(habit.id);
+  const { handleToggleDate, handleEdit, handleDelete, isToggling } =
+    useHabitActions(habit.id);
 
   function handleToggleDay(date: Date) {
-    const localYear = date.getFullYear();
-    const localMonth = date.getMonth();
-    const localDay = date.getDate();
-    const utcDate = new Date(Date.UTC(localYear, localMonth, localDay));
-    toggleDate.mutate({
-      param: { id: habit.id },
-      json: { date: utcDate.toISOString() },
-    });
+    handleToggleDate(habit.id, date);
   }
 
   return (
@@ -64,7 +54,7 @@ export const HabitRow = ({ habit }: HabitRowProps) => {
       <WeekDayToggle
         completionHistory={habit.completionHistory}
         onToggleDay={handleToggleDay}
-        disabled={toggleDate.isPending}
+        disabled={isToggling}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -78,13 +68,13 @@ export const HabitRow = ({ habit }: HabitRowProps) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setEditingHabitId(habit.id)}>
+          <DropdownMenuItem onClick={() => handleEdit(habit.id)}>
             <PencilIcon />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
-            onClick={() => setDeletingHabitId(habit.id)}
+            onClick={() => handleDelete(habit.id)}
           >
             <Trash2Icon />
             Delete

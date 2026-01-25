@@ -2,65 +2,14 @@
 
 import { PageHeading } from '@/components/page-heading';
 import { SearchBar } from '@/components/search-bar';
-import { useDebounce } from '@/hooks/use-debounce';
-import { useAtom, useAtomValue } from 'jotai';
-import { useMemo } from 'react';
-import { useInView } from 'react-intersection-observer';
-import {
-  searchQueryAtom,
-  sortByAtom,
-  statusFilterAtom,
-} from './atoms/habit-atoms';
+import { useAtom } from 'jotai';
+import { searchQueryAtom } from './atoms/habit-atoms';
 import { HabitListActions } from './components/habit-list-actions';
 import { HabitsTable } from './components/habits-table';
 import { HabitMetricsBadges } from './components/sections/habit-metrics-badges';
-import { useInfiniteHabits } from './hooks/queries/use-infinite-habits';
-import {
-  enrichHabitsWithMetrics,
-  filterHabits,
-  sortHabits,
-} from './utils/habit-calculations';
 
 export default function HabitsPage() {
-  const sortBy = useAtomValue(sortByAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
-  const statusFilter = useAtomValue(statusFilterAtom);
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-
-  const {
-    habits: rawHabits,
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteHabits({
-    search: debouncedSearchQuery || undefined,
-    sortBy: sortBy === 'title' ? 'title' : undefined,
-    sortOrder: 'asc',
-  });
-
-  const { ref: sentinelRef } = useInView({
-    onChange: (inView) => {
-      if (inView && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    },
-    threshold: 0,
-  });
-
-  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
-
-  const filteredHabits = useMemo(
-    () => filterHabits(habits, '', statusFilter),
-    [habits, statusFilter]
-  );
-
-  const sortedHabits = useMemo(() => {
-    if (sortBy === 'streak') {
-      return sortHabits(filteredHabits, sortBy);
-    }
-    return filteredHabits;
-  }, [filteredHabits, sortBy]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -81,12 +30,7 @@ export default function HabitsPage() {
           </div>
         </div>
       </div>
-      <HabitsTable
-        habits={sortedHabits}
-        isLoading={isLoading}
-        isFetchingNextPage={isFetchingNextPage}
-        sentinelRef={sentinelRef}
-      />
+      <HabitsTable />
     </div>
   );
 }

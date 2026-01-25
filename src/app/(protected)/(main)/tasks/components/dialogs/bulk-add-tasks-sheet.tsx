@@ -17,6 +17,7 @@ import { useAtom } from 'jotai';
 import { PlusIcon, XIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
+import { v4 as uuidv4 } from 'uuid';
 import { bulkAddTasksSheetAtom } from '../../atoms/task-dialogs';
 import { useBulkCreateTasks } from '../../hooks/mutations/use-bulk-create-tasks';
 import { useProjects } from '../../hooks/queries/use-projects';
@@ -53,7 +54,7 @@ export const BulkAddTasksSheet = () => {
     if (!form.title.trim()) return;
 
     const newTask: PendingTask = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       title: form.title.trim(),
     };
 

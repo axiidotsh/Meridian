@@ -1,12 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -16,41 +10,72 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useDebounce } from '@/hooks/use-debounce';
+import { formatDayLabel } from '@/utils/date-format';
+import { getLast7DaysUTC, isTodayUTC } from '@/utils/date-utc';
 import { cn } from '@/utils/utils';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { TargetIcon } from 'lucide-react';
+import { useMemo } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { createDialogOpenAtom } from '../atoms/dialog-atoms';
 import {
-  EllipsisIcon,
-  FlameIcon,
-  PencilIcon,
-  TargetIcon,
-  Trash2Icon,
-} from 'lucide-react';
+  searchQueryAtom,
+  sortByAtom,
+  statusFilterAtom,
+} from '../atoms/habit-atoms';
+import { useInfiniteHabits } from '../hooks/queries/use-infinite-habits';
 import {
-  createDialogOpenAtom,
-  deletingHabitIdAtom,
-  editingHabitIdAtom,
-} from '../atoms/dialog-atoms';
-import { useToggleHabit } from '../hooks/mutations/use-toggle-habit';
-import type { HabitWithMetrics } from '../hooks/types';
-import { formatDayLabel, getLast7Days, isToday } from '../utils/date-helpers';
-import { getStreakColor } from '../utils/streak-helpers';
-import { WeekDayToggle } from './week-day-toggle';
+  enrichHabitsWithMetrics,
+  filterHabits,
+  sortHabits,
+} from '../utils/habit-calculations';
+import { HabitTableRow } from './habit-table-row';
 
-interface HabitsTableProps {
-  habits: HabitWithMetrics[];
-  isLoading?: boolean;
-  isFetchingNextPage?: boolean;
-  sentinelRef?: (node?: Element | null) => void;
-}
+export const HabitsTable = () => {
+  const sortBy = useAtomValue(sortByAtom);
+  const searchQuery = useAtomValue(searchQueryAtom);
+  const statusFilter = useAtomValue(statusFilterAtom);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-export const HabitsTable = ({
-  habits,
-  isLoading,
-  isFetchingNextPage,
-  sentinelRef,
-}: HabitsTableProps) => {
   const setCreateDialogOpen = useSetAtom(createDialogOpenAtom);
-  const days = getLast7Days();
+
+  const {
+    habits: rawHabits,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteHabits({
+    search: debouncedSearchQuery || undefined,
+    sortBy: sortBy === 'title' ? 'title' : undefined,
+    sortOrder: 'asc',
+  });
+
+  const { ref: sentinelRef } = useInView({
+    onChange: (inView) => {
+      if (inView && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    },
+    threshold: 0,
+  });
+
+  const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
+
+  const filteredHabits = useMemo(
+    () => filterHabits(habits, '', statusFilter),
+    [habits, statusFilter]
+  );
+
+  const sortedHabits = useMemo(() => {
+    if (sortBy === 'streak') {
+      return sortHabits(filteredHabits, sortBy);
+    }
+    return filteredHabits;
+  }, [filteredHabits, sortBy]);
+
+  const days = getLast7DaysUTC();
 
   if (isLoading) {
     return (
@@ -68,7 +93,7 @@ export const HabitsTable = ({
                       key={index}
                       className={cn(
                         'w-3.5 text-center',
-                        isToday(day) && 'font-semibold'
+                        isTodayUTC(day) && 'font-semibold'
                       )}
                     >
                       {formatDayLabel(day)}
@@ -109,7 +134,7 @@ export const HabitsTable = ({
     );
   }
 
-  if (habits.length === 0) {
+  if (sortedHabits.length === 0) {
     return (
       <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-32 text-center sm:py-48">
         <TargetIcon className="mb-2 size-12 stroke-1 opacity-50" />
@@ -144,7 +169,7 @@ export const HabitsTable = ({
                     key={index}
                     className={cn(
                       'w-3.5 text-center',
-                      isToday(day) && 'font-semibold'
+                      isTodayUTC(day) && 'font-semibold'
                     )}
                   >
                     {formatDayLabel(day)}
@@ -159,7 +184,7 @@ export const HabitsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {habits.map((habit) => (
+          {sortedHabits.map((habit) => (
             <HabitTableRow key={habit.id} habit={habit} />
           ))}
           {isFetchingNextPage && (
@@ -173,96 +198,7 @@ export const HabitsTable = ({
           )}
         </TableBody>
       </Table>
-      {sentinelRef && <div ref={sentinelRef} className="h-px" />}
+      <div ref={sentinelRef} className="h-px" />
     </div>
-  );
-};
-
-interface HabitTableRowProps {
-  habit: HabitWithMetrics;
-}
-
-const HabitTableRow = ({ habit }: HabitTableRowProps) => {
-  const setEditingHabitId = useSetAtom(editingHabitIdAtom);
-  const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
-  const { toggleDate } = useToggleHabit(habit.id);
-
-  function handleToggleDay(date: Date) {
-    const localYear = date.getFullYear();
-    const localMonth = date.getMonth();
-    const localDay = date.getDate();
-    const utcDate = new Date(Date.UTC(localYear, localMonth, localDay));
-    toggleDate.mutate({
-      param: { id: habit.id },
-      json: { date: utcDate.toISOString() },
-    });
-  }
-
-  return (
-    <TableRow>
-      <TableCell className="max-w-[400px]">
-        <span
-          className={cn(
-            'text-sm',
-            habit.completed && 'text-muted-foreground line-through'
-          )}
-        >
-          {habit.title}
-        </span>
-      </TableCell>
-      <TableCell>
-        <div className="flex items-center justify-center">
-          <WeekDayToggle
-            completionHistory={habit.completionHistory}
-            onToggleDay={handleToggleDay}
-            disabled={toggleDate.isPending}
-          />
-        </div>
-      </TableCell>
-      <TableCell>
-        {habit.currentStreak > 0 ? (
-          <div
-            className={cn(
-              'flex items-center gap-1.5 font-mono text-xs',
-              getStreakColor(habit.currentStreak)
-            )}
-          >
-            <FlameIcon className="size-3.5" />
-            <span>
-              {habit.currentStreak} day{habit.currentStreak !== 1 ? 's' : ''}
-            </span>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">No streak</span>
-        )}
-      </TableCell>
-      <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              aria-label="Habit options"
-              tooltip="Habit options"
-            >
-              <EllipsisIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => setEditingHabitId(habit.id)}>
-              <PencilIcon />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              variant="destructive"
-              onSelect={() => setDeletingHabitId(habit.id)}
-            >
-              <Trash2Icon />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
   );
 };

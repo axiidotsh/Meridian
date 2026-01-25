@@ -4,8 +4,8 @@ import { ContentCard } from '@/app/(protected)/(main)/components/content-card';
 import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/mutations/use-focus-session';
 import { useTimerLogic } from '@/app/(protected)/(main)/focus/hooks/timer/use-timer-logic';
 import type { FocusSession } from '@/app/(protected)/(main)/focus/hooks/types';
-import { formatTime } from '@/app/(protected)/(main)/focus/utils/timer-calculations';
 import { Button } from '@/components/ui/button';
+import { formatTime } from '@/utils/timer';
 import { CheckCircle2, Clock, Pause, Play } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 

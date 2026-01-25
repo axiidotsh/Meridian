@@ -8,11 +8,8 @@ import {
 import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/mutations/use-focus-session';
 import { useActiveSession } from '@/app/(protected)/(main)/focus/hooks/queries/use-active-session';
 import { useTimerLogic } from '@/app/(protected)/(main)/focus/hooks/timer/use-timer-logic';
-import {
-  formatTime,
-  formatTimePreview,
-} from '@/app/(protected)/(main)/focus/utils/timer-calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { formatTime, formatTimePreview } from '@/utils/timer';
 import { cn } from '@/utils/utils';
 import { useSetAtom } from 'jotai';
 import {

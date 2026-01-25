@@ -1,3 +1,13 @@
+import {
+  formatTimeDiff,
+  getHabitComparisonLabel,
+  getStreakComparisonLabel,
+  getTaskComparisonLabel,
+} from '@/app/(protected)/(main)/dashboard/utils/dashboard-calculations';
+import {
+  calculateBestStreak,
+  calculateCurrentStreak,
+} from '@/app/(protected)/(main)/habits/utils/habit-calculations';
 import { getUTCMidnight } from '@/utils/date-utc';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
@@ -10,81 +20,6 @@ import { calculateOverallStreak } from '../services/overall-streak';
 const heatmapQuerySchema = z.object({
   weeks: z.coerce.number().min(1).max(52).default(52),
 });
-
-function formatTimeDiff(minutes: number): string {
-  if (minutes === 0) return 'Same as yesterday';
-  const sign = minutes > 0 ? '+' : '';
-  const absMinutes = Math.abs(minutes);
-
-  if (absMinutes >= 60) {
-    const hours = Math.floor(absMinutes / 60);
-    const mins = absMinutes % 60;
-    if (mins === 0) {
-      return `${sign}${hours}h from yesterday`;
-    }
-    return `${sign}${hours}h ${mins}m from yesterday`;
-  }
-
-  return `${sign}${absMinutes}m from yesterday`;
-}
-
-function getTaskComparisonLabel(
-  completedToday: number,
-  totalToday: number,
-  overdue: number
-): string {
-  if (overdue > 0) {
-    return `${overdue} overdue`;
-  }
-
-  if (totalToday === 0) {
-    return 'No tasks for today';
-  }
-
-  const completionPercentage = (completedToday / totalToday) * 100;
-
-  const now = new Date();
-  const startOfDayUTC = getUTCMidnight(now);
-  const endOfDayUTC = new Date(startOfDayUTC.getTime() + 24 * 60 * 60 * 1000);
-
-  const totalDayMs = endOfDayUTC.getTime() - startOfDayUTC.getTime();
-  const elapsedMs = now.getTime() - startOfDayUTC.getTime();
-  const dayProgressPercentage = (elapsedMs / totalDayMs) * 100;
-
-  if (completionPercentage >= dayProgressPercentage + 20) {
-    return 'Ahead of schedule';
-  } else if (completionPercentage >= dayProgressPercentage - 10) {
-    return 'On track';
-  } else {
-    return 'Behind schedule';
-  }
-}
-
-function getHabitComparisonLabel(weeklyAverage: number): string {
-  return `${weeklyAverage}% weekly average`;
-}
-
-function getStreakComparisonLabel(
-  currentStreak: number,
-  bestStreak: number
-): string {
-  if (currentStreak === 0) {
-    return 'Start your streak today!';
-  }
-
-  if (currentStreak >= bestStreak && currentStreak > 0) {
-    return 'New personal record!';
-  }
-
-  const daysUntilRecord = bestStreak - currentStreak;
-  if (daysUntilRecord === 1) {
-    return '1 day to beat your record';
-  } else if (daysUntilRecord > 0) {
-    return `${daysUntilRecord} days to beat your record`;
-  }
-
-  return 'Keep it up!';
-}
 
 const DASHBOARD_TASK_LIMIT = 5;
 const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2, NO_PRIORITY: 3 } as const;
@@ -190,57 +125,8 @@ export const dashboardRouter = new Hono()
 
     const habitsWithMetrics = incompleteHabits.map((habit) => {
       const allCompletions = habit.completions;
-
-      let currentStreak = 0;
-      let checkDate = new Date(todayKey);
-
-      for (const completion of allCompletions) {
-        const compDate = new Date(
-          Date.UTC(
-            completion.date.getUTCFullYear(),
-            completion.date.getUTCMonth(),
-            completion.date.getUTCDate()
-          )
-        );
-
-        if (compDate.getTime() === checkDate.getTime()) {
-          currentStreak++;
-          checkDate = new Date(checkDate.getTime() - 24 * 60 * 60 * 1000);
-        } else if (compDate.getTime() < checkDate.getTime()) {
-          break;
-        }
-      }
-
-      let bestStreak = 0;
-      let tempStreak = 0;
-      let prevDate: Date | null = null;
-
-      const sortedAsc = [...allCompletions].sort(
-        (a, b) => a.date.getTime() - b.date.getTime()
-      );
-
-      for (const completion of sortedAsc) {
-        const compDate = new Date(
-          Date.UTC(
-            completion.date.getUTCFullYear(),
-            completion.date.getUTCMonth(),
-            completion.date.getUTCDate()
-          )
-        );
-
-        if (!prevDate) {
-          tempStreak = 1;
-        } else {
-          const expectedDate = new Date(
-            prevDate.getTime() + 24 * 60 * 60 * 1000
-          );
-          tempStreak =
-            compDate.getTime() === expectedDate.getTime() ? tempStreak + 1 : 1;
-        }
-
-        bestStreak = Math.max(bestStreak, tempStreak);
-        prevDate = compDate;
-      }
+      const currentStreak = calculateCurrentStreak(allCompletions);
+      const bestStreak = calculateBestStreak(allCompletions);
 
       const recentCompletions = allCompletions.filter(
         (c) => c.date.getTime() >= weekAgo.getTime()

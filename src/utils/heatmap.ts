@@ -189,27 +189,3 @@ export const getIntensityColor = (intensity: number): string => {
       return 'border-border bg-muted/30';
   }
 };
-
-export const generateMockData = () => {
-  const data = new Map<
-    string,
-    { focusMinutes: number; tasks: number; habits: number }
-  >();
-  const today = new Date();
-
-  for (let i = 0; i < 52 * 7; i++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
-    const dateKey = date.toISOString().split('T')[0];
-
-    if (Math.random() > 0.4) {
-      data.set(dateKey, {
-        focusMinutes: Math.floor(Math.random() * 180),
-        tasks: Math.floor(Math.random() * 8),
-        habits: Math.floor(Math.random() * 7),
-      });
-    }
-  }
-
-  return data;
-};

@@ -5,7 +5,6 @@ import {
 } from '@/app/(protected)/(main)/focus/atoms/session-dialogs';
 import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/mutations/use-focus-session';
 import { useActiveSession } from '@/app/(protected)/(main)/focus/hooks/queries/use-active-session';
-import { calculateRemainingSeconds } from '@/app/(protected)/(main)/focus/utils/timer-calculations';
 import { createDialogOpenAtom } from '@/app/(protected)/(main)/habits/atoms/dialog-atoms';
 import { useUpdateSettings } from '@/app/(protected)/(main)/settings/hooks/mutations/use-update-settings';
 import {
@@ -22,6 +21,7 @@ import {
   THEMES,
 } from '@/config/commands';
 import type { CommandDefinition } from '@/hooks/command-menu/types';
+import { calculateRemainingSeconds } from '@/utils/timer';
 import { useSetAtom } from 'jotai';
 import { PauseIcon, PlayIcon, SaveIcon, SquareIcon, XIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';

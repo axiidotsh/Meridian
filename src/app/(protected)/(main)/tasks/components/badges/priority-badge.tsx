@@ -1,7 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/utils/utils';
 import type { TaskPriority } from '../../hooks/types';
-import { formatPriorityLabel } from '../../utils/format-priority';
+
+function formatPriorityLabel(priority: TaskPriority): string {
+  if (priority === 'NO_PRIORITY') return '';
+  return priority.charAt(0) + priority.slice(1).toLowerCase();
+}
 
 interface PriorityBadgeProps {
   priority: TaskPriority;

@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { formatDueDate, getDueDateUrgency } from '@/utils/date';
+import { formatDueDateWithTime, getDueDateUrgency } from '@/utils/date';
 import { cn } from '@/utils/utils';
 import { PlusIcon } from 'lucide-react';
 import { ContentCard } from '../../components/content-card';
@@ -46,7 +46,7 @@ export const DashboardTasks = ({ tasks }: DashboardTasksProps) => {
             {task.dueDate && (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground font-mono text-xs">
-                  {formatDueDate(task.dueDate)}
+                  {formatDueDateWithTime(task.dueDate)}
                 </span>
                 <div
                   className={cn('size-1.5 rounded-xs', {

@@ -16,7 +16,7 @@ export const getDaysFromNowAt = (
   return newDate;
 };
 
-export const formatDueDate = (date: Date): string => {
+export const formatDueDateWithTime = (date: Date): string => {
   const now = new Date();
   const isToday =
     date.getDate() === now.getDate() &&
@@ -24,7 +24,6 @@ export const formatDueDate = (date: Date): string => {
     date.getFullYear() === now.getFullYear();
 
   if (isToday) {
-    // Show only time for today's tasks
     return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -32,7 +31,6 @@ export const formatDueDate = (date: Date): string => {
     });
   }
 
-  // Show date + time for other days
   return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',

@@ -61,7 +61,7 @@ export const ProjectSelect = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className="w-[var(--radix-dropdown-menu-trigger-width)]"
+        className="w-(--radix-dropdown-menu-trigger-width)"
       >
         <div className="flex items-center gap-2 px-2">
           <SearchIcon className="text-muted-foreground size-4 shrink-0" />

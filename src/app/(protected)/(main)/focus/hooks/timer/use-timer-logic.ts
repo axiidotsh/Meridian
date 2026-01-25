@@ -1,5 +1,5 @@
+import { calculateRemainingSeconds } from '@/utils/timer';
 import { useEffect, useRef, useState } from 'react';
-import { calculateRemainingSeconds } from '../../utils/timer-calculations';
 import type { FocusSession } from '../types';
 
 export function useTimerLogic(activeSession: FocusSession | null | undefined) {

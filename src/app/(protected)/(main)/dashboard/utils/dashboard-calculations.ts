@@ -3,7 +3,7 @@ import type { Habit } from '../../habits/hooks/types';
 import type { Task } from '../../tasks/hooks/types';
 import type { DashboardMetrics } from '../hooks/types';
 
-function getTaskComparisonLabel(
+export function getTaskComparisonLabel(
   completedToday: number,
   totalToday: number,
   overdue: number
@@ -35,8 +35,47 @@ function getTaskComparisonLabel(
   }
 }
 
-function getHabitComparisonLabel(weeklyAverage: number): string {
+export function getHabitComparisonLabel(weeklyAverage: number): string {
   return `${weeklyAverage}% weekly average`;
+}
+
+export function getStreakComparisonLabel(
+  currentStreak: number,
+  bestStreak: number
+): string {
+  if (currentStreak === 0) {
+    return 'Start your streak today!';
+  }
+
+  if (currentStreak >= bestStreak && currentStreak > 0) {
+    return 'New personal record!';
+  }
+
+  const daysUntilRecord = bestStreak - currentStreak;
+  if (daysUntilRecord === 1) {
+    return '1 day to beat your record';
+  } else if (daysUntilRecord > 0) {
+    return `${daysUntilRecord} days to beat your record`;
+  }
+
+  return 'Keep it up!';
+}
+
+export function formatTimeDiff(minutes: number): string {
+  if (minutes === 0) return 'Same as yesterday';
+  const sign = minutes > 0 ? '+' : '';
+  const absMinutes = Math.abs(minutes);
+
+  if (absMinutes >= 60) {
+    const hours = Math.floor(absMinutes / 60);
+    const mins = absMinutes % 60;
+    if (mins === 0) {
+      return `${sign}${hours}h from yesterday`;
+    }
+    return `${sign}${hours}h ${mins}m from yesterday`;
+  }
+
+  return `${sign}${absMinutes}m from yesterday`;
 }
 
 export function updateDashboardMetricsForTaskToggle(

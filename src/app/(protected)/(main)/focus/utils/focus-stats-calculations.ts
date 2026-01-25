@@ -1,25 +1,5 @@
+import { getUTCDateKey, getUTCDaysDifference } from '@/utils/date-utc';
 import type { FocusSession } from '../hooks/types';
-
-function getDateKey(date: Date): string {
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function getDaysDifference(date1: Date, date2: Date): number {
-  const d1 = Date.UTC(
-    date1.getUTCFullYear(),
-    date1.getUTCMonth(),
-    date1.getUTCDate()
-  );
-  const d2 = Date.UTC(
-    date2.getUTCFullYear(),
-    date2.getUTCMonth(),
-    date2.getUTCDate()
-  );
-  return Math.floor((d1 - d2) / (1000 * 60 * 60 * 24));
-}
 
 export interface FocusStatsResult {
   currentStreak: number;
@@ -49,7 +29,7 @@ export function calculateFocusStats(
   const dailyTotals = new Map<string, { minutes: number; count: number }>();
 
   for (const session of completedSessions) {
-    const dateKey = getDateKey(new Date(session.startedAt));
+    const dateKey = getUTCDateKey(new Date(session.startedAt));
     const existing = dailyTotals.get(dateKey) || { minutes: 0, count: 0 };
     dailyTotals.set(dateKey, {
       minutes: existing.minutes + session.durationMinutes,
@@ -77,11 +57,11 @@ export function calculateFocusStats(
   );
 
   const now = new Date();
-  const todayKey = getDateKey(now);
+  const todayKey = getUTCDateKey(now);
   const yesterday = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 1)
   );
-  const yesterdayKey = getDateKey(yesterday);
+  const yesterdayKey = getUTCDateKey(yesterday);
 
   let currentStreak = 0;
   let bestStreak = 0;
@@ -98,7 +78,7 @@ export function calculateFocusStats(
         currentStreak++;
         const [y, m, d] = checkKey.split('-').map(Number);
         const nextDate = new Date(Date.UTC(y, m - 1, d - 1));
-        checkKey = getDateKey(nextDate);
+        checkKey = getUTCDateKey(nextDate);
       } else {
         break;
       }
@@ -115,7 +95,7 @@ export function calculateFocusStats(
       const currentDate = new Date(Date.UTC(cy, cm - 1, cd));
       const prevDate = new Date(Date.UTC(py, pm - 1, pd));
 
-      if (getDaysDifference(prevDate, currentDate) === 1) {
+      if (getUTCDaysDifference(prevDate, currentDate) === 1) {
         tempStreak++;
       } else {
         tempStreak = 1;
@@ -128,7 +108,7 @@ export function calculateFocusStats(
 
   let highestDailyDaysAgo: number | null = null;
   if (highestDailyDate) {
-    const highestKey = getDateKey(highestDailyDate);
+    const highestKey = getUTCDateKey(highestDailyDate);
     const [ty, tm, td] = todayKey.split('-').map(Number);
     const [hy, hm, hd] = highestKey.split('-').map(Number);
     const todayDate = Date.UTC(ty, tm - 1, td);

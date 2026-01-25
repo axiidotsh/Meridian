@@ -13,34 +13,25 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
 import { createDialogOpenAtom } from '../../atoms/dialog-atoms';
 import { useCreateHabit } from '../../hooks/mutations/use-create-habit';
+import { useHabitForm } from '../../hooks/use-habit-form';
 
 export const CreateHabitDialog = () => {
   const [open, setOpen] = useAtom(createDialogOpenAtom);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-
+  const form = useHabitForm();
   const createHabit = useCreateHabit();
 
   const handleCreate = () => {
-    if (!title.trim()) return;
+    if (!form.title.trim()) return;
 
     createHabit.mutate(
       {
-        json: {
-          title: title.trim(),
-          description: description.trim() || undefined,
-          category: category.trim() || undefined,
-        },
+        json: form.getFormData(),
       },
       {
         onSuccess: () => {
-          setTitle('');
-          setDescription('');
-          setCategory('');
+          form.reset();
           setOpen(false);
         },
       }
@@ -48,7 +39,7 @@ export const CreateHabitDialog = () => {
   };
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && title.trim() && !createHabit.isPending) {
+    if (e.key === 'Enter' && form.title.trim() && !createHabit.isPending) {
       e.preventDefault();
       handleCreate();
     }
@@ -68,8 +59,8 @@ export const CreateHabitDialog = () => {
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={form.title}
+              onChange={(e) => form.setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="e.g., Morning meditation"
               maxLength={100}
@@ -79,8 +70,8 @@ export const CreateHabitDialog = () => {
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={form.description}
+              onChange={(e) => form.setDescription(e.target.value)}
               placeholder="e.g., 10 minutes of mindfulness"
               maxLength={500}
             />
@@ -89,8 +80,8 @@ export const CreateHabitDialog = () => {
             <Label htmlFor="category">Category (optional)</Label>
             <Input
               id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={form.category}
+              onChange={(e) => form.setCategory(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="e.g., wellness, health, learning"
               maxLength={50}
@@ -107,7 +98,7 @@ export const CreateHabitDialog = () => {
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={!title.trim() || createHabit.isPending}
+            disabled={!form.title.trim() || createHabit.isPending}
             isLoading={createHabit.isPending}
             loadingContent="Creating..."
           >

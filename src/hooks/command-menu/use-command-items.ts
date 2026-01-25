@@ -1,6 +1,6 @@
 import { useRecentSessions } from '@/app/(protected)/(main)/focus/hooks/queries/use-recent-sessions';
 import type { FocusSession } from '@/app/(protected)/(main)/focus/hooks/types';
-import { useHabits } from '@/app/(protected)/(main)/habits/hooks/queries/use-habits';
+import { useInfiniteHabits } from '@/app/(protected)/(main)/habits/hooks/queries/use-infinite-habits';
 import type { Habit } from '@/app/(protected)/(main)/habits/hooks/types';
 import { useInfiniteTasks } from '@/app/(protected)/(main)/tasks/hooks/queries/use-infinite-tasks';
 import { useProjects } from '@/app/(protected)/(main)/tasks/hooks/queries/use-projects';
@@ -13,7 +13,7 @@ const ITEM_LIMIT = 10;
 export function useCommandItems() {
   const { tasks } = useInfiniteTasks({ limit: ITEM_LIMIT });
   const { data: projects = [] } = useProjects();
-  const { data: habits = [] } = useHabits();
+  const { habits } = useInfiniteHabits({ limit: ITEM_LIMIT, days: 7 });
   const { data: recentSessions = [] } = useRecentSessions(ITEM_LIMIT);
 
   return useMemo(

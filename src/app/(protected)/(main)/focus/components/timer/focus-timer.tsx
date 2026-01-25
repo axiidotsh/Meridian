@@ -2,6 +2,11 @@
 
 import { useSettings } from '@/app/(protected)/(main)/settings/hooks/queries/use-settings';
 import { Input } from '@/components/ui/input';
+import {
+  calculateRemainingSeconds,
+  formatTime,
+  formatTimePreview,
+} from '@/utils/timer';
 import { cn } from '@/utils/utils';
 import { useAtom, useSetAtom } from 'jotai';
 import { useEffect } from 'react';
@@ -19,11 +24,6 @@ import { useFocusSession } from '../../hooks/mutations/use-focus-session';
 import { useSessionTask } from '../../hooks/mutations/use-session-task';
 import { useTimerLogic } from '../../hooks/timer/use-timer-logic';
 import type { FocusSession } from '../../hooks/types';
-import {
-  calculateRemainingSeconds,
-  formatTime,
-  formatTimePreview,
-} from '../../utils/timer-calculations';
 import { DurationDropdown } from './duration-dropdown';
 import { TimerControls } from './timer-controls';
 import { TimerDisplay } from './timer-display';

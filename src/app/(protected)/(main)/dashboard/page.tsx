@@ -3,7 +3,7 @@
 import { PageHeading } from '@/components/page-heading';
 import { FocusChartSection } from '../focus/components/sections/focus-chart-section';
 import { useActiveSession } from '../focus/hooks/queries/use-active-session';
-import { HabitChartSection } from '../habits/components/habit-chart-section';
+import { HabitChartSection } from '../habits/components/sections/habit-chart-section';
 import { TaskChartSection } from '../tasks/components/sections/task-chart-section';
 import { DashboardHabitList } from './components/dashboard-habit-list';
 import { DashboardMetrics } from './components/dashboard-metrics';

@@ -3,14 +3,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { formatFullDate } from '@/utils/date-format';
+import { getLast7DaysUTC, isSameDayUTC, isTodayUTC } from '@/utils/date-utc';
 import { cn } from '@/utils/utils';
 import type { CompletionRecord } from '../hooks/types';
-import {
-  formatFullDate,
-  getLast7Days,
-  isSameDay,
-  isToday,
-} from '../utils/date-helpers';
 
 interface WeekDayToggleProps {
   completionHistory: CompletionRecord[];
@@ -23,11 +19,11 @@ export const WeekDayToggle = ({
   onToggleDay,
   disabled = false,
 }: WeekDayToggleProps) => {
-  const days = getLast7Days();
+  const days = getLast7DaysUTC();
 
   function isCompleted(date: Date): boolean {
     return completionHistory.some(
-      (record) => isSameDay(new Date(record.date), date) && record.completed
+      (record) => isSameDayUTC(new Date(record.date), date) && record.completed
     );
   }
 
@@ -35,7 +31,7 @@ export const WeekDayToggle = ({
     <div className="flex gap-1">
       {days.map((day, index) => {
         const completed = isCompleted(day);
-        const today = isToday(day);
+        const today = isTodayUTC(day);
 
         return (
           <Tooltip key={index}>

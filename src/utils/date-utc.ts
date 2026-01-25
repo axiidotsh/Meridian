@@ -39,3 +39,27 @@ export function normalizeToUTCMidnight(date: Date): string {
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   ).toISOString();
 }
+
+export function isSameDayUTC(date1: Date, date2: Date): boolean {
+  return getUTCDateKey(date1) === getUTCDateKey(date2);
+}
+
+export function isTodayUTC(date: Date): boolean {
+  const today = new Date();
+  return isSameDayUTC(date, today);
+}
+
+export function getLast7DaysUTC(): Date[] {
+  const days: Date[] = [];
+  const now = new Date();
+  const today = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  );
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+    days.push(date);
+  }
+
+  return days;
+}

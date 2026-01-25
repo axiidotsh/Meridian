@@ -13,13 +13,13 @@ import { useAtom } from 'jotai';
 import { useMemo } from 'react';
 import { deletingHabitIdAtom } from '../../atoms/dialog-atoms';
 import { useDeleteHabit } from '../../hooks/mutations/use-delete-habit';
-import { useHabits } from '../../hooks/queries/use-habits';
+import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
 import { enrichHabitsWithMetrics } from '../../utils/habit-calculations';
 
 export const DeleteHabitDialog = () => {
   const [deletingHabitId, setDeletingHabitId] = useAtom(deletingHabitIdAtom);
 
-  const { data: rawHabits = [] } = useHabits(7);
+  const { habits: rawHabits } = useInfiniteHabits({ days: 7 });
   const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
   const habit = habits.find((h) => h.id === deletingHabitId) || null;
 

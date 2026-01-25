@@ -3,13 +3,9 @@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useHabitStats } from '../../hooks/queries/use-habit-stats';
-import { useHabits } from '../../hooks/queries/use-habits';
 
 export const HabitMetricsBadges = () => {
-  const { data: stats, isLoading: statsLoading } = useHabitStats();
-  const { data: habits = [], isLoading: habitsLoading } = useHabits();
-
-  const isLoading = statsLoading || habitsLoading;
+  const { data: stats, isLoading } = useHabitStats();
 
   if (isLoading) {
     return (
@@ -21,12 +17,10 @@ export const HabitMetricsBadges = () => {
 
   if (!stats) return null;
 
-  const activeCount = habits.filter((h) => !h.archived).length;
-
   return (
     <div className="flex items-center gap-2">
       <Badge variant="secondary" className="gap-1.5">
-        {activeCount} active
+        {stats.completedToday}/{stats.totalHabits} done
       </Badge>
       {stats.activeStreakCount > 0 && (
         <Badge

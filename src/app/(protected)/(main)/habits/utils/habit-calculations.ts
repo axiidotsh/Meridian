@@ -1,18 +1,5 @@
+import { isSameDayUTC } from '@/utils/date-utc';
 import type { CompletionRecord, Habit, HabitWithMetrics } from '../hooks/types';
-
-function getDateKey(date: Date): string {
-  const d = new Date(date);
-  const year = d.getUTCFullYear();
-  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function isSameDay(date1: Date, date2: Date): boolean {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  return getDateKey(d1) === getDateKey(d2);
-}
 
 export function calculateCurrentStreak(
   completions: { date: Date | string }[]
@@ -109,7 +96,7 @@ export function enrichHabitsWithMetrics(habits: Habit[]): HabitWithMetrics[] {
     const totalCompletions = completions.length;
 
     const completedToday = completions.some((c) =>
-      isSameDay(new Date(c.date), today)
+      isSameDayUTC(new Date(c.date), today)
     );
 
     const completionHistory: CompletionRecord[] = completions.map((c) => ({
@@ -170,82 +157,4 @@ export function sortHabits(
 
     return comparison;
   });
-}
-
-export function calculateHabitStats(habits: Habit[]) {
-  const today = new Date();
-  const todayKey = new Date(
-    Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
-  );
-
-  const startOfWeek = new Date(todayKey);
-  const dayOfWeek = todayKey.getUTCDay();
-  const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startOfWeek.setUTCDate(todayKey.getUTCDate() - daysToMonday);
-
-  const weekDaysWithActivity = new Set<string>();
-  const weekCompletions: { date: Date; count: number }[] = [];
-
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(startOfWeek);
-    date.setUTCDate(startOfWeek.getUTCDate() + i);
-
-    const completedCount = habits.filter((habit) =>
-      (habit.completions || []).some((comp) => {
-        const compDate = new Date(comp.date);
-        return compDate.getTime() === date.getTime();
-      })
-    ).length;
-
-    if (completedCount > 0) {
-      weekDaysWithActivity.add(date.toISOString());
-    }
-
-    weekCompletions.push({ date, count: completedCount });
-  }
-
-  let longestStreak = 0;
-  let bestStreak = 0;
-  let activeStreakCount = 0;
-
-  for (const habit of habits) {
-    const completions = habit.completions || [];
-    const currentStreak = calculateCurrentStreak(completions);
-    const allTimeStreak = calculateBestStreak(completions);
-
-    if (currentStreak > 0) {
-      activeStreakCount++;
-    }
-
-    if (currentStreak > longestStreak) {
-      longestStreak = currentStreak;
-    }
-
-    if (allTimeStreak > bestStreak) {
-      bestStreak = allTimeStreak;
-    }
-  }
-
-  const totalHabits = habits.length;
-  const weekCompletionRate =
-    totalHabits > 0
-      ? Math.round(
-          (weekCompletions.reduce((sum, day) => sum + day.count, 0) /
-            (totalHabits * 7)) *
-            100
-        )
-      : 0;
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
-
-  return {
-    weekConsistency: weekDaysWithActivity.size,
-    activeStreakCount,
-    longestStreak,
-    bestStreak,
-    completionRate: weekCompletionRate,
-    weekStart: startOfWeek.toISOString(),
-    weekEnd: endOfWeek.toISOString(),
-  };
 }

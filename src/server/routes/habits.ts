@@ -1,3 +1,7 @@
+import {
+  calculateBestStreak,
+  calculateCurrentStreak,
+} from '@/app/(protected)/(main)/habits/utils/habit-calculations';
 import { addUTCDays } from '@/utils/date-utc';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
@@ -21,89 +25,86 @@ const toggleDateSchema = z.object({
   date: z.string().datetime(),
 });
 
+const getHabitsQuerySchema = z.object({
+  days: z.coerce.number().min(1).max(365).default(7),
+  limit: z.coerce.number().min(1).max(100).default(50),
+  offset: z.coerce.number().min(0).default(0),
+  search: z.string().optional(),
+  sortBy: z
+    .enum(['title', 'createdAt', 'currentStreak', 'bestStreak'])
+    .default('createdAt'),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
 export const habitsRouter = new Hono()
   .use(authMiddleware)
-  .get(
-    '/',
-    zValidator(
-      'query',
-      z.object({
-        days: z.coerce.number().min(1).max(365).default(7),
-        limit: z.coerce.number().min(1).max(100).default(50),
-        offset: z.coerce.number().min(0).default(0),
-        search: z.string().optional(),
-        sortBy: z.enum(['title', 'createdAt']).default('createdAt'),
-        sortOrder: z.enum(['asc', 'desc']).default('desc'),
-      })
-    ),
-    async (c) => {
-      const user = c.get('user');
-      const { days, limit, offset, search, sortBy, sortOrder } =
-        c.req.valid('query');
+  .get('/', zValidator('query', getHabitsQuerySchema), async (c) => {
+    const user = c.get('user');
+    const { days, limit, offset, search, sortBy, sortOrder } =
+      c.req.valid('query');
 
-      const now = new Date();
-      const cutoffDate = new Date(
-        Date.UTC(
-          now.getUTCFullYear(),
-          now.getUTCMonth(),
-          now.getUTCDate() - days,
-          0,
-          0,
-          0,
-          0
-        )
-      );
+    const now = new Date();
+    const cutoffDate = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - days,
+        0,
+        0,
+        0,
+        0
+      )
+    );
 
-      const where: {
-        userId: string;
-        archived: boolean;
-        OR?: Array<{
-          title?: { contains: string; mode: 'insensitive' };
-          category?: { contains: string; mode: 'insensitive' };
-        }>;
-      } = {
-        userId: user.id,
-        archived: false,
-      };
+    const where: {
+      userId: string;
+      archived: boolean;
+      OR?: Array<{
+        title?: { contains: string; mode: 'insensitive' };
+        category?: { contains: string; mode: 'insensitive' };
+      }>;
+    } = {
+      userId: user.id,
+      archived: false,
+    };
 
-      if (search) {
-        where.OR = [
-          { title: { contains: search, mode: 'insensitive' } },
-          { category: { contains: search, mode: 'insensitive' } },
-        ];
-      }
-
-      const orderBy: Record<string, 'asc' | 'desc'>[] = [
-        { [sortBy]: sortOrder },
-        { id: sortOrder },
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
       ];
+    }
 
-      const [habits, totalCount] = await Promise.all([
-        db.habit.findMany({
-          where,
-          include: {
-            completions: {
-              where: {
-                date: { gte: cutoffDate },
-              },
-              select: {
-                date: true,
-              },
+    const orderBy: Record<string, 'asc' | 'desc'>[] = [
+      { [sortBy]: sortOrder },
+      { id: sortOrder },
+    ];
+
+    const [habits, totalCount] = await Promise.all([
+      db.habit.findMany({
+        where,
+        include: {
+          completions: {
+            where: {
+              date: { gte: cutoffDate },
+            },
+            select: {
+              date: true,
             },
           },
-          orderBy,
-          take: limit,
-          skip: offset,
-        }),
-        db.habit.count({ where }),
-      ]);
+        },
+        orderBy,
+        take: limit,
+        skip: offset,
+      }),
+      db.habit.count({ where }),
+    ]);
 
-      const hasMore = offset + limit < totalCount;
-      const nextOffset = hasMore ? offset + limit : null;
+    const hasMore = offset + limit < totalCount;
+    const nextOffset = hasMore ? offset + limit : null;
 
-      return c.json({ habits, nextOffset });
-    }
-  )
+    return c.json({ habits, nextOffset });
+  })
   .post('/', zValidator('json', createHabitSchema), async (c) => {
     const user = c.get('user');
     const { title, description, category } = c.req.valid('json');
@@ -178,6 +179,12 @@ export const habitsRouter = new Hono()
         userId: user.id,
         archived: false,
       },
+      include: {
+        completions: {
+          orderBy: { date: 'desc' },
+          select: { date: true },
+        },
+      },
     });
 
     if (!habit) {
@@ -198,22 +205,67 @@ export const habitsRouter = new Hono()
       },
     });
 
+    let updatedCompletions = habit.completions;
+
     if (existing) {
       await db.habitCompletion.delete({
         where: { id: existing.id },
       });
-      return c.json({ completed: false });
+      updatedCompletions = habit.completions.filter(
+        (c) => c.date.getTime() !== dateKey.getTime()
+      );
+    } else {
+      await db.habitCompletion.create({
+        data: {
+          habitId: id,
+          userId: user.id,
+          date: dateKey,
+        },
+      });
+      updatedCompletions = [{ date: dateKey }, ...habit.completions];
     }
 
-    const completion = await db.habitCompletion.create({
+    const newCurrentStreak = calculateCurrentStreak(updatedCompletions);
+    const newBestStreak = calculateBestStreak(updatedCompletions);
+
+    await db.habit.update({
+      where: { id },
       data: {
-        habitId: id,
-        userId: user.id,
-        date: dateKey,
+        currentStreak: newCurrentStreak,
+        bestStreak: newBestStreak,
       },
     });
 
-    return c.json({ completed: true, completion });
+    const allUserCompletions = await db.habitCompletion.findMany({
+      where: { userId: user.id },
+      select: { date: true },
+      orderBy: { date: 'desc' },
+    });
+
+    const uniqueDates = [
+      ...new Set(allUserCompletions.map((c) => c.date.getTime())),
+    ]
+      .map((t) => new Date(t))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    const userLongestStreak = calculateBestStreak(
+      uniqueDates.map((date) => ({ date }))
+    );
+
+    await db.habitStats.upsert({
+      where: { userId: user.id },
+      update: { longestStreak: userLongestStreak },
+      create: {
+        userId: user.id,
+        longestStreak: userLongestStreak,
+        totalHabits: 0,
+      },
+    });
+
+    return c.json({
+      completed: !existing,
+      completion: existing ? null : { date: dateKey },
+    });
   })
   .post('/:id/toggle-date', zValidator('json', toggleDateSchema), async (c) => {
     const user = c.get('user');
@@ -225,6 +277,12 @@ export const habitsRouter = new Hono()
         id,
         userId: user.id,
         archived: false,
+      },
+      include: {
+        completions: {
+          orderBy: { date: 'desc' },
+          select: { date: true },
+        },
       },
     });
 
@@ -250,22 +308,67 @@ export const habitsRouter = new Hono()
       },
     });
 
+    let updatedCompletions = habit.completions;
+
     if (existing) {
       await db.habitCompletion.delete({
         where: { id: existing.id },
       });
-      return c.json({ completed: false });
+      updatedCompletions = habit.completions.filter(
+        (c) => c.date.getTime() !== dateKey.getTime()
+      );
+    } else {
+      await db.habitCompletion.create({
+        data: {
+          habitId: id,
+          userId: user.id,
+          date: dateKey,
+        },
+      });
+      updatedCompletions = [{ date: dateKey }, ...habit.completions];
     }
 
-    const completion = await db.habitCompletion.create({
+    const newCurrentStreak = calculateCurrentStreak(updatedCompletions);
+    const newBestStreak = calculateBestStreak(updatedCompletions);
+
+    await db.habit.update({
+      where: { id },
       data: {
-        habitId: id,
-        userId: user.id,
-        date: dateKey,
+        currentStreak: newCurrentStreak,
+        bestStreak: newBestStreak,
       },
     });
 
-    return c.json({ completed: true, completion });
+    const allUserCompletions = await db.habitCompletion.findMany({
+      where: { userId: user.id },
+      select: { date: true },
+      orderBy: { date: 'desc' },
+    });
+
+    const uniqueDates = [
+      ...new Set(allUserCompletions.map((c) => c.date.getTime())),
+    ]
+      .map((t) => new Date(t))
+      .sort((a, b) => b.getTime() - a.getTime());
+
+    const userLongestStreak = calculateBestStreak(
+      uniqueDates.map((date) => ({ date }))
+    );
+
+    await db.habitStats.upsert({
+      where: { userId: user.id },
+      update: { longestStreak: userLongestStreak },
+      create: {
+        userId: user.id,
+        longestStreak: userLongestStreak,
+        totalHabits: 0,
+      },
+    });
+
+    return c.json({
+      completed: !existing,
+      completion: existing ? null : { date: dateKey },
+    });
   })
   .get(
     '/chart',
@@ -279,43 +382,45 @@ export const habitsRouter = new Hono()
       const user = c.get('user');
       const { days } = c.req.valid('query');
 
-      const chartData = [];
       const endDate = new Date();
 
-      for (let i = days - 1; i >= 0; i--) {
-        const dateKey = addUTCDays(endDate, -i);
+      const chartData = await Promise.all(
+        Array.from({ length: days }, async (_, index) => {
+          const i = days - 1 - index;
+          const dateKey = addUTCDays(endDate, -i);
 
-        const [totalHabits, completedCount] = await Promise.all([
-          db.habit.count({
-            where: {
-              userId: user.id,
-              archived: false,
-              createdAt: { lte: dateKey },
-            },
-          }),
-          db.habitCompletion.count({
-            where: {
-              userId: user.id,
-              date: dateKey,
-            },
-          }),
-        ]);
+          const [totalHabits, completedCount] = await Promise.all([
+            db.habit.count({
+              where: {
+                userId: user.id,
+                archived: false,
+                createdAt: { lte: dateKey },
+              },
+            }),
+            db.habitCompletion.count({
+              where: {
+                userId: user.id,
+                date: dateKey,
+              },
+            }),
+          ]);
 
-        const completionRate =
-          totalHabits > 0
-            ? Math.round((completedCount / totalHabits) * 100)
-            : 0;
+          const completionRate =
+            totalHabits > 0
+              ? Math.round((completedCount / totalHabits) * 100)
+              : 0;
 
-        const dateLabel =
-          days <= 7
-            ? dateKey.toLocaleDateString('en-US', { weekday: 'short' })
-            : `${dateKey.getUTCMonth() + 1}/${dateKey.getUTCDate()}`;
+          const dateLabel =
+            days <= 7
+              ? dateKey.toLocaleDateString('en-US', { weekday: 'short' })
+              : `${dateKey.getUTCMonth() + 1}/${dateKey.getUTCDate()}`;
 
-        chartData.push({
-          date: dateLabel,
-          completionRate,
-        });
-      }
+          return {
+            date: dateLabel,
+            completionRate,
+          };
+        })
+      );
 
       return c.json({ chartData });
     }
@@ -333,155 +438,42 @@ export const habitsRouter = new Hono()
         userId: user.id,
         archived: false,
       },
-      include: {
+      select: {
+        currentStreak: true,
+        bestStreak: true,
         completions: {
-          orderBy: { date: 'desc' },
+          where: { date: todayKey },
           select: { date: true },
         },
       },
     });
 
-    const startOfWeek = new Date(todayKey);
-    const dayOfWeek = todayKey.getUTCDay();
-    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    startOfWeek.setUTCDate(todayKey.getUTCDate() - daysToMonday);
-
-    const weekDaysWithActivity = new Set<string>();
-    const weekCompletions: { date: Date; count: number }[] = [];
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setUTCDate(startOfWeek.getUTCDate() + i);
-
-      const completedCount = habits.filter((habit) =>
-        habit.completions.some((comp) => {
-          const compDate = new Date(comp.date);
-          return compDate.getTime() === date.getTime();
-        })
-      ).length;
-
-      if (completedCount > 0) {
-        weekDaysWithActivity.add(date.toISOString());
-      }
-
-      weekCompletions.push({ date, count: completedCount });
-    }
-
-    let longestStreak = 0;
-    let bestStreak = 0;
-    let activeStreakCount = 0;
-
-    for (const habit of habits) {
-      const currentStreak = calculateCurrentStreak(habit.completions);
-      const allTimeStreak = calculateBestStreak(habit.completions);
-
-      if (currentStreak > 0) {
-        activeStreakCount++;
-      }
-
-      if (currentStreak > longestStreak) {
-        longestStreak = currentStreak;
-      }
-
-      if (allTimeStreak > bestStreak) {
-        bestStreak = allTimeStreak;
-      }
-    }
+    const habitStats = await db.habitStats.findUnique({
+      where: { userId: user.id },
+      select: { longestStreak: true },
+    });
 
     const totalHabits = habits.length;
-    const weekCompletionRate =
-      totalHabits > 0
-        ? Math.round(
-            (weekCompletions.reduce((sum, day) => sum + day.count, 0) /
-              (totalHabits * 7)) *
-              100
-          )
-        : 0;
-
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
+    const completedToday = habits.filter(
+      (h) => h.completions.length > 0
+    ).length;
+    const activeStreakCount = habits.filter((h) => h.currentStreak > 0).length;
+    const longestCurrentStreak = Math.max(
+      ...habits.map((h) => h.currentStreak),
+      0
+    );
+    const bestStreak = Math.max(...habits.map((h) => h.bestStreak), 0);
 
     return c.json({
       stats: {
-        weekConsistency: weekDaysWithActivity.size,
+        totalHabits,
+        completedToday,
         activeStreakCount,
-        longestStreak,
+        longestCurrentStreak,
         bestStreak,
-        completionRate: weekCompletionRate,
-        weekStart: startOfWeek.toISOString(),
-        weekEnd: endOfWeek.toISOString(),
+        longestStreak: habitStats?.longestStreak ?? 0,
       },
     });
   });
-
-function calculateCurrentStreak(completions: { date: Date }[]): number {
-  if (completions.length === 0) return 0;
-
-  const today = new Date();
-  const todayKey = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
-  );
-
-  let streak = 0;
-  const checkDate = new Date(todayKey);
-
-  for (const completion of completions) {
-    const compDate = new Date(completion.date);
-    const compKey = new Date(
-      Date.UTC(
-        compDate.getUTCFullYear(),
-        compDate.getUTCMonth(),
-        compDate.getUTCDate()
-      )
-    );
-
-    if (compKey.getTime() === checkDate.getTime()) {
-      streak++;
-      checkDate.setUTCDate(checkDate.getUTCDate() - 1);
-    } else if (compKey.getTime() < checkDate.getTime()) {
-      break;
-    }
-  }
-
-  return streak;
-}
-
-function calculateBestStreak(completions: { date: Date }[]): number {
-  if (completions.length === 0) return 0;
-
-  const sortedDates = completions
-    .map((c) => {
-      const d = new Date(c.date);
-      return new Date(
-        Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
-      );
-    })
-    .sort((a, b) => b.getTime() - a.getTime());
-
-  let maxStreak = 0;
-  let currentStreak = 0;
-  let lastDate: Date | null = null;
-
-  for (const date of sortedDates) {
-    if (!lastDate) {
-      currentStreak = 1;
-    } else {
-      const daysDiff = Math.round(
-        (lastDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-      );
-
-      if (daysDiff === 1) {
-        currentStreak++;
-      } else {
-        maxStreak = Math.max(maxStreak, currentStreak);
-        currentStreak = 1;
-      }
-    }
-
-    lastDate = date;
-  }
-
-  return Math.max(maxStreak, currentStreak);
-}
 
 export type AppType = typeof habitsRouter;

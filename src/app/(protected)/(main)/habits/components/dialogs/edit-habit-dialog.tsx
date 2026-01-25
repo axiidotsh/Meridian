@@ -13,19 +13,18 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useAtom } from 'jotai';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { editingHabitIdAtom } from '../../atoms/dialog-atoms';
 import { useUpdateHabit } from '../../hooks/mutations/use-update-habit';
-import { useHabits } from '../../hooks/queries/use-habits';
+import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
+import { useHabitForm } from '../../hooks/use-habit-form';
 import { enrichHabitsWithMetrics } from '../../utils/habit-calculations';
 
 export const EditHabitDialog = () => {
   const [editingHabitId, setEditingHabitId] = useAtom(editingHabitIdAtom);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
+  const form = useHabitForm();
 
-  const { data: rawHabits = [] } = useHabits(7);
+  const { habits: rawHabits } = useInfiniteHabits({ days: 7 });
   const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
   const habit = habits.find((h) => h.id === editingHabitId) || null;
 
@@ -33,23 +32,19 @@ export const EditHabitDialog = () => {
 
   useEffect(() => {
     if (habit) {
-      setTitle(habit.title);
-      setDescription(habit.description || '');
-      setCategory(habit.category || '');
+      form.setTitle(habit.title);
+      form.setDescription(habit.description || '');
+      form.setCategory(habit.category || '');
     }
-  }, [habit]);
+  }, [habit, form]);
 
   const handleSave = () => {
-    if (!habit || !title.trim()) return;
+    if (!habit || !form.title.trim()) return;
 
     updateHabit.mutate(
       {
         param: { id: habit.id },
-        json: {
-          title: title.trim(),
-          description: description.trim() || undefined,
-          category: category.trim() || undefined,
-        },
+        json: form.getFormData(),
       },
       {
         onSuccess: () => {
@@ -60,7 +55,7 @@ export const EditHabitDialog = () => {
   };
 
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === 'Enter' && title.trim() && !updateHabit.isPending) {
+    if (e.key === 'Enter' && form.title.trim() && !updateHabit.isPending) {
       e.preventDefault();
       handleSave();
     }
@@ -83,8 +78,8 @@ export const EditHabitDialog = () => {
             <Label htmlFor="edit-title">Title</Label>
             <Input
               id="edit-title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={form.title}
+              onChange={(e) => form.setTitle(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={100}
             />
@@ -93,8 +88,8 @@ export const EditHabitDialog = () => {
             <Label htmlFor="edit-description">Description (optional)</Label>
             <Textarea
               id="edit-description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={form.description}
+              onChange={(e) => form.setDescription(e.target.value)}
               maxLength={500}
             />
           </div>
@@ -102,8 +97,8 @@ export const EditHabitDialog = () => {
             <Label htmlFor="edit-category">Category (optional)</Label>
             <Input
               id="edit-category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={form.category}
+              onChange={(e) => form.setCategory(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={50}
             />
@@ -119,7 +114,7 @@ export const EditHabitDialog = () => {
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!title.trim() || updateHabit.isPending}
+            disabled={!form.title.trim() || updateHabit.isPending}
             isLoading={updateHabit.isPending}
             loadingContent="Saving..."
           >

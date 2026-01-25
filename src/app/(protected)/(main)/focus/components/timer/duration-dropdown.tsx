@@ -134,7 +134,7 @@ export const DurationDropdown = ({
               e.stopPropagation();
               handleCustomMinutesSubmit(e);
             }}
-            className="h-8 border-0 bg-transparent! ring-0!"
+            className="h-8 border-0 bg-transparent! shadow-none ring-0!"
             type="text"
             inputMode="numeric"
           />

@@ -26,10 +26,7 @@ import {
   statusFilterAtom,
 } from '../atoms/habit-atoms';
 import { useInfiniteHabits } from '../hooks/queries/use-infinite-habits';
-import {
-  enrichHabitsWithMetrics,
-  filterHabits,
-} from '../utils/habit-calculations';
+import { enrichHabitsWithMetrics } from '../utils/habit-calculations';
 import { HabitTableRow } from './habit-table-row';
 
 export const HabitsTable = () => {
@@ -51,6 +48,7 @@ export const HabitsTable = () => {
     search: debouncedSearchQuery || undefined,
     sortBy,
     sortOrder,
+    status: statusFilter,
   });
 
   const { ref: sentinelRef } = useInView({
@@ -63,11 +61,6 @@ export const HabitsTable = () => {
   });
 
   const habits = useMemo(() => enrichHabitsWithMetrics(rawHabits), [rawHabits]);
-
-  const filteredHabits = useMemo(
-    () => filterHabits(habits, '', statusFilter),
-    [habits, statusFilter]
-  );
 
   const days = getLast7DaysUTC();
 
@@ -128,7 +121,7 @@ export const HabitsTable = () => {
     );
   }
 
-  if (filteredHabits.length === 0) {
+  if (habits.length === 0) {
     return (
       <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-32 text-center sm:py-48">
         <TargetIcon className="mb-2 size-12 stroke-1 opacity-50" />
@@ -178,7 +171,7 @@ export const HabitsTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredHabits.map((habit) => (
+          {habits.map((habit) => (
             <HabitTableRow key={habit.id} habit={habit} />
           ))}
           {isFetchingNextPage && (

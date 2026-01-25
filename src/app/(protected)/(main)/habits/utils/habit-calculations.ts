@@ -1,4 +1,3 @@
-import { isSameDayUTC } from '@/utils/date-utc';
 import type { CompletionRecord, Habit, HabitWithMetrics } from '../hooks/types';
 
 export function calculateCurrentStreak(
@@ -84,20 +83,9 @@ export function calculateBestStreak(
 }
 
 export function enrichHabitsWithMetrics(habits: Habit[]): HabitWithMetrics[] {
-  const now = new Date();
-  const today = new Date(
-    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
-  );
-
   return habits.map((habit) => {
     const completions = habit.completions || [];
-    const currentStreak = calculateCurrentStreak(completions);
-    const bestStreak = calculateBestStreak(completions);
     const totalCompletions = completions.length;
-
-    const completedToday = completions.some((c) =>
-      isSameDayUTC(new Date(c.date), today)
-    );
 
     const completionHistory: CompletionRecord[] = completions.map((c) => ({
       date: new Date(c.date),
@@ -106,10 +94,7 @@ export function enrichHabitsWithMetrics(habits: Habit[]): HabitWithMetrics[] {
 
     return {
       ...habit,
-      currentStreak,
-      bestStreak,
       totalCompletions,
-      completed: completedToday,
       completionHistory,
     };
   });

@@ -8,10 +8,18 @@ interface UseInfiniteHabitsOptions {
   limit?: number;
   sortBy?: 'title' | 'createdAt' | 'currentStreak' | 'bestStreak';
   sortOrder?: 'asc' | 'desc';
+  status?: 'all' | 'completed' | 'pending';
 }
 
 export function useInfiniteHabits(options: UseInfiniteHabitsOptions = {}) {
-  const { search, days = 7, limit = 50, sortBy, sortOrder = 'asc' } = options;
+  const {
+    search,
+    days = 7,
+    limit = 50,
+    sortBy,
+    sortOrder = 'asc',
+    status = 'all',
+  } = options;
 
   const query = useApiInfiniteQuery(api.habits.$get, {
     queryKey: [
@@ -21,12 +29,14 @@ export function useInfiniteHabits(options: UseInfiniteHabitsOptions = {}) {
       limit,
       sortBy,
       sortOrder,
+      status,
     ],
     getInput: (offset) => ({
       query: {
         offset: offset.toString(),
         limit: limit.toString(),
         days: days.toString(),
+        status,
         ...(search && { search }),
         ...(sortBy && { sortBy, sortOrder }),
       },

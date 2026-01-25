@@ -34,16 +34,20 @@ const getHabitsQuerySchema = z.object({
     .enum(['title', 'createdAt', 'currentStreak', 'bestStreak'])
     .default('createdAt'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
+  status: z.enum(['all', 'completed', 'pending']).default('all'),
 });
 
 export const habitsRouter = new Hono()
   .use(authMiddleware)
   .get('/', zValidator('query', getHabitsQuerySchema), async (c) => {
     const user = c.get('user');
-    const { days, limit, offset, search, sortBy, sortOrder } =
+    const { days, limit, offset, search, sortBy, sortOrder, status } =
       c.req.valid('query');
 
     const now = new Date();
+    const todayKey = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+    );
     const cutoffDate = new Date(
       Date.UTC(
         now.getUTCFullYear(),
@@ -63,6 +67,10 @@ export const habitsRouter = new Hono()
         title?: { contains: string; mode: 'insensitive' };
         category?: { contains: string; mode: 'insensitive' };
       }>;
+      completions?: {
+        some?: { date: Date };
+        none?: { date: Date };
+      };
     } = {
       userId: user.id,
       archived: false,
@@ -73,6 +81,12 @@ export const habitsRouter = new Hono()
         { title: { contains: search, mode: 'insensitive' } },
         { category: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    if (status === 'completed') {
+      where.completions = { some: { date: todayKey } };
+    } else if (status === 'pending') {
+      where.completions = { none: { date: todayKey } };
     }
 
     const orderBy: Record<string, 'asc' | 'desc'>[] = [
@@ -100,10 +114,17 @@ export const habitsRouter = new Hono()
       db.habit.count({ where }),
     ]);
 
+    const habitsWithStatus = habits.map((habit) => ({
+      ...habit,
+      completed: habit.completions.some(
+        (c) => c.date.getTime() === todayKey.getTime()
+      ),
+    }));
+
     const hasMore = offset + limit < totalCount;
     const nextOffset = hasMore ? offset + limit : null;
 
-    return c.json({ habits, nextOffset });
+    return c.json({ habits: habitsWithStatus, nextOffset });
   })
   .post('/', zValidator('json', createHabitSchema), async (c) => {
     const user = c.get('user');

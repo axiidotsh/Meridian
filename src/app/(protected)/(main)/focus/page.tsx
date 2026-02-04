@@ -15,7 +15,7 @@ export default function FocusPage() {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col overflow-y-auto">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-row items-center justify-between gap-3">
           <div className="flex flex-row items-center gap-3">
             <PageHeading>Focus</PageHeading>
             <FocusMetricsBadges />
@@ -26,7 +26,7 @@ export default function FocusPage() {
             onClick={() => setShowSessionsDialog(true)}
           >
             <HistoryIcon />
-            Recent Sessions
+            <span className="hidden sm:inline">Recent Sessions</span>
           </Button>
         </div>
       </div>

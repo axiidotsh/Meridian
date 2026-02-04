@@ -272,10 +272,24 @@ async function createFocusSessions() {
 
   for (const user of users) {
     const sessions = [];
+    const now = new Date();
     for (let i = 1; i <= 75; i++) {
       const durationMinutes = [25, 45, 60, 90][i % 4];
       const daysAgo = Math.floor(i / 2);
-      const startedAt = new Date(Date.now() - daysAgo * 86400000);
+      const hourOfDay = 8 + (i % 12);
+
+      const startedAt = new Date(
+        Date.UTC(
+          now.getUTCFullYear(),
+          now.getUTCMonth(),
+          now.getUTCDate() - daysAgo,
+          hourOfDay,
+          0,
+          0,
+          0
+        )
+      );
+
       const completedAt = new Date(
         startedAt.getTime() + durationMinutes * 60000
       );

@@ -1,4 +1,4 @@
-import { addUTCDays, getUTCStartOfDaysAgo } from '@/utils/date-utc';
+import { getUTCDateKey, getUTCStartOfDaysAgo } from '@/utils/date-utc';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -108,8 +108,7 @@ export const focusRouter = new Hono()
     const user = c.get('user');
     const { days } = c.req.valid('query');
 
-    const now = new Date();
-    const startDate = addUTCDays(now, -(days - 1));
+    const startDate = getUTCStartOfDaysAgo(days - 1);
 
     const sessions = await db.focusSession.findMany({
       where: {
@@ -126,7 +125,7 @@ export const focusRouter = new Hono()
     const dataMap = new Map<string, { totalMinutes: number; count: number }>();
 
     sessions.forEach((session) => {
-      const dateKey = session.startedAt.toISOString().split('T')[0];
+      const dateKey = getUTCDateKey(session.startedAt);
       const existing = dataMap.get(dateKey) || { totalMinutes: 0, count: 0 };
       dataMap.set(dateKey, {
         totalMinutes: existing.totalMinutes + session.durationMinutes,
@@ -135,8 +134,9 @@ export const focusRouter = new Hono()
     });
 
     const chartData = Array.from({ length: days }, (_, i) => {
-      const date = addUTCDays(now, -(days - 1 - i));
-      const dateKey = date.toISOString().split('T')[0];
+      const daysAgo = days - 1 - i;
+      const date = getUTCStartOfDaysAgo(daysAgo);
+      const dateKey = getUTCDateKey(date);
       const data = dataMap.get(dateKey) || { totalMinutes: 0, count: 0 };
 
       const dateLabel =

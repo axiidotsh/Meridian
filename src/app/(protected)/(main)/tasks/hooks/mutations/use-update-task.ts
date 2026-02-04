@@ -9,6 +9,7 @@ export function useUpdateTask() {
       TASK_QUERY_KEYS.all,
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
+      DASHBOARD_QUERY_KEYS.dashboardTasks,
     ],
     errorMessage: 'Failed to update task',
     successMessage: 'Task updated',

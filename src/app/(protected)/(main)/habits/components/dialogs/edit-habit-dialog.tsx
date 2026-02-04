@@ -14,17 +14,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useAtom } from 'jotai';
 import { useEffect } from 'react';
-import { editingHabitIdAtom } from '../../atoms/dialog-atoms';
+import { editingHabitAtom } from '../../atoms/dialog-atoms';
 import { useUpdateHabit } from '../../hooks/mutations/use-update-habit';
-import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
 import { useHabitForm } from '../../hooks/use-habit-form';
 
 export const EditHabitDialog = () => {
-  const [editingHabitId, setEditingHabitId] = useAtom(editingHabitIdAtom);
+  const [habit, setEditingHabit] = useAtom(editingHabitAtom);
   const form = useHabitForm();
-
-  const { habits } = useInfiniteHabits({ days: 7 });
-  const habit = habits.find((h) => h.id === editingHabitId) || null;
 
   const updateHabit = useUpdateHabit();
 
@@ -46,7 +42,7 @@ export const EditHabitDialog = () => {
       },
       {
         onSuccess: () => {
-          setEditingHabitId(null);
+          setEditingHabit(null);
         },
       }
     );
@@ -61,8 +57,8 @@ export const EditHabitDialog = () => {
 
   return (
     <ResponsiveDialog
-      open={!!editingHabitId}
-      onOpenChange={(open) => !open && setEditingHabitId(null)}
+      open={!!habit}
+      onOpenChange={(open) => !open && setEditingHabit(null)}
     >
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
@@ -105,7 +101,7 @@ export const EditHabitDialog = () => {
         <ResponsiveDialogFooter>
           <Button
             variant="outline"
-            onClick={() => setEditingHabitId(null)}
+            onClick={() => setEditingHabit(null)}
             disabled={updateHabit.isPending}
           >
             Cancel

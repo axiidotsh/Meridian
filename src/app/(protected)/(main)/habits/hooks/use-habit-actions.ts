@@ -1,12 +1,13 @@
 'use client';
 
 import { useSetAtom } from 'jotai';
-import { deletingHabitIdAtom, editingHabitIdAtom } from '../atoms/dialog-atoms';
+import { deletingHabitAtom, editingHabitAtom } from '../atoms/dialog-atoms';
 import { useToggleHabit } from './mutations/use-toggle-habit';
+import type { Habit } from './types';
 
 export function useHabitActions(habitId?: string) {
-  const setEditingHabitId = useSetAtom(editingHabitIdAtom);
-  const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
+  const setEditingHabit = useSetAtom(editingHabitAtom);
+  const setDeletingHabit = useSetAtom(deletingHabitAtom);
   const { toggleToday, toggleDate } = useToggleHabit(habitId);
 
   function handleToggle(id: string) {
@@ -23,12 +24,12 @@ export function useHabitActions(habitId?: string) {
     });
   }
 
-  function handleEdit(id: string) {
-    setEditingHabitId(id);
+  function handleEdit(habit: Habit) {
+    setEditingHabit(habit);
   }
 
-  function handleDelete(id: string) {
-    setDeletingHabitId(id);
+  function handleDelete(habit: Habit) {
+    setDeletingHabit(habit);
   }
 
   return {

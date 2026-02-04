@@ -22,54 +22,35 @@ const heatmapQuerySchema = z.object({
   weeks: z.coerce.number().min(1).max(52).default(52),
 });
 
-interface TaskWithProject {
-  id: string;
-  userId: string;
-  projectId: string | null;
-  title: string;
-  completed: boolean;
-  dueDate: Date | null;
-  priority: 'NO_PRIORITY' | 'LOW' | 'MEDIUM' | 'HIGH';
-  tags: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  project: { id: string; name: string; color: string | null } | null;
-}
-
 export const dashboardRouter = new Hono()
   .use(authMiddleware)
   .get('/tasks', async (c) => {
     const user = c.get('user');
     const today = getUTCMidnight(new Date());
-    const nextWeek = addUTCDays(today, 7);
+    const tomorrow = addUTCDays(today, 1);
 
-    const tasks = await db.$queryRaw<TaskWithProject[]>`
-      SELECT
-        t.*,
-        CASE
-          WHEN t."dueDate" IS NULL THEN 1000 +
-            CASE t.priority
-              WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3
-            END
-          WHEN t."dueDate" < ${today} THEN -100 +
-            EXTRACT(EPOCH FROM (t."dueDate" - ${today})) / 86400 +
-            CASE t.priority WHEN 'HIGH' THEN 0.0 WHEN 'MEDIUM' THEN 0.1 WHEN 'LOW' THEN 0.2 ELSE 0.3 END
-          WHEN DATE(t."dueDate") = DATE(${today}) THEN
-            CASE t.priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END
-          ELSE 10 + EXTRACT(EPOCH FROM (t."dueDate" - ${today})) / 86400 +
-            CASE t.priority WHEN 'HIGH' THEN 0.0 WHEN 'MEDIUM' THEN 0.1 WHEN 'LOW' THEN 0.2 ELSE 0.3 END
-        END as urgency_score,
-        CASE WHEN p.id IS NOT NULL THEN
-          json_build_object('id', p.id, 'name', p.name, 'color', p.color)
-        ELSE NULL END as project
-      FROM tasks t
-      LEFT JOIN projects p ON t."projectId" = p.id
-      WHERE t."userId" = ${user.id}
-        AND t.completed = false
-        AND (t."dueDate" IS NULL OR t."dueDate" <= ${nextWeek})
-      ORDER BY urgency_score ASC
-      LIMIT ${DASHBOARD_TASK_LIMIT}
-    `;
+    const tasks = await db.task.findMany({
+      where: {
+        userId: user.id,
+        dueDate: {
+          not: null,
+          lt: tomorrow,
+        },
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            color: true,
+          },
+        },
+      },
+      orderBy: {
+        dueDate: 'asc',
+      },
+      take: DASHBOARD_TASK_LIMIT,
+    });
 
     return c.json({ tasks });
   })
@@ -80,12 +61,9 @@ export const dashboardRouter = new Hono()
     const todayKey = getUTCMidnight(now);
     const weekAgo = addUTCDays(todayKey, -7);
 
-    const incompleteHabits = await db.habit.findMany({
+    const allHabits = await db.habit.findMany({
       where: {
         userId: user.id,
-        completions: {
-          none: { date: todayKey },
-        },
       },
       include: {
         completions: {
@@ -95,16 +73,19 @@ export const dashboardRouter = new Hono()
       },
     });
 
-    const habitsWithStreaks = incompleteHabits.map((habit) => {
+    const habitsWithStreaks = allHabits.map((habit) => {
       const dates = getActivityDates(habit.completions);
       const { currentStreak, bestStreak } = calculateStreakFromDates(dates);
+      const isCompletedToday = habit.completions.some(
+        (c) => c.date.getTime() === todayKey.getTime()
+      );
       return {
         ...habit,
         currentStreak,
         bestStreak,
         totalCompletions: habit.completions.filter((c) => c.date >= weekAgo)
           .length,
-        completed: false,
+        completed: isCompletedToday,
         completionHistory: habit.completions
           .filter((c) => c.date >= weekAgo)
           .map((c) => ({
@@ -114,9 +95,9 @@ export const dashboardRouter = new Hono()
       };
     });
 
-    const sortedHabits = habitsWithStreaks
-      .sort((a, b) => b.currentStreak - a.currentStreak)
-      .slice(0, DASHBOARD_TASK_LIMIT);
+    const sortedHabits = habitsWithStreaks.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+    );
 
     return c.json({ habits: sortedHabits });
   })

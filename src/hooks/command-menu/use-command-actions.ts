@@ -6,8 +6,8 @@ import {
 } from '@/app/(protected)/(main)/focus/atoms/session-dialogs';
 import { useFocusSession } from '@/app/(protected)/(main)/focus/hooks/mutations/use-focus-session';
 import {
-  deletingHabitIdAtom,
-  editingHabitIdAtom,
+  deletingHabitAtom,
+  editingHabitAtom,
 } from '@/app/(protected)/(main)/habits/atoms/dialog-atoms';
 import { useToggleHabit } from '@/app/(protected)/(main)/habits/hooks/mutations/use-toggle-habit';
 import { useUpdateSettings } from '@/app/(protected)/(main)/settings/hooks/mutations/use-update-settings';
@@ -28,8 +28,8 @@ export function useCommandActions() {
   const setDeletingTask = useSetAtom(deletingTaskAtom);
   const setEditingProject = useSetAtom(editingProjectAtom);
   const setDeletingProject = useSetAtom(deletingProjectAtom);
-  const setEditingHabitId = useSetAtom(editingHabitIdAtom);
-  const setDeletingHabitId = useSetAtom(deletingHabitIdAtom);
+  const setEditingHabit = useSetAtom(editingHabitAtom);
+  const setDeletingHabit = useSetAtom(deletingHabitAtom);
   const setEditingSession = useSetAtom(editingSessionAtom);
   const setDeletingSession = useSetAtom(deletingSessionAtom);
   const setCreateCustomSession = useSetAtom(createCustomSessionAtom);
@@ -96,13 +96,13 @@ export function useCommandActions() {
         case 'edit':
           if (item.type === 'todo') setEditingTask(item.data);
           if (item.type === 'project') setEditingProject(item.data);
-          if (item.type === 'habit') setEditingHabitId(item.data.id);
+          if (item.type === 'habit') setEditingHabit(item.data);
           if (item.type === 'session') setEditingSession(item.data);
           break;
         case 'delete':
           if (item.type === 'todo') setDeletingTask(item.data);
           if (item.type === 'project') setDeletingProject(item.data);
-          if (item.type === 'habit') setDeletingHabitId(item.data.id);
+          if (item.type === 'habit') setDeletingHabit(item.data);
           if (item.type === 'session') setDeletingSession(item.data);
           break;
       }
@@ -113,8 +113,8 @@ export function useCommandActions() {
       setDeletingTask,
       setEditingProject,
       setDeletingProject,
-      setEditingHabitId,
-      setDeletingHabitId,
+      setEditingHabit,
+      setDeletingHabit,
       setEditingSession,
       setDeletingSession,
       setCreateCustomSession,

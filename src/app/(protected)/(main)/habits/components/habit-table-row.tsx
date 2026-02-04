@@ -78,13 +78,13 @@ export const HabitTableRow = ({ habit }: HabitTableRowProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => handleEdit(habit.id)}>
+            <DropdownMenuItem onSelect={() => handleEdit(habit)}>
               <PencilIcon />
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
               variant="destructive"
-              onSelect={() => handleDelete(habit.id)}
+              onSelect={() => handleDelete(habit)}
             >
               <Trash2Icon />
               Delete

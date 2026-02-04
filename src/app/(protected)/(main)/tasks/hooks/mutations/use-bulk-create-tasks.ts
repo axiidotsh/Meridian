@@ -9,6 +9,7 @@ export function useBulkCreateTasks() {
       TASK_QUERY_KEYS.all,
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
+      DASHBOARD_QUERY_KEYS.dashboardTasks,
     ],
     errorMessage: 'Failed to create tasks',
     successMessage: 'Tasks created',

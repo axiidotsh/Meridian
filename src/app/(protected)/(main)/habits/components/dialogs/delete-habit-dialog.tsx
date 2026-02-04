@@ -10,15 +10,11 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
-import { deletingHabitIdAtom } from '../../atoms/dialog-atoms';
+import { deletingHabitAtom } from '../../atoms/dialog-atoms';
 import { useDeleteHabit } from '../../hooks/mutations/use-delete-habit';
-import { useInfiniteHabits } from '../../hooks/queries/use-infinite-habits';
 
 export const DeleteHabitDialog = () => {
-  const [deletingHabitId, setDeletingHabitId] = useAtom(deletingHabitIdAtom);
-
-  const { habits } = useInfiniteHabits({ days: 7 });
-  const habit = habits.find((h) => h.id === deletingHabitId) || null;
+  const [habit, setDeletingHabit] = useAtom(deletingHabitAtom);
 
   const deleteHabit = useDeleteHabit();
 
@@ -29,7 +25,7 @@ export const DeleteHabitDialog = () => {
       { param: { id: habit.id } },
       {
         onSuccess: () => {
-          setDeletingHabitId(null);
+          setDeletingHabit(null);
         },
       }
     );
@@ -37,8 +33,8 @@ export const DeleteHabitDialog = () => {
 
   return (
     <ResponsiveDialog
-      open={!!deletingHabitId}
-      onOpenChange={(open) => !open && setDeletingHabitId(null)}
+      open={!!habit}
+      onOpenChange={(open) => !open && setDeletingHabit(null)}
     >
       <ResponsiveDialogContent showCloseButton={false}>
         <ResponsiveDialogHeader>
@@ -51,7 +47,7 @@ export const DeleteHabitDialog = () => {
         <ResponsiveDialogFooter>
           <Button
             variant="outline"
-            onClick={() => setDeletingHabitId(null)}
+            onClick={() => setDeletingHabit(null)}
             disabled={deleteHabit.isPending}
           >
             Cancel

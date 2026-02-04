@@ -1,6 +1,7 @@
 'use client';
 
 import { ErrorState } from '@/components/error-state';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PartyPopperIcon } from 'lucide-react';
 import { ContentCard } from '../../components/content-card';
@@ -50,11 +51,13 @@ export const DashboardTaskList = () => {
     }
 
     return (
-      <ul className="mt-6 space-y-3">
-        {tasks.map((task) => (
-          <TaskListItem key={task.id} task={task} />
-        ))}
-      </ul>
+      <ScrollArea className="mt-6 h-80">
+        <ul className="space-y-3 pr-4">
+          {tasks.map((task) => (
+            <TaskListItem key={task.id} task={task} />
+          ))}
+        </ul>
+      </ScrollArea>
     );
   };
 

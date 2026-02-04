@@ -2,6 +2,7 @@
 
 import { ErrorState } from '@/components/error-state';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useSetAtom } from 'jotai';
 import { PartyPopperIcon, PlusIcon } from 'lucide-react';
@@ -46,18 +47,20 @@ export const DashboardHabitList = () => {
       return (
         <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-16 text-center">
           <PartyPopperIcon className="mb-2 size-12 stroke-1 opacity-50" />
-          <p className="text-sm font-medium">All caught up!</p>
-          <p className="text-xs">All habits completed for today</p>
+          <p className="text-sm font-medium">No habits yet</p>
+          <p className="text-xs">Create your first habit to get started</p>
         </div>
       );
     }
 
     return (
-      <ul className="mt-6 space-y-3">
-        {habits.map((habit) => (
-          <DashboardHabitItem key={habit.id} habit={habit} />
-        ))}
-      </ul>
+      <ScrollArea className="mt-6 h-80">
+        <ul className="space-y-3 pr-4">
+          {habits.map((habit) => (
+            <DashboardHabitItem key={habit.id} habit={habit} />
+          ))}
+        </ul>
+      </ScrollArea>
     );
   };
 

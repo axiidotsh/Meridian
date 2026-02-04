@@ -11,6 +11,7 @@ export function useDeleteHabit() {
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
       DASHBOARD_QUERY_KEYS.habitChart,
+      DASHBOARD_QUERY_KEYS.dashboardHabits,
     ],
     errorMessage: 'Failed to delete habit',
     successMessage: 'Habit deleted',

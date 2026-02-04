@@ -36,9 +36,9 @@ export async function getHeatmapData(
       where: {
         userId,
         completed: true,
-        updatedAt: { gte: startDate },
+        completedAt: { gte: startDate },
       },
-      select: { updatedAt: true },
+      select: { completedAt: true },
     }),
     client.habitCompletion.findMany({
       where: {
@@ -74,7 +74,8 @@ export async function getHeatmapData(
   });
 
   completedTasks.forEach((task) => {
-    const key = getUTCDateKey(task.updatedAt);
+    if (!task.completedAt) return;
+    const key = getUTCDateKey(task.completedAt);
     const data = dataMap.get(key);
     if (data) {
       data.tasksCompleted++;

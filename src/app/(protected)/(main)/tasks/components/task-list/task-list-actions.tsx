@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/utils/utils';
@@ -65,7 +66,7 @@ export const TaskListActions = () => {
               tooltip="Filter tasks"
               className={cn(
                 hasActiveFilters &&
-                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/20'
               )}
             >
               <FilterIcon />
@@ -106,7 +107,7 @@ export const TaskListActions = () => {
               tooltip="Sort tasks"
               className={cn(
                 hasActiveSorting &&
-                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/20'
               )}
             >
               <ArrowDownUpIcon />
@@ -183,6 +184,20 @@ export const TaskListActions = () => {
                 { label: 'Z → A', order: 'desc' },
               ]}
             />
+            {hasActiveSorting && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setSortBy('dueDate');
+                    setSortOrder('asc');
+                  }}
+                  className="justify-center"
+                >
+                  Reset sorting
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>

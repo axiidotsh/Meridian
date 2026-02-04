@@ -7,6 +7,8 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/utils/utils';
@@ -39,7 +41,7 @@ export const HabitListActions = () => {
               tooltip="Filter habits"
               className={cn(
                 hasActiveFilters &&
-                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/20'
               )}
             >
               <FilterIcon />
@@ -64,6 +66,17 @@ export const HabitListActions = () => {
             >
               Pending today
             </DropdownMenuCheckboxItem>
+            {hasActiveFilters && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => setStatusFilter('all')}
+                  className="justify-center"
+                >
+                  Reset filter
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
@@ -74,7 +87,7 @@ export const HabitListActions = () => {
               tooltip="Sort habits"
               className={cn(
                 hasActiveSorting &&
-                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                  'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/20'
               )}
             >
               <ArrowDownUpIcon />
@@ -137,6 +150,20 @@ export const HabitListActions = () => {
                 { label: 'Oldest → Newest', order: 'asc' },
               ]}
             />
+            {hasActiveSorting && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={() => {
+                    setSortBy('currentStreak');
+                    setSortOrder('desc');
+                  }}
+                  className="justify-center"
+                >
+                  Reset sorting
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </ButtonGroup>

@@ -41,7 +41,7 @@ export const ProjectFilterMenu = ({
         <div className="flex w-full items-center justify-between">
           Filter by projects
           {selectedProjects.length > 0 && (
-            <span className="bg-primary/15 text-primary ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium">
+            <span className="bg-primary/15 text-primary dark:bg-primary/20 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium">
               {selectedProjects.length}
             </span>
           )}

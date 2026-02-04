@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -79,7 +81,7 @@ export const RecentSessionsDialog = () => {
                   tooltip="Sort sessions"
                   className={cn(
                     hasActiveSorting &&
-                      'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary'
+                      'bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary dark:bg-primary/15 dark:hover:bg-primary/20'
                   )}
                 >
                   <ArrowDownUpIcon />
@@ -128,6 +130,20 @@ export const RecentSessionsDialog = () => {
                     { label: 'Shortest → Longest', order: 'asc' },
                   ]}
                 />
+                {hasActiveSorting && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={() => {
+                        setSortBy('date');
+                        setSortOrder('desc');
+                      }}
+                      className="justify-center"
+                    >
+                      Reset sorting
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

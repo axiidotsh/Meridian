@@ -19,15 +19,15 @@ export async function getOverallStats(
 ): Promise<OverallStats> {
   const [focusSessions, completedTasks, habitCompletions] = await Promise.all([
     client.focusSession.findMany({
-      where: { userId, status: 'COMPLETED' },
+      where: { userId, status: 'COMPLETED', deletedAt: null },
       select: { startedAt: true },
     }),
     client.task.findMany({
-      where: { userId, completed: true },
+      where: { userId, completed: true, deletedAt: null },
       select: { updatedAt: true },
     }),
     client.habitCompletion.findMany({
-      where: { userId },
+      where: { userId, habit: { deletedAt: null } },
       select: { date: true },
     }),
   ]);

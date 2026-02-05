@@ -58,6 +58,7 @@ export const habitsRouter = new Hono()
 
     const where: {
       userId: string;
+      deletedAt: null;
       OR?: Array<{
         title?: { contains: string; mode: 'insensitive' };
         category?: { contains: string; mode: 'insensitive' };
@@ -68,6 +69,7 @@ export const habitsRouter = new Hono()
       };
     } = {
       userId: user.id,
+      deletedAt: null,
     };
 
     if (search) {
@@ -178,6 +180,7 @@ export const habitsRouter = new Hono()
       where: {
         id,
         userId: user.id,
+        deletedAt: null,
       },
     });
 
@@ -204,6 +207,7 @@ export const habitsRouter = new Hono()
       where: {
         id,
         userId: user.id,
+        deletedAt: null,
       },
     });
 
@@ -211,8 +215,9 @@ export const habitsRouter = new Hono()
       return c.json({ error: 'Habit not found' }, 404);
     }
 
-    await db.habit.delete({
+    await db.habit.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
 
     return c.json({ success: true });
@@ -225,6 +230,7 @@ export const habitsRouter = new Hono()
       where: {
         id,
         userId: user.id,
+        deletedAt: null,
       },
     });
 
@@ -270,6 +276,7 @@ export const habitsRouter = new Hono()
       where: {
         id,
         userId: user.id,
+        deletedAt: null,
       },
     });
 
@@ -321,7 +328,7 @@ export const habitsRouter = new Hono()
       const now = new Date();
 
       const totalHabits = await db.habit.count({
-        where: { userId: user.id },
+        where: { userId: user.id, deletedAt: null },
       });
 
       const chartData = await Promise.all(
@@ -365,7 +372,7 @@ export const habitsRouter = new Hono()
     const [stats, totalHabits, completedToday, habitsWithStreaks] =
       await Promise.all([
         getHabitStats(user.id),
-        db.habit.count({ where: { userId: user.id } }),
+        db.habit.count({ where: { userId: user.id, deletedAt: null } }),
         db.habitCompletion.count({
           where: {
             userId: user.id,

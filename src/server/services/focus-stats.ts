@@ -32,24 +32,25 @@ export async function getFocusStats(
   const [sessions, todayAggregate, allTimeBest, totalSessions] =
     await Promise.all([
       client.focusSession.findMany({
-        where: { userId, status: 'COMPLETED' },
+        where: { userId, status: 'COMPLETED', deletedAt: null },
         select: { startedAt: true, durationMinutes: true },
       }),
       client.focusSession.aggregate({
         where: {
           userId,
           status: 'COMPLETED',
+          deletedAt: null,
           startedAt: { gte: todayStart },
         },
         _sum: { durationMinutes: true },
       }),
       client.focusSession.findFirst({
-        where: { userId, status: 'COMPLETED' },
+        where: { userId, status: 'COMPLETED', deletedAt: null },
         orderBy: { durationMinutes: 'desc' },
         select: { durationMinutes: true },
       }),
       client.focusSession.count({
-        where: { userId, status: 'COMPLETED' },
+        where: { userId, status: 'COMPLETED', deletedAt: null },
       }),
     ]);
 

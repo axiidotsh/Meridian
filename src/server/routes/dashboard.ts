@@ -32,6 +32,7 @@ export const dashboardRouter = new Hono()
     const tasks = await db.task.findMany({
       where: {
         userId: user.id,
+        deletedAt: null,
         dueDate: {
           not: null,
           lt: tomorrow,
@@ -64,6 +65,7 @@ export const dashboardRouter = new Hono()
     const allHabits = await db.habit.findMany({
       where: {
         userId: user.id,
+        deletedAt: null,
       },
       include: {
         completions: {
@@ -124,6 +126,7 @@ export const dashboardRouter = new Hono()
         where: {
           userId: user.id,
           status: 'COMPLETED',
+          deletedAt: null,
           startedAt: { gte: todayKey, lt: tomorrowKey },
         },
         _sum: { durationMinutes: true },
@@ -132,6 +135,7 @@ export const dashboardRouter = new Hono()
         where: {
           userId: user.id,
           status: 'COMPLETED',
+          deletedAt: null,
           startedAt: { gte: yesterday, lt: todayKey },
         },
         _sum: { durationMinutes: true },
@@ -140,12 +144,14 @@ export const dashboardRouter = new Hono()
         where: {
           userId: user.id,
           status: { in: ['ACTIVE', 'PAUSED'] },
+          deletedAt: null,
         },
         orderBy: { startedAt: 'desc' },
       }),
       db.task.findMany({
         where: {
           userId: user.id,
+          deletedAt: null,
           dueDate: {
             not: null,
             lt: tomorrowKey,
@@ -182,6 +188,7 @@ export const dashboardRouter = new Hono()
         LEFT JOIN habit_completions hc1 ON h.id = hc1."habitId" AND hc1.date = ${todayKey}
         LEFT JOIN habit_completions hc2 ON h.id = hc2."habitId" AND hc2.date >= ${weekAgoKey}
         WHERE h."userId" = ${user.id}
+          AND h."deletedAt" IS NULL
       `,
       getOverallStats(user.id),
     ]);

@@ -39,6 +39,7 @@ export const focusRouter = new Hono()
       where: {
         userId: user.id,
         status: { in: ['ACTIVE', 'PAUSED'] },
+        deletedAt: null,
       },
       orderBy: { startedAt: 'desc' },
     });
@@ -53,11 +54,13 @@ export const focusRouter = new Hono()
     const whereClause: {
       userId: string;
       status: 'COMPLETED';
+      deletedAt: null;
       startedAt?: { gte?: Date };
       task?: { contains: string; mode: 'insensitive' };
     } = {
       userId: user.id,
       status: 'COMPLETED',
+      deletedAt: null,
     };
 
     if (days) {
@@ -115,6 +118,7 @@ export const focusRouter = new Hono()
       where: {
         userId: user.id,
         status: 'COMPLETED',
+        deletedAt: null,
         startedAt: { gte: startDate },
       },
       select: {
@@ -160,6 +164,7 @@ export const focusRouter = new Hono()
         const existingActive = await tx.focusSession.findFirst({
           where: {
             userId: user.id,
+            deletedAt: null,
             status: {
               in: ['ACTIVE', 'PAUSED'],
             },
@@ -203,6 +208,7 @@ export const focusRouter = new Hono()
         where: {
           id,
           userId: user.id,
+          deletedAt: null,
         },
       });
 
@@ -229,6 +235,7 @@ export const focusRouter = new Hono()
       where: {
         id,
         userId: user.id,
+        deletedAt: null,
       },
     });
 
@@ -236,8 +243,9 @@ export const focusRouter = new Hono()
       return c.json({ error: 'Session not found' }, 404);
     }
 
-    await db.focusSession.delete({
+    await db.focusSession.update({
       where: { id },
+      data: { deletedAt: new Date() },
     });
 
     return c.json({ success: true });
@@ -251,6 +259,7 @@ export const focusRouter = new Hono()
         id,
         userId: user.id,
         status: 'ACTIVE',
+        deletedAt: null,
       },
     });
 
@@ -281,6 +290,7 @@ export const focusRouter = new Hono()
         id,
         userId: user.id,
         status: 'PAUSED',
+        deletedAt: null,
       },
     });
 
@@ -320,6 +330,7 @@ export const focusRouter = new Hono()
         id,
         userId: user.id,
         status: { in: ['ACTIVE', 'PAUSED'] },
+        deletedAt: null,
       },
     });
 
@@ -358,6 +369,7 @@ export const focusRouter = new Hono()
         id,
         userId: user.id,
         status: { in: ['ACTIVE', 'PAUSED'] },
+        deletedAt: null,
       },
     });
 
@@ -380,6 +392,7 @@ export const focusRouter = new Hono()
         id,
         userId: user.id,
         status: { in: ['ACTIVE', 'PAUSED'] },
+        deletedAt: null,
       },
     });
 

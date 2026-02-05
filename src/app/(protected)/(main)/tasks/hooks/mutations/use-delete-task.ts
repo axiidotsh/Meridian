@@ -1,4 +1,5 @@
 import { DASHBOARD_QUERY_KEYS } from '@/app/(protected)/(main)/dashboard/hooks/dashboard-query-keys';
+import { TRASH_QUERY_KEYS } from '@/app/(protected)/(main)/trash/hooks/trash-query-keys';
 import { useApiMutation } from '@/hooks/use-api-mutation';
 import { api } from '@/lib/rpc';
 import { TASK_QUERY_KEYS } from '../task-query-keys';
@@ -10,8 +11,10 @@ export function useDeleteTask() {
       DASHBOARD_QUERY_KEYS.metrics,
       DASHBOARD_QUERY_KEYS.heatmap,
       DASHBOARD_QUERY_KEYS.dashboardTasks,
+      TRASH_QUERY_KEYS.counts,
+      TRASH_QUERY_KEYS.tasks,
     ],
     errorMessage: 'Failed to delete task',
-    successMessage: 'Task deleted',
+    successMessage: 'Task moved to trash',
   });
 }

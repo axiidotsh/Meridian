@@ -28,6 +28,7 @@ export async function getHeatmapData(
       where: {
         userId,
         status: 'COMPLETED',
+        deletedAt: null,
         startedAt: { gte: startDate },
       },
       select: { startedAt: true, durationMinutes: true },
@@ -36,6 +37,7 @@ export async function getHeatmapData(
       where: {
         userId,
         completed: true,
+        deletedAt: null,
         completedAt: { gte: startDate },
       },
       select: { completedAt: true },
@@ -44,6 +46,7 @@ export async function getHeatmapData(
       where: {
         userId,
         date: { gte: startDate },
+        habit: { deletedAt: null },
       },
       select: { date: true },
     }),

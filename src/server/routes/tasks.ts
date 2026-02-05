@@ -86,18 +86,21 @@ export const tasksRouter = new Hono()
       db.task.count({
         where: {
           userId: user.id,
+          deletedAt: null,
         },
       }),
       db.task.count({
         where: {
           userId: user.id,
           completed: true,
+          deletedAt: null,
         },
       }),
       db.task.count({
         where: {
           userId: user.id,
           completed: false,
+          deletedAt: null,
           dueDate: { lt: startOfToday },
         },
       }),
@@ -133,12 +136,14 @@ export const tasksRouter = new Hono()
           db.task.count({
             where: {
               userId: user.id,
+              deletedAt: null,
               createdAt: { lt: nextDate },
             },
           }),
           db.task.count({
             where: {
               userId: user.id,
+              deletedAt: null,
               completedAt: { gte: date, lt: nextDate },
             },
           }),
@@ -173,11 +178,12 @@ export const tasksRouter = new Hono()
 
     const where: {
       userId: string;
+      deletedAt: null;
       projectId?: { in: string[] };
       completed?: boolean;
       title?: { contains: string; mode: 'insensitive' };
       tags?: { hasSome: string[] };
-    } = { userId: user.id };
+    } = { userId: user.id, deletedAt: null };
 
     if (projectIds) where.projectId = { in: projectIds.split(',') };
     if (completed !== undefined) where.completed = completed;
@@ -185,7 +191,10 @@ export const tasksRouter = new Hono()
     if (tags) where.tags = { hasSome: tags.split(',') };
 
     if (sortBy === 'priority') {
-      const conditions: Prisma.Sql[] = [Prisma.sql`t."userId" = ${user.id}`];
+      const conditions: Prisma.Sql[] = [
+        Prisma.sql`t."userId" = ${user.id}`,
+        Prisma.sql`t."deletedAt" IS NULL`,
+      ];
 
       if (where.projectId) {
         conditions.push(Prisma.sql`t."projectId" = ANY(${where.projectId.in})`);
@@ -354,7 +363,7 @@ export const tasksRouter = new Hono()
     const data = c.req.valid('json');
 
     const existing = await db.task.findFirst({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, deletedAt: null },
     });
 
     if (!existing) {
@@ -404,7 +413,7 @@ export const tasksRouter = new Hono()
     const { id } = c.req.param();
 
     const existing = await db.task.findFirst({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, deletedAt: null },
     });
 
     if (!existing) {
@@ -432,14 +441,17 @@ export const tasksRouter = new Hono()
     const { id } = c.req.param();
 
     const existing = await db.task.findFirst({
-      where: { id, userId: user.id },
+      where: { id, userId: user.id, deletedAt: null },
     });
 
     if (!existing) {
       return c.json({ error: 'Task not found' }, 404);
     }
 
-    await db.task.delete({ where: { id } });
+    await db.task.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
     return c.json({ success: true });
   });

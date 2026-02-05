@@ -118,6 +118,7 @@ model Task {
   dueDate     DateTime?
   priority    TaskPriority @default(NO_PRIORITY)
   tags        String[]     @default([])
+  deletedAt   DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -128,6 +129,7 @@ model Task {
   @@index([userId, dueDate])
   @@index([userId, completed, dueDate])
   @@index([userId, completedAt])
+  @@index([userId, deletedAt])
   @@map("tasks")
 }
 
@@ -160,18 +162,20 @@ model Project {
 }
 
 model Habit {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   userId      String
   title       String
   description String?
   category    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   completions HabitCompletion[]
 
   @@index([userId])
+  @@index([userId, deletedAt])
   @@map("habits")
 }
 
@@ -200,11 +204,13 @@ model FocusSession {
   totalPausedSeconds Int                @default(0)
   completedAt        DateTime?
   status             FocusSessionStatus @default(ACTIVE)
+  deletedAt          DateTime?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status, startedAt])
+  @@index([userId, deletedAt])
   @@map("focus_sessions")
 }

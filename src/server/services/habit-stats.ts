@@ -39,7 +39,7 @@ export async function getHabitsWithStreaks(
   client: PrismaClient | TransactionClient = db
 ): Promise<HabitWithStreak[]> {
   const habits = await client.habit.findMany({
-    where: { userId },
+    where: { userId, deletedAt: null },
     select: {
       id: true,
       title: true,
@@ -68,7 +68,7 @@ export async function getHabitStats(
 ): Promise<HabitStats> {
   const [completions, habitsWithStreaks] = await Promise.all([
     client.habitCompletion.findMany({
-      where: { userId },
+      where: { userId, habit: { deletedAt: null } },
       select: { date: true },
     }),
     getHabitsWithStreaks(userId, client),

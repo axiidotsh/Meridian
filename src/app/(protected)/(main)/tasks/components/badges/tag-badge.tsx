@@ -15,7 +15,7 @@ export const TagBadge = ({ tag, onRemove, className }: TagBadgeProps) => {
       <Badge
         variant="secondary"
         className={cn(
-          'dark:bg-secondary bg-foreground/10 gap-1 pr-1',
+          'bg-foreground/10 gap-1 pr-1 dark:bg-zinc-500/25',
           className
         )}
         onClick={(e) => e.stopPropagation()}
@@ -39,7 +39,7 @@ export const TagBadge = ({ tag, onRemove, className }: TagBadgeProps) => {
   return (
     <Badge
       variant="secondary"
-      className={cn('dark:bg-secondary bg-foreground/10', className)}
+      className={cn('bg-foreground/10 dark:bg-zinc-500/25', className)}
     >
       {tag}
     </Badge>

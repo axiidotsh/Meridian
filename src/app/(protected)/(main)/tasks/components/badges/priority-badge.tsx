@@ -21,13 +21,13 @@ export const PriorityBadge = ({ priority, className }: PriorityBadgeProps) => {
     <Badge
       variant="secondary"
       className={cn(
-        'border text-xs',
+        'border-0 text-xs',
         priority === 'LOW' &&
-          'border-green-500/50 bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+          'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-600/50 dark:bg-emerald-500/20 dark:text-emerald-400',
         priority === 'MEDIUM' &&
-          'border-amber-500/50 bg-amber-500/10 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400',
+          'border-orange-200 bg-orange-100 text-orange-700 dark:border-orange-600/50 dark:bg-orange-500/20 dark:text-orange-400',
         priority === 'HIGH' &&
-          'border-red-500/50 bg-red-500/10 text-red-700 dark:bg-red-500/20 dark:text-red-400',
+          'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-600/50 dark:bg-rose-500/20 dark:text-rose-400',
         className
       )}
     >

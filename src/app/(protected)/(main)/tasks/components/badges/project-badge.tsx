@@ -25,7 +25,7 @@ export const ProjectBadge = ({
   return (
     <Badge
       variant="outline"
-      className={cn('gap-1 border', className)}
+      className={cn('gap-1.5 border-0', className)}
       style={{
         backgroundColor: project.color
           ? addColorOpacity(project.color, PROJECT_COLOR_OPACITY.BACKGROUND)

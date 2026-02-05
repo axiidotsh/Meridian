@@ -56,11 +56,11 @@ export const MobileDock = () => {
       <LayoutGroup>
         <div
           data-mobile-dock
-          className="fixed inset-x-0 bottom-3 z-60 flex items-center justify-center gap-2 md:hidden"
+          className="fixed inset-x-0 bottom-3 z-60 flex items-center justify-center gap-3 md:hidden"
         >
           <motion.div
             layout
-            className="bg-sidebar/60 flex h-14 items-center gap-1 rounded-full border px-2 shadow-lg backdrop-blur-md"
+            className="bg-sidebar/60 dark:bg-accent/60 border-border/50 flex h-14 items-center gap-1 rounded-full border px-2 shadow-lg backdrop-blur-md"
           >
             {navItems.map((item) => {
               const isActive = !commandMenuOpen && pathname === item.url;
@@ -72,10 +72,10 @@ export const MobileDock = () => {
                   href={item.url}
                   onClick={() => setCommandMenuOpen(false)}
                   className={cn(
-                    'flex size-10 items-center justify-center rounded-full transition-colors',
+                    'flex h-10 items-center justify-center rounded-full px-5 transition-colors',
                     isActive
                       ? 'bg-foreground/10 text-foreground'
-                      : 'text-muted-foreground hover:bg-foreground/10 hover:text-accent-foreground'
+                      : 'text-foreground hover:bg-foreground/10 hover:text-accent-foreground'
                   )}
                 >
                   <Icon className="size-5" />
@@ -89,12 +89,12 @@ export const MobileDock = () => {
           </AnimatePresence>
           <motion.div
             layout
-            className="bg-sidebar/60 flex h-14 items-center rounded-full border px-2 shadow-lg backdrop-blur-md"
+            className="bg-sidebar/60 border-border/50 dark:bg-accent/60 flex h-14 items-center rounded-full border px-2 shadow-lg backdrop-blur-md"
           >
             <button
               onClick={() => setCommandMenuOpen((prev) => !prev)}
               className={cn(
-                'text-muted-foreground hover:bg-foreground/10 hover:text-accent-foreground flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors',
+                'text-foreground hover:bg-foreground/10 hover:text-accent-foreground flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors',
                 commandMenuOpen && 'bg-foreground/10 text-foreground'
               )}
             >

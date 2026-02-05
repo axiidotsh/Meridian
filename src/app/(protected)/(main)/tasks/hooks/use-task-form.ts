@@ -1,7 +1,7 @@
 'use client';
 
 import { useSettings } from '@/app/(protected)/(main)/settings/hooks/queries/use-settings';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface TaskFormValues {
   title: string;
@@ -18,17 +18,23 @@ export function useTaskForm(initialValues?: Partial<TaskFormValues>) {
     initialValues?.dueDate
   );
   const [priority, setPriority] = useState<string>(
-    initialValues?.priority ?? 'NO_PRIORITY'
+    initialValues?.priority ?? settings?.defaultTaskPriority ?? 'NO_PRIORITY'
   );
   const [projectId, setProjectId] = useState<string>(
     initialValues?.projectId ?? ''
   );
   const [tags, setTags] = useState<string[]>(initialValues?.tags ?? []);
 
+  useEffect(() => {
+    if (settings?.defaultTaskPriority && !initialValues?.priority) {
+      setPriority(settings.defaultTaskPriority);
+    }
+  }, [settings?.defaultTaskPriority, initialValues?.priority]);
+
   function reset() {
     setTitle('');
     setDueDate(undefined);
-    setPriority('NO_PRIORITY');
+    setPriority(settings?.defaultTaskPriority ?? 'NO_PRIORITY');
     setProjectId('');
     setTags([]);
   }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useSettings } from '@/app/(protected)/(main)/settings/hooks/queries/use-settings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,16 +14,23 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createCustomSessionAtom } from '../../atoms/session-dialogs';
 import { MAX_DURATION, MIN_DURATION } from '../../constants';
 import { useFocusSession } from '../../hooks/mutations/use-focus-session';
 
 export const FocusSessionCreateDialog = () => {
   const [open, setOpen] = useAtom(createCustomSessionAtom);
+  const { data: settings } = useSettings();
   const { start } = useFocusSession();
   const [task, setTask] = useState('');
   const [durationMinutes, setDurationMinutes] = useState('');
+
+  useEffect(() => {
+    if (settings?.defaultFocusDuration && !durationMinutes) {
+      setDurationMinutes(settings.defaultFocusDuration.toString());
+    }
+  }, [settings?.defaultFocusDuration, durationMinutes]);
 
   function handleCreate() {
     const duration = parseInt(durationMinutes, 10);
@@ -40,7 +48,7 @@ export const FocusSessionCreateDialog = () => {
         onSuccess: () => {
           setOpen(false);
           setTask('');
-          setDurationMinutes('');
+          setDurationMinutes(settings?.defaultFocusDuration?.toString() ?? '');
         },
       }
     );

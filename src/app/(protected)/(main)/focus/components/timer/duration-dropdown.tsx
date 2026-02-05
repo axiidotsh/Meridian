@@ -1,3 +1,4 @@
+import { useSettings } from '@/app/(protected)/(main)/settings/hooks/queries/use-settings';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useAtom } from 'jotai';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   customMinutesAtom,
   isCustomDurationAtom,
@@ -39,10 +40,17 @@ interface DurationDropdownProps {
 export const DurationDropdown = ({
   hasActiveSession,
 }: DurationDropdownProps) => {
+  const { data: settings } = useSettings();
   const [selectedMinutes, setSelectedMinutes] = useAtom(selectedMinutesAtom);
   const [customMinutes, setCustomMinutes] = useAtom(customMinutesAtom);
   const [isCustomDuration, setIsCustomDuration] = useAtom(isCustomDurationAtom);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (settings?.defaultFocusDuration) {
+      setSelectedMinutes(settings.defaultFocusDuration);
+    }
+  }, [settings?.defaultFocusDuration, setSelectedMinutes]);
 
   const handleSelectPreset = (minutes: number) => {
     setSelectedMinutes(minutes);

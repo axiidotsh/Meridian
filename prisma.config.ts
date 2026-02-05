@@ -1,7 +1,10 @@
+import { env as serverEnv } from '@/lib/config/env/server';
 import { config } from 'dotenv';
 import { defineConfig, env } from 'prisma/config';
 
-config({ path: '.env.local' });
+if (serverEnv.NODE_ENV !== 'production') {
+  config({ path: '.env.local' });
+}
 
 export default defineConfig({
   schema: 'src/server/db/schema.prisma',

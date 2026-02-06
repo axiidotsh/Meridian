@@ -8,7 +8,6 @@ import { addUTCDays, getUTCMidnight } from '@/utils/date-utc';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { DASHBOARD_TASK_LIMIT } from '../constants';
 import { db } from '../db';
 import { authMiddleware } from '../middleware/auth';
 import { getHeatmapData } from '../services/heatmap';
@@ -50,7 +49,6 @@ export const dashboardRouter = new Hono()
       orderBy: {
         dueDate: 'asc',
       },
-      take: DASHBOARD_TASK_LIMIT,
     });
 
     return c.json({ tasks });
@@ -169,7 +167,6 @@ export const dashboardRouter = new Hono()
         orderBy: {
           dueDate: 'asc',
         },
-        take: DASHBOARD_TASK_LIMIT,
       }),
       db.$queryRaw<
         [

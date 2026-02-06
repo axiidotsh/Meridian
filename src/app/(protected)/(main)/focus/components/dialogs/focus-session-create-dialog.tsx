@@ -27,10 +27,10 @@ export const FocusSessionCreateDialog = () => {
   const [durationMinutes, setDurationMinutes] = useState('');
 
   useEffect(() => {
-    if (settings?.defaultFocusDuration && !durationMinutes) {
+    if (settings?.defaultFocusDuration) {
       setDurationMinutes(settings.defaultFocusDuration.toString());
     }
-  }, [settings?.defaultFocusDuration, durationMinutes]);
+  }, [settings?.defaultFocusDuration]);
 
   function handleCreate() {
     const duration = parseInt(durationMinutes, 10);
@@ -47,8 +47,6 @@ export const FocusSessionCreateDialog = () => {
       {
         onSuccess: () => {
           setOpen(false);
-          setTask('');
-          setDurationMinutes(settings?.defaultFocusDuration?.toString() ?? '');
         },
       }
     );
@@ -61,8 +59,15 @@ export const FocusSessionCreateDialog = () => {
     }
   }
 
+  function handleClose(open: boolean) {
+    if (!open) {
+      setTask('');
+    }
+    setOpen(open);
+  }
+
   return (
-    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+    <ResponsiveDialog open={open} onOpenChange={handleClose}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>

@@ -74,7 +74,7 @@ function Button({
           <motion.span
             key="spinner"
             initial={{ opacity: 0, width: 0 }}
-            animate={{ opacity: 1, width: 'auto' }}
+            animate={{ opacity: isLoading ? 0.7 : 1, width: 'auto' }}
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             className="inline-flex items-center overflow-hidden"

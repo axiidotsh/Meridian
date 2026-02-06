@@ -236,7 +236,7 @@ const KanbanColumnWithHeader = ({
     />
     <KanbanColumnContent
       value={config.id}
-      className="max-h-[calc(100vh-14rem)] min-h-[200px] overflow-y-auto"
+      className="h-[calc(100vh-16rem)] min-h-[200px] overflow-y-auto sm:h-[calc(100vh-14rem)]"
     >
       <KanbanColumnData
         config={config}

@@ -4,7 +4,9 @@ import { PageHeading } from '@/components/page-heading';
 import { SearchBar } from '@/components/search-bar';
 import { useAtom } from 'jotai';
 import { searchQueryAtom } from './atoms/habit-atoms';
+import { HabitFilters } from './components/habit-filters';
 import { HabitListActions } from './components/habit-list-actions';
+import { HabitNewButton } from './components/habit-new-button';
 import { HabitsTable } from './components/habits-table';
 import { HabitMetricsBadges } from './components/sections/habit-metrics-badges';
 
@@ -14,7 +16,25 @@ export default function HabitsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        {/* Mobile layout */}
+        <div className="flex flex-col gap-3 sm:hidden">
+          <div className="flex items-center justify-between">
+            <PageHeading>Habits</PageHeading>
+            <HabitNewButton />
+          </div>
+          <div className="flex items-center gap-2">
+            <SearchBar
+              placeholder="Search habits..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 flex-1 border"
+            />
+            <HabitFilters />
+          </div>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden flex-col justify-between gap-3 sm:flex sm:flex-row sm:items-center">
           <div className="flex flex-row items-center gap-3">
             <PageHeading>Habits</PageHeading>
             <HabitMetricsBadges />

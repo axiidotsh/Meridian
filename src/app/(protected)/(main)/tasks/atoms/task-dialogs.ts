@@ -1,7 +1,9 @@
 import { atom } from 'jotai';
-import type { Project, Task } from '../hooks/types';
+import type { Project, Task, TaskPriority } from '../hooks/types';
 
-export const createTaskDialogAtom = atom(false);
+export const createTaskDialogAtom = atom<
+  false | true | { priority: TaskPriority }
+>(false);
 export const editingTaskAtom = atom<Task | null>(null);
 export const deletingTaskAtom = atom<Task | null>(null);
 

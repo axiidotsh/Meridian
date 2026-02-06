@@ -11,7 +11,7 @@ import {
   type KanbanMoveEvent,
 } from '@/components/ui/kanban';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useMemo, useState } from 'react';
 import {
   sortByAtom,
@@ -19,6 +19,7 @@ import {
   type SortOption,
   type SortOrder,
 } from '../../atoms/task-atoms';
+import { createTaskDialogAtom } from '../../atoms/task-dialogs';
 import { useUpdateTask } from '../../hooks/mutations/use-update-task';
 import { TASK_QUERY_KEYS } from '../../hooks/task-query-keys';
 import type { Task, TaskPriority } from '../../hooks/types';
@@ -218,12 +219,14 @@ const KanbanColumnWithHeader = ({
   pendingMoves,
   sortBy,
   sortOrder,
+  onAdd,
 }: {
   config: ColumnConfig;
   taskCount: number;
   pendingMoves: Map<string, PendingMove>;
   sortBy: SortOption;
   sortOrder: SortOrder;
+  onAdd?: () => void;
 }) => (
   <KanbanColumn
     value={config.id}
@@ -233,6 +236,7 @@ const KanbanColumnWithHeader = ({
       label={config.label}
       count={taskCount}
       colorClass={config.colorClass}
+      onAdd={onAdd}
     />
     <KanbanColumnContent
       value={config.id}
@@ -253,6 +257,7 @@ export const TasksKanban = () => {
   const updateTask = useUpdateTask();
   const sortBy = useAtomValue(sortByAtom);
   const sortOrder = useAtomValue(sortOrderAtom);
+  const setCreateTaskDialog = useSetAtom(createTaskDialogAtom);
 
   const highCol = useKanbanColumn({ priority: 'HIGH', completed: false });
   const medCol = useKanbanColumn({ priority: 'MEDIUM', completed: false });
@@ -401,6 +406,11 @@ export const TasksKanban = () => {
                 pendingMoves={pendingMoves}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
+                onAdd={
+                  col.priority
+                    ? () => setCreateTaskDialog({ priority: col.priority! })
+                    : undefined
+                }
               />
             ))}
           </KanbanBoard>

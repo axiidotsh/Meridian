@@ -59,7 +59,7 @@ export const FocusSessionCreateDialog = () => {
     }
   }
 
-  function handleClose(open: boolean) {
+  function handleOpenChange(open: boolean) {
     if (!open) {
       setTask('');
     }
@@ -67,7 +67,7 @@ export const FocusSessionCreateDialog = () => {
   }
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={handleClose}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>

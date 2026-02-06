@@ -12,6 +12,7 @@ import {
   ResponsiveDialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { useAtom } from 'jotai';
+import { useEffect } from 'react';
 import { createTaskDialogAtom } from '../../atoms/task-dialogs';
 import { useCreateTask } from '../../hooks/mutations/use-create-task';
 import { useProjects } from '../../hooks/queries/use-projects';
@@ -22,16 +23,28 @@ import { ProjectSelect } from '../project-select';
 import { TagInput } from './tag-input';
 
 export const CreateTaskDialog = () => {
-  const [open, setOpen] = useAtom(createTaskDialogAtom);
+  const [dialogState, setDialogState] = useAtom(createTaskDialogAtom);
+  const open = !!dialogState;
+
+  console.log(dialogState);
 
   const createTask = useCreateTask();
   const form = useTaskForm();
   const { data: projects = [] } = useProjects();
   const { data: existingTags = [] } = useTaskTags();
 
-  const handleClose = () => {
-    setOpen(false);
-    form.reset();
+  useEffect(() => {
+    if (typeof dialogState === 'object') {
+      form.setPriority(dialogState.priority);
+    }
+  }, [dialogState, form.setPriority]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setDialogState(false);
+      form.reset();
+    }
+    setDialogState(open);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -43,13 +56,13 @@ export const CreateTaskDialog = () => {
         json: form.getFormData(),
       },
       {
-        onSuccess: handleClose,
+        onSuccess: () => handleOpenChange(false),
       }
     );
   };
 
   return (
-    <ResponsiveDialog open={open} onOpenChange={setOpen}>
+    <ResponsiveDialog open={open} onOpenChange={handleOpenChange}>
       <ResponsiveDialogContent>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Create Task</ResponsiveDialogTitle>
@@ -103,7 +116,7 @@ export const CreateTaskDialog = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={handleClose}
+              onClick={() => handleOpenChange(false)}
               disabled={createTask.isPending}
             >
               Cancel

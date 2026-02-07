@@ -147,14 +147,25 @@ export const RecentSessionsDialog = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <ScrollArea className="h-[60vh]">
-            <SessionsTable
-              sessions={sessions}
-              isLoading={isLoading}
-              isFetchingNextPage={isFetchingNextPage}
-              sentinelRef={sentinelRef}
-            />
-          </ScrollArea>
+          {isMobile ? (
+            <div className="-mx-6 h-[60vh] overflow-auto px-6">
+              <SessionsTable
+                sessions={sessions}
+                isLoading={isLoading}
+                isFetchingNextPage={isFetchingNextPage}
+                sentinelRef={sentinelRef}
+              />
+            </div>
+          ) : (
+            <ScrollArea className="-mx-6 h-[60vh] px-6">
+              <SessionsTable
+                sessions={sessions}
+                isLoading={isLoading}
+                isFetchingNextPage={isFetchingNextPage}
+                sentinelRef={sentinelRef}
+              />
+            </ScrollArea>
+          )}
         </div>
       </ResponsiveDialogContent>
     </ResponsiveDialog>

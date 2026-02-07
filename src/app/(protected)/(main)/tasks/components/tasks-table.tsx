@@ -2,6 +2,7 @@
 
 import { ErrorState } from '@/components/error-state';
 import { Button } from '@/components/ui/button';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -152,7 +153,8 @@ export const TasksTable = () => {
   }
 
   return (
-    <div className="w-full">
+    <ScrollArea className="w-full">
+      <ScrollBar orientation="horizontal" />
       <Table>
         <TableHeader className="bg-background">
           <TableRow>
@@ -191,6 +193,6 @@ export const TasksTable = () => {
         </TableBody>
       </Table>
       <div ref={sentinelRef} className="h-px" />
-    </div>
+    </ScrollArea>
   );
 };

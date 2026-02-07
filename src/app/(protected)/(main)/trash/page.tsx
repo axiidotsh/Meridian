@@ -3,9 +3,10 @@
 import { PageHeading } from '@/components/page-heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   ClockPlusIcon,
   GoalIcon,
@@ -22,6 +23,7 @@ import { useTrashCounts } from './hooks/queries/use-trash-counts';
 export default function TrashPage() {
   const { data: counts } = useTrashCounts();
   const emptyAll = useEmptyAllTrash();
+  const isMobile = useIsMobile();
 
   const totalCount =
     (counts?.tasks ?? 0) + (counts?.habits ?? 0) + (counts?.sessions ?? 0);
@@ -102,6 +104,7 @@ export default function TrashPage() {
             <TabsContent key={tab.value} value={tab.value} className="mt-0">
               <ScrollArea className="md:h-[calc(100vh-12rem)]">
                 {tab.content}
+                <ScrollBar orientation={isMobile ? 'horizontal' : 'vertical'} />
               </ScrollArea>
             </TabsContent>
           ))}

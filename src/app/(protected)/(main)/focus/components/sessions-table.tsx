@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -88,7 +89,8 @@ export const SessionsTable = ({
   }
 
   return (
-    <div className="w-full">
+    <ScrollArea>
+      <ScrollBar orientation="horizontal" />
       <Table>
         <TableHeader className="bg-background sticky top-0">
           <TableRow>
@@ -121,7 +123,7 @@ export const SessionsTable = ({
           )}
         </TableBody>
       </Table>
-    </div>
+    </ScrollArea>
   );
 };
 

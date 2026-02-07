@@ -1,7 +1,6 @@
 'use client';
 
 import { ErrorState } from '@/components/error-state';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -28,6 +27,8 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { useAtom } from 'jotai';
 import { InboxIcon, RotateCcwIcon, TrashIcon } from 'lucide-react';
+import { PriorityBadge } from '../../tasks/components/badges/priority-badge';
+import { ProjectBadge } from '../../tasks/components/badges/project-badge';
 import { selectedTrashTasksAtom } from '../atoms/trash-atoms';
 import {
   useBulkDelete,
@@ -39,23 +40,6 @@ import { useRestoreTask } from '../hooks/mutations/use-restore-task';
 import { useTrashTasks } from '../hooks/queries/use-trash-tasks';
 import { EmptyTrashDialog } from './empty-trash-dialog';
 import { TrashToolbar } from './trash-toolbar';
-
-const PRIORITY_LABELS: Record<string, string> = {
-  HIGH: 'High',
-  MEDIUM: 'Medium',
-  LOW: 'Low',
-  NO_PRIORITY: 'None',
-};
-
-const PRIORITY_VARIANTS: Record<
-  string,
-  'default' | 'secondary' | 'destructive' | 'outline'
-> = {
-  HIGH: 'destructive',
-  MEDIUM: 'default',
-  LOW: 'secondary',
-  NO_PRIORITY: 'outline',
-};
 
 export const TrashTasksTab = () => {
   const { data, isLoading, error, refetch } = useTrashTasks();
@@ -175,12 +159,10 @@ export const TrashTasksTab = () => {
               </TableCell>
               <TableCell className="font-medium">{task.title}</TableCell>
               <TableCell>
-                <Badge variant={PRIORITY_VARIANTS[task.priority]}>
-                  {PRIORITY_LABELS[task.priority]}
-                </Badge>
+                <PriorityBadge priority={task.priority} />
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {task.project?.name ?? '-'}
+                {task.project ? <ProjectBadge project={task.project} /> : '-'}
               </TableCell>
               <TableCell className="text-muted-foreground text-xs">
                 {task.deletedAt

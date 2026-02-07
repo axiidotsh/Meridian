@@ -13,11 +13,13 @@ import {
 } from '@/components/ui/responsive-dialog';
 
 interface EmptyTrashDialogProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   title: string;
   description: string;
   onConfirm: () => void;
   isPending?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const EmptyTrashDialog = ({
@@ -26,11 +28,15 @@ export const EmptyTrashDialog = ({
   description,
   onConfirm,
   isPending,
+  open,
+  onOpenChange,
 }: EmptyTrashDialogProps) => {
   return (
-    <ResponsiveDialog>
-      <ResponsiveDialogTrigger asChild>{children}</ResponsiveDialogTrigger>
-      <ResponsiveDialogContent>
+    <ResponsiveDialog open={open} onOpenChange={onOpenChange}>
+      {children && (
+        <ResponsiveDialogTrigger asChild>{children}</ResponsiveDialogTrigger>
+      )}
+      <ResponsiveDialogContent showCloseButton={false}>
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>{title}</ResponsiveDialogTitle>
           <ResponsiveDialogDescription>

@@ -25,7 +25,8 @@ export interface CommandDefinition {
     | 'theme'
     | 'position'
     | 'account'
-    | 'settings';
+    | 'settings'
+    | 'trash';
   handler: () => void | Promise<void>;
 }
 

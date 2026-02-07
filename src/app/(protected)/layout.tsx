@@ -13,6 +13,7 @@ import { CreateTaskDialog } from '@/app/(protected)/(main)/tasks/components/dial
 import { DeleteProjectDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/delete-project-dialog';
 import { EditProjectDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/edit-project-dialog';
 import { EditTaskDialog } from '@/app/(protected)/(main)/tasks/components/dialogs/edit-task-dialog';
+import { EmptyTrashCommandDialog } from '@/app/(protected)/(main)/trash/components/empty-trash-command-dialog';
 import { AppHeader } from '@/components/app-header';
 import { AppSidebar } from '@/components/app-sidebar';
 import { LogoutDialog } from '@/components/logout-dialog';
@@ -70,6 +71,9 @@ export default async function ProtectedLayout({
       {/* Habit Dialogs */}
       <CreateHabitDialog />
       <EditHabitDialog />
+
+      {/* Trash Dialogs */}
+      <EmptyTrashCommandDialog />
 
       <FocusSessionTabTitle />
     </>

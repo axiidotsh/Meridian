@@ -12,7 +12,7 @@ import {
   createProjectDialogAtom,
   createTaskDialogAtom,
 } from '@/app/(protected)/(main)/tasks/atoms/task-dialogs';
-import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
+import { emptyTrashDialogAtom, logoutDialogOpenAtom } from '@/atoms/ui-atoms';
 import {
   ACCOUNT_ACTIONS,
   CREATE_COMMANDS,
@@ -23,7 +23,17 @@ import {
 import type { CommandDefinition } from '@/hooks/command-menu/types';
 import { calculateRemainingSeconds } from '@/utils/timer';
 import { useSetAtom } from 'jotai';
-import { PauseIcon, PlayIcon, SaveIcon, SquareIcon, XIcon } from 'lucide-react';
+import {
+  ClockPlusIcon,
+  GoalIcon,
+  LayoutListIcon,
+  PauseIcon,
+  PlayIcon,
+  SaveIcon,
+  SquareIcon,
+  TrashIcon,
+  XIcon,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
@@ -43,6 +53,7 @@ export function useCommandRegistry() {
   const setCancelingSession = useSetAtom(cancelingSessionAtom);
   const setEndingEarlySession = useSetAtom(endingEarlySessionAtom);
   const setDiscardingSession = useSetAtom(discardingSessionAtom);
+  const setEmptyTrashDialog = useSetAtom(emptyTrashDialogAtom);
 
   const focusCommands = useMemo(() => {
     const commands: CommandDefinition[] = [];
@@ -202,6 +213,42 @@ export function useCommandRegistry() {
             json: { commandMenuPosition: position.value },
           }),
       })),
+      {
+        id: 'trash-empty-tasks',
+        name: 'Clear trashed tasks',
+        icon: LayoutListIcon,
+        keywords: ['trash', 'delete', 'remove', 'empty', 'tasks'],
+        destructive: true,
+        category: 'trash' as const,
+        handler: () => setEmptyTrashDialog('tasks'),
+      },
+      {
+        id: 'trash-empty-habits',
+        name: 'Clear trashed habits',
+        icon: GoalIcon,
+        keywords: ['trash', 'delete', 'remove', 'empty', 'habits'],
+        destructive: true,
+        category: 'trash' as const,
+        handler: () => setEmptyTrashDialog('habits'),
+      },
+      {
+        id: 'trash-empty-sessions',
+        name: 'Clear trashed sessions',
+        icon: ClockPlusIcon,
+        keywords: ['trash', 'delete', 'remove', 'empty', 'focus', 'sessions'],
+        destructive: true,
+        category: 'trash' as const,
+        handler: () => setEmptyTrashDialog('sessions'),
+      },
+      {
+        id: 'trash-empty-all',
+        name: 'Empty entire trash',
+        icon: TrashIcon,
+        keywords: ['trash', 'delete', 'remove', 'empty', 'all', 'clear'],
+        destructive: true,
+        category: 'trash' as const,
+        handler: () => setEmptyTrashDialog('all'),
+      },
       ...ACCOUNT_ACTIONS.map((action) => ({
         id: action.action,
         name: action.name,
@@ -226,6 +273,7 @@ export function useCommandRegistry() {
       setCreateProjectDialogOpen,
       setCreateHabitDialogOpen,
       setLogoutDialogOpen,
+      setEmptyTrashDialog,
     ]
   );
 }

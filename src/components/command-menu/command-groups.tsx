@@ -48,6 +48,7 @@ export const CommandGroups = ({
   const positionCommands = commands.filter(
     (cmd) => cmd.category === 'position'
   );
+  const trashCommands = commands.filter((cmd) => cmd.category === 'trash');
   const accountCommands = commands.filter((cmd) => cmd.category === 'account');
 
   return (
@@ -151,6 +152,27 @@ export const CommandGroups = ({
             onSelect={() => onCommandSelect(command)}
           >
             <command.icon className="size-3.5" />
+            <span>{command.name}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+
+      <CommandGroup heading="Trash">
+        {trashCommands.map((command) => (
+          <CommandItem
+            key={command.id}
+            value={[command.id, command.name, ...(command.keywords ?? [])].join(
+              ' '
+            )}
+            onSelect={() => onCommandSelect(command)}
+            className={command.destructive ? 'text-destructive!' : ''}
+          >
+            <command.icon
+              className={cn(
+                'size-3.5',
+                command.destructive && 'text-destructive!'
+              )}
+            />
             <span>{command.name}</span>
           </CommandItem>
         ))}

@@ -61,10 +61,15 @@ export const dashboardRouter = new Hono()
     const todayKey = getUTCMidnight(now);
     const weekAgo = addUTCDays(todayKey, -7);
 
-    const allHabits = await db.habit.findMany({
+    const incompleteHabits = await db.habit.findMany({
       where: {
         userId: user.id,
         deletedAt: null,
+        completions: {
+          none: {
+            date: todayKey,
+          },
+        },
       },
       include: {
         completions: {
@@ -74,7 +79,7 @@ export const dashboardRouter = new Hono()
       },
     });
 
-    const habitsWithStreaks = allHabits.map((habit) => {
+    const habitsWithStreaks = incompleteHabits.map((habit) => {
       const dates = getActivityDates(habit.completions);
       const { currentStreak, bestStreak } = calculateStreakFromDates(dates);
       const isCompletedToday = habit.completions.some(

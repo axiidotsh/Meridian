@@ -48,8 +48,8 @@ export const DashboardHabitList = () => {
       return (
         <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-16 text-center">
           <PartyPopperIcon className="mb-2 size-12 stroke-1 opacity-50" />
-          <p className="text-sm font-medium">No habits yet</p>
-          <p className="text-xs">Create your first habit to get started</p>
+          <p className="text-sm font-medium">All habits completed!</p>
+          <p className="text-xs">You’ve completed all your habits for today</p>
         </div>
       );
     }

@@ -73,7 +73,9 @@ function Button({
   const button = (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }), 'relative')}
+      data-variant={variant}
+      data-size={size}
+      className={cn(buttonVariants({ variant, size, className }))}
       disabled={isLoading || props.disabled}
       {...props}
     >

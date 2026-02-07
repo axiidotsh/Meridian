@@ -54,7 +54,7 @@ export default function TrashPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pl-3">
         <PageHeading>Trash</PageHeading>
         {totalCount > 0 && (
           <EmptyTrashDialog
@@ -63,14 +63,14 @@ export default function TrashPage() {
             onConfirm={() => emptyAll.mutate({})}
             isPending={emptyAll.isPending}
           >
-            <Button variant="outline" size="sm">
+            <Button variant="destructive" size="sm">
               <TrashIcon className="size-4" />
               Empty trash
             </Button>
           </EmptyTrashDialog>
         )}
       </div>
-      <p className="text-muted-foreground/60 mt-2 text-xs">
+      <p className="text-muted-foreground/60 mt-2 pl-3 text-xs">
         Items are automatically deleted after 30 days.
       </p>
       <Tabs

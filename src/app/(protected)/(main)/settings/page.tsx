@@ -56,7 +56,9 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col">
-      <PageHeading>Settings</PageHeading>
+      <div className="pl-3">
+        <PageHeading>Settings</PageHeading>
+      </div>
       <Tabs
         defaultValue="appearance"
         className="mt-4 flex flex-col md:flex-row md:items-start"

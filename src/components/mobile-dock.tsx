@@ -80,7 +80,7 @@ export const MobileDock = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="flex w-full items-center gap-2 px-1"
+                  className="flex w-full items-center gap-1 px-1"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {selectedItem ? (
@@ -106,7 +106,7 @@ export const MobileDock = () => {
                         transition={{ duration: 0.2, ease: 'easeInOut' }}
                         className="text-muted-foreground flex size-8 shrink-0 items-center justify-center"
                       >
-                        <SearchIcon className="size-4" />
+                        <SearchIcon className="size-5" />
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -189,7 +189,7 @@ export const MobileDock = () => {
                     exit={{ opacity: 0, rotate: -90 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                   >
-                    <SearchIcon className="size-4" />
+                    <SearchIcon className="size-5" />
                   </motion.div>
                 )}
               </AnimatePresence>

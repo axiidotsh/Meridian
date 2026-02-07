@@ -35,8 +35,8 @@ export const DashboardHabitItem = ({ habit }: DashboardHabitItemProps) => {
         setIsOptimisticCompleted(prevCompleted);
       },
       onSuccess: (data) => {
-        if ('habit' in data) {
-          setIsOptimisticCompleted(data.habit.completed);
+        if ('completed' in data) {
+          setIsOptimisticCompleted(data.completed);
         }
       },
     });

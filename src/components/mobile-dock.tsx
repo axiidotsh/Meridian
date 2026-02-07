@@ -70,7 +70,7 @@ export const MobileDock = () => {
         >
           <motion.div
             layout
-            className="bg-sidebar/60 dark:bg-accent/60 border-border/50 flex h-14 w-full items-center gap-1 rounded-full border px-2 shadow-lg backdrop-blur-md"
+            className="shiny-dock-border bg-sidebar/40 dark:bg-accent/60 flex h-14 w-full items-center gap-1 rounded-full px-2 shadow-lg backdrop-blur-md"
           >
             <AnimatePresence mode="wait" initial={false}>
               {commandMenuOpen ? (
@@ -158,7 +158,7 @@ export const MobileDock = () => {
           </AnimatePresence>
           <motion.div
             layout
-            className="bg-sidebar/60 border-border/50 dark:bg-accent/60 flex h-14 items-center rounded-full border px-2 shadow-lg backdrop-blur-md"
+            className="shiny-dock-border bg-sidebar/40 dark:bg-accent/60 flex h-14 items-center rounded-full px-2 shadow-lg backdrop-blur-md"
           >
             <button
               onClick={() => {

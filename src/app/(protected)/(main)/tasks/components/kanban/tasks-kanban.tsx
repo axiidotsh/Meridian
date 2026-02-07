@@ -14,6 +14,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import {
   sortByAtom,
   sortOrderAtom,
@@ -367,6 +368,14 @@ export const TasksKanban = () => {
       updateTask.mutate(
         { param: { id: taskId }, json: updateData },
         {
+          onError: () => {
+            setPendingMoves((prev) => {
+              const next = new Map(prev);
+              next.delete(taskId);
+              return next;
+            });
+            toast.error('Failed to move task');
+          },
           onSettled: async () => {
             await queryClient.invalidateQueries({
               queryKey: TASK_QUERY_KEYS.all,

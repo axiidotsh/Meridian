@@ -1,6 +1,7 @@
 'use client';
 
 import { sessionKeyAtom } from '@/atoms/ui-atoms';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider as JotaiProvider, useAtomValue } from 'jotai';
 import {
@@ -27,6 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
   const sessionKey = useAtomValue(sessionKeyAtom);
+  const isMobile = useIsMobile();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -47,6 +49,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             warning: <TriangleAlertIcon className="size-4 text-yellow-500" />,
             loading: <Loader2Icon className="size-4 animate-spin" />,
           }}
+          position={isMobile ? 'top-center' : 'bottom-right'}
         />
       </JotaiProvider>
     </QueryClientProvider>

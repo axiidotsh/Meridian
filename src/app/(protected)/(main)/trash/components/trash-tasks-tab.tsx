@@ -184,93 +184,97 @@ export const TrashTasksTab = () => {
           </div>
         ))}
       </div>
-      <Table className="hidden md:table">
-        <TableHeader className="bg-background">
-          <TableRow>
-            <TableHead className="w-10" />
-            <TableHead className="text-muted-foreground min-w-[200px] text-xs font-normal">
-              Title
-            </TableHead>
-            <TableHead className="text-muted-foreground w-[100px] text-xs font-normal">
-              Priority
-            </TableHead>
-            <TableHead className="text-muted-foreground w-[150px] text-xs font-normal">
-              Project
-            </TableHead>
-            <TableHead className="text-muted-foreground w-[120px] text-xs font-normal">
-              Deleted
-            </TableHead>
-            <TableHead className="w-12" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tasks.map((task) => (
-            <TableRow key={task.id}>
-              <TableCell>
-                <Checkbox
-                  checked={selected.has(task.id)}
-                  onCheckedChange={() => handleToggle(task.id)}
-                />
-              </TableCell>
-              <TableCell className="font-medium">{task.title}</TableCell>
-              <TableCell>
-                <PriorityBadge priority={task.priority} />
-              </TableCell>
-              <TableCell className="text-muted-foreground">
-                {task.project ? <ProjectBadge project={task.project} /> : '-'}
-              </TableCell>
-              <TableCell className="text-muted-foreground text-xs">
-                {task.deletedAt
-                  ? formatDistanceToNow(new Date(task.deletedAt), {
-                      addSuffix: true,
-                    })
-                  : '-'}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={() =>
-                          restoreTask.mutate({ param: { id: task.id } })
-                        }
-                        disabled={restoreTask.isPending}
-                      >
-                        <RotateCcwIcon className="size-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Restore</TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <EmptyTrashDialog
-                      title="Delete task permanently?"
-                      description="This action cannot be undone."
-                      onConfirm={() =>
-                        deleteTask.mutate({ param: { id: task.id } })
-                      }
-                      isPending={deleteTask.isPending}
-                    >
+      <div className="hidden overflow-x-auto md:block">
+        <Table className="w-full min-w-[600px] table-fixed">
+          <TableHeader className="bg-background">
+            <TableRow>
+              <TableHead className="w-10" />
+              <TableHead className="text-muted-foreground text-xs font-normal">
+                Title
+              </TableHead>
+              <TableHead className="text-muted-foreground w-20 text-xs font-normal">
+                Priority
+              </TableHead>
+              <TableHead className="text-muted-foreground w-28 text-xs font-normal">
+                Project
+              </TableHead>
+              <TableHead className="text-muted-foreground w-24 text-xs font-normal">
+                Deleted
+              </TableHead>
+              <TableHead className="w-20" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tasks.map((task) => (
+              <TableRow key={task.id}>
+                <TableCell>
+                  <Checkbox
+                    checked={selected.has(task.id)}
+                    onCheckedChange={() => handleToggle(task.id)}
+                  />
+                </TableCell>
+                <TableCell className="truncate font-medium">
+                  {task.title}
+                </TableCell>
+                <TableCell>
+                  <PriorityBadge priority={task.priority} />
+                </TableCell>
+                <TableCell className="text-muted-foreground">
+                  {task.project ? <ProjectBadge project={task.project} /> : '-'}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-xs">
+                  {task.deletedAt
+                    ? formatDistanceToNow(new Date(task.deletedAt), {
+                        addSuffix: true,
+                      })
+                    : '-'}
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-destructive size-8"
+                          className="size-8"
+                          onClick={() =>
+                            restoreTask.mutate({ param: { id: task.id } })
+                          }
+                          disabled={restoreTask.isPending}
                         >
-                          <TrashIcon className="size-4" />
+                          <RotateCcwIcon className="size-4" />
                         </Button>
                       </TooltipTrigger>
-                    </EmptyTrashDialog>
-                    <TooltipContent>Delete permanently</TooltipContent>
-                  </Tooltip>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                      <TooltipContent>Restore</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <EmptyTrashDialog
+                        title="Delete task permanently?"
+                        description="This action cannot be undone."
+                        onConfirm={() =>
+                          deleteTask.mutate({ param: { id: task.id } })
+                        }
+                        isPending={deleteTask.isPending}
+                      >
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive size-8"
+                          >
+                            <TrashIcon className="size-4" />
+                          </Button>
+                        </TooltipTrigger>
+                      </EmptyTrashDialog>
+                      <TooltipContent>Delete permanently</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
@@ -292,23 +296,23 @@ const TrashTabSkeleton = () => (
         </div>
       ))}
     </div>
-    <Table className="hidden md:table">
+    <Table className="hidden w-full table-fixed md:table">
       <TableHeader className="bg-background">
         <TableRow>
           <TableHead className="w-10" />
-          <TableHead className="text-muted-foreground min-w-[200px] text-xs font-normal">
+          <TableHead className="text-muted-foreground text-xs font-normal">
             Title
           </TableHead>
-          <TableHead className="text-muted-foreground w-[100px] text-xs font-normal">
+          <TableHead className="text-muted-foreground w-20 text-xs font-normal">
             Priority
           </TableHead>
-          <TableHead className="text-muted-foreground w-[150px] text-xs font-normal">
+          <TableHead className="text-muted-foreground w-28 text-xs font-normal">
             Project
           </TableHead>
-          <TableHead className="text-muted-foreground w-[120px] text-xs font-normal">
+          <TableHead className="text-muted-foreground w-24 text-xs font-normal">
             Deleted
           </TableHead>
-          <TableHead className="w-12" />
+          <TableHead className="w-20" />
         </TableRow>
       </TableHeader>
       <TableBody>

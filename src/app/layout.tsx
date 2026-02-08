@@ -1,7 +1,7 @@
 import { Providers } from '@/components/providers';
 import '@/styles/globals.css';
 import { cn } from '@/utils/utils';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist_Mono, Inter } from 'next/font/google';
 
 const fontSans = Inter({
@@ -13,6 +13,12 @@ const fontMono = Geist_Mono({
   variable: '--font-mono',
   subsets: ['latin'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export const metadata: Metadata = {
   title: 'Horizon',

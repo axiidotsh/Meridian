@@ -68,7 +68,7 @@ export const KanbanTaskCard = ({ task }: KanbanTaskCardProps) => {
         </button>
         <span
           className={cn(
-            'line-clamp-2 flex-1 text-sm leading-snug',
+            'line-clamp-2 flex-1 text-sm leading-snug [overflow-wrap:anywhere] hyphens-auto',
             isOptimisticCompleted && 'text-muted-foreground line-through'
           )}
         >

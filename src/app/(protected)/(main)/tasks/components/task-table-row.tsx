@@ -29,7 +29,7 @@ export const TaskTableRow = ({ task }: TaskTableRowProps) => {
 
   const onToggle = () => {
     const prevCompleted = isOptimisticCompleted;
-    setIsOptimisticCompleted(true);
+    setIsOptimisticCompleted(!prevCompleted);
 
     handleToggle(task.id, {
       onError: () => {

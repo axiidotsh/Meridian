@@ -12,8 +12,18 @@ export type SortOrder = 'asc' | 'desc';
 
 export type TaskView = 'list' | 'kanban';
 
-export const sortByAtom = atom<SortOption>('dueDate');
-export const sortOrderAtom = atom<SortOrder>('asc');
+export const sortByAtom = atomWithStorage<SortOption>(
+  'task-sort-by',
+  'dueDate',
+  undefined,
+  { getOnInit: true }
+);
+export const sortOrderAtom = atomWithStorage<SortOrder>(
+  'task-sort-order',
+  'asc',
+  undefined,
+  { getOnInit: true }
+);
 export const searchQueryAtom = atom('');
 export const selectedTagsAtom = atom<string[]>([]);
 export const selectedProjectsAtom = atom<string[]>([]);

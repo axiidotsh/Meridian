@@ -24,6 +24,10 @@ import { useAtom } from 'jotai';
 import { ArrowDownUpIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useInView } from 'react-intersection-observer';
+import {
+  sessionSortByAtom,
+  sessionSortOrderAtom,
+} from '../../atoms/session-atoms';
 import { showSessionsDialogAtom } from '../../atoms/session-dialogs';
 import { useInfiniteRecentSessions } from '../../hooks/queries/use-infinite-recent-sessions';
 import { SessionsTable } from '../sessions-table';
@@ -31,8 +35,8 @@ import { SessionsTable } from '../sessions-table';
 export const RecentSessionsDialog = () => {
   const [open, setOpen] = useAtom(showSessionsDialogAtom);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'duration' | 'date'>('date');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useAtom(sessionSortByAtom);
+  const [sortOrder, setSortOrder] = useAtom(sessionSortOrderAtom);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const isMobile = useIsMobile();
 
@@ -94,7 +98,7 @@ export const RecentSessionsDialog = () => {
                   currentSortBy={sortBy}
                   currentSortOrder={sortOrder}
                   onChange={(by, order) => {
-                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortBy(by as typeof sortBy);
                     setSortOrder(order);
                   }}
                   options={[
@@ -108,7 +112,7 @@ export const RecentSessionsDialog = () => {
                   currentSortBy={sortBy}
                   currentSortOrder={sortOrder}
                   onChange={(by, order) => {
-                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortBy(by as typeof sortBy);
                     setSortOrder(order);
                   }}
                   options={[
@@ -122,7 +126,7 @@ export const RecentSessionsDialog = () => {
                   currentSortBy={sortBy}
                   currentSortOrder={sortOrder}
                   onChange={(by, order) => {
-                    setSortBy(by as 'name' | 'duration' | 'date');
+                    setSortBy(by as typeof sortBy);
                     setSortOrder(order);
                   }}
                   options={[

@@ -45,6 +45,25 @@ export const EditTaskDialog = () => {
     setTask(null);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!task || !form.title.trim() || updateTask.isPending) return;
+      const formData = form.getFormData();
+      updateTask.mutate(
+        {
+          param: { id: task.id },
+          json: {
+            ...formData,
+            dueDate: formData.dueDate ?? null,
+            projectId: formData.projectId || null,
+          },
+        },
+        { onSuccess: handleClose }
+      );
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!task || !form.title.trim()) return;
@@ -75,7 +94,11 @@ export const EditTaskDialog = () => {
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Edit Task</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <ResponsiveDialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-title">Title</Label>

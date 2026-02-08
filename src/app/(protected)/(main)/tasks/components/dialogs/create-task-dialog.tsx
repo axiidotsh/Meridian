@@ -46,6 +46,17 @@ export const CreateTaskDialog = () => {
     setDialogState(open);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      if (!form.title.trim() || createTask.isPending) return;
+      createTask.mutate(
+        { json: form.getFormData() },
+        { onSuccess: () => handleOpenChange(false) }
+      );
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
@@ -66,7 +77,11 @@ export const CreateTaskDialog = () => {
         <ResponsiveDialogHeader>
           <ResponsiveDialogTitle>Create Task</ResponsiveDialogTitle>
         </ResponsiveDialogHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={handleSubmit}
+          onKeyDown={handleKeyDown}
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <ResponsiveDialogBody className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Title</Label>

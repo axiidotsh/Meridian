@@ -1,3 +1,7 @@
+import {
+  CommandDefinitionItem,
+  SearchItem,
+} from '@/components/command-menu/items';
 import type { CommandMenuItem } from '@/components/command-menu/types';
 import {
   CommandGroup,
@@ -6,6 +10,7 @@ import {
 } from '@/components/ui/command';
 import { Kbd } from '@/components/ui/kbd';
 import type { CommandDefinition } from '@/hooks/command-menu/types';
+import type { ResolvedHistoryEntry } from '@/hooks/command-menu/use-command-history';
 import { cn } from '@/utils/utils';
 import {
   CheckCircle2Icon,
@@ -24,6 +29,8 @@ interface CommandGroupsProps {
   habits: CommandMenuItem[];
   sessions: CommandMenuItem[];
   showStartFocusItem: boolean;
+  recentEntries: ResolvedHistoryEntry[];
+  searchValue: string;
   onCommandSelect: (command: CommandDefinition) => void;
   onItemSelect: (item: CommandMenuItem) => void;
 }
@@ -35,6 +42,8 @@ export const CommandGroups = ({
   habits,
   sessions,
   showStartFocusItem,
+  recentEntries,
+  searchValue,
   onCommandSelect,
   onItemSelect,
 }: CommandGroupsProps) => {
@@ -51,8 +60,32 @@ export const CommandGroups = ({
   const trashCommands = commands.filter((cmd) => cmd.category === 'trash');
   const accountCommands = commands.filter((cmd) => cmd.category === 'account');
 
+  const showRecent = searchValue === '' && recentEntries.length > 0;
+
   return (
     <>
+      {showRecent && (
+        <CommandGroup heading="Recent">
+          {recentEntries.map((resolved) =>
+            resolved.kind === 'command' ? (
+              <CommandDefinitionItem
+                key={`recent:${resolved.command.id}`}
+                command={resolved.command}
+                onSelect={() => onCommandSelect(resolved.command)}
+                valuePrefix="recent:"
+              />
+            ) : (
+              <SearchItem
+                key={`recent:item:${'itemId' in resolved.entry ? `${resolved.entry.itemType}:${resolved.entry.itemId}` : resolved.item.type}`}
+                item={resolved.item}
+                onSelect={() => onItemSelect(resolved.item)}
+                valuePrefix="recent:"
+              />
+            )
+          )}
+        </CommandGroup>
+      )}
+
       <CommandGroup heading="Pages">
         {pageCommands.map((command) => (
           <CommandItem

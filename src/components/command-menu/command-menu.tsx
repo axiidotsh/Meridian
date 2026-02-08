@@ -10,6 +10,7 @@ import { Command, CommandInput, CommandList } from '@/components/ui/command';
 import { Popover } from '@/components/ui/popover';
 import type { CommandDefinition } from '@/hooks/command-menu/types';
 import { useCommandActions } from '@/hooks/command-menu/use-command-actions';
+import { useCommandHistory } from '@/hooks/command-menu/use-command-history';
 import { useCommandItems } from '@/hooks/command-menu/use-command-items';
 import { useCommandRegistry } from '@/hooks/command-menu/use-command-registry';
 import { useCommandState } from '@/hooks/command-menu/use-command-state';
@@ -21,6 +22,8 @@ export const CommandMenu = () => {
   const { state, actions } = useCommandState();
   const commands = useCommandRegistry();
   const items = useCommandItems();
+  const { resolvedHistory, addCommandToHistory, addItemToHistory } =
+    useCommandHistory({ commands, items });
   const { handleAction, handleDateToggle } = useCommandActions();
   const { data: settings } = useSettings();
   const isMobile = useIsMobile();
@@ -53,21 +56,23 @@ export const CommandMenu = () => {
 
   const handleCommandSelect = useCallback(
     (command: CommandDefinition) => {
+      addCommandToHistory(command.id);
       command.handler();
       actions.reset();
       if (!isCentered) {
         inputRef.current?.blur();
       }
     },
-    [actions, isCentered]
+    [actions, isCentered, addCommandToHistory]
   );
 
   const handleItemSelect = useCallback(
     (item: typeof state.selectedItem) => {
+      if (item) addItemToHistory(item);
       actions.setSelectedItem(item);
       actions.setSearchValue('');
     },
-    [actions, state.selectedItem]
+    [actions, addItemToHistory]
   );
 
   const handleActionSelect = useCallback(
@@ -190,6 +195,8 @@ export const CommandMenu = () => {
                   habits={items.habits}
                   sessions={items.sessions}
                   showStartFocusItem={showStartFocusItem}
+                  recentEntries={resolvedHistory}
+                  searchValue={state.searchValue}
                   onCommandSelect={handleCommandSelect}
                   onItemSelect={handleItemSelect}
                 />
@@ -240,6 +247,8 @@ export const CommandMenu = () => {
                 habits={items.habits}
                 sessions={items.sessions}
                 showStartFocusItem={showStartFocusItem}
+                recentEntries={resolvedHistory}
+                searchValue={state.searchValue}
                 onCommandSelect={handleCommandSelect}
                 onItemSelect={handleItemSelect}
               />

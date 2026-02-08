@@ -36,3 +36,23 @@ export interface CommandMenuState {
   selectedValue: string;
   selectedItem: CommandMenuItem | null;
 }
+
+export type CommandHistoryEntry =
+  | { kind: 'command'; commandId: string; timestamp: number }
+  | {
+      kind: 'item';
+      itemType: 'todo' | 'project' | 'habit' | 'session';
+      itemId: string;
+      timestamp: number;
+    }
+  | {
+      kind: 'item';
+      itemType: 'focus-start' | 'focus-duration' | 'task-priority';
+      timestamp: number;
+    };
+
+export function getHistoryEntryKey(entry: CommandHistoryEntry): string {
+  if (entry.kind === 'command') return `command:${entry.commandId}`;
+  if ('itemId' in entry) return `item:${entry.itemType}:${entry.itemId}`;
+  return `item:${entry.itemType}`;
+}

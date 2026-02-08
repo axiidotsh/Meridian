@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/command';
 import type { CommandDefinition } from '@/hooks/command-menu/types';
 import { useCommandActions } from '@/hooks/command-menu/use-command-actions';
+import { useCommandHistory } from '@/hooks/command-menu/use-command-history';
 import { useCommandItems } from '@/hooks/command-menu/use-command-items';
 import { useCommandRegistry } from '@/hooks/command-menu/use-command-registry';
 import { useAtom } from 'jotai';
@@ -36,12 +37,15 @@ export default function SearchPage() {
 
   const commands = useCommandRegistry();
   const items = useCommandItems();
+  const { resolvedHistory, addCommandToHistory, addItemToHistory } =
+    useCommandHistory({ commands, items });
   const { handleAction, handleDateToggle } = useCommandActions();
 
   const showStartFocusItem = !commands.some((cmd) => cmd.category === 'focus');
 
   const handleCommandSelect = useCallback(
     (command: CommandDefinition) => {
+      addCommandToHistory(command.id);
       command.handler();
       setSearchValue('');
       setSelectedItem(null);
@@ -49,15 +53,16 @@ export default function SearchPage() {
         router.back();
       }
     },
-    [router, setSearchValue, setSelectedItem]
+    [router, setSearchValue, setSelectedItem, addCommandToHistory]
   );
 
   const handleItemSelect = useCallback(
     (item: CommandMenuItem) => {
+      addItemToHistory(item);
       setSelectedItem(item);
       setSearchValue('');
     },
-    [setSelectedItem, setSearchValue]
+    [setSelectedItem, setSearchValue, addItemToHistory]
   );
 
   const handleActionSelect = useCallback(
@@ -116,6 +121,29 @@ export default function SearchPage() {
                   No results found.
                 </CommandEmpty>
               )}
+
+              {searchValue === '' && resolvedHistory.length > 0 && (
+                <CommandGroup heading="Recent">
+                  {resolvedHistory.map((resolved) =>
+                    resolved.kind === 'command' ? (
+                      <CommandDefinitionItem
+                        key={`recent:${resolved.command.id}`}
+                        command={resolved.command}
+                        onSelect={() => handleCommandSelect(resolved.command)}
+                        valuePrefix="recent:"
+                      />
+                    ) : (
+                      <SearchItem
+                        key={`recent:item:${'itemId' in resolved.entry ? `${resolved.entry.itemType}:${resolved.entry.itemId}` : resolved.item.type}`}
+                        item={resolved.item}
+                        onSelect={() => handleItemSelect(resolved.item)}
+                        valuePrefix="recent:"
+                      />
+                    )
+                  )}
+                </CommandGroup>
+              )}
+
               <CommandGroup heading="Pages">
                 {pageCommands.map((command) => (
                   <CommandDefinitionItem

@@ -1,6 +1,7 @@
 import { CommandGroups } from '@/components/command-menu/command-groups';
 import type { CommandMenuItem } from '@/components/command-menu/types';
 import type { CommandDefinition } from '@/hooks/command-menu/types';
+import type { ResolvedHistoryEntry } from '@/hooks/command-menu/use-command-history';
 import { CommandMenuEmpty } from './command-menu-empty';
 
 interface CommandPaletteProps {
@@ -10,6 +11,8 @@ interface CommandPaletteProps {
   habits: CommandMenuItem[];
   sessions: CommandMenuItem[];
   showStartFocusItem: boolean;
+  recentEntries: ResolvedHistoryEntry[];
+  searchValue: string;
   onCommandSelect: (command: CommandDefinition) => void;
   onItemSelect: (item: CommandMenuItem) => void;
 }
@@ -21,6 +24,8 @@ export const CommandPalette = ({
   habits,
   sessions,
   showStartFocusItem,
+  recentEntries,
+  searchValue,
   onCommandSelect,
   onItemSelect,
 }: CommandPaletteProps) => {
@@ -34,6 +39,8 @@ export const CommandPalette = ({
         habits={habits}
         sessions={sessions}
         showStartFocusItem={showStartFocusItem}
+        recentEntries={recentEntries}
+        searchValue={searchValue}
         onCommandSelect={onCommandSelect}
         onItemSelect={onItemSelect}
       />

@@ -43,6 +43,7 @@ export function useCommandItems() {
         data: session,
       })),
       itemsMap: createItemsMap(tasks, projects, habits, recentSessions),
+      itemsByIdMap: createItemsByIdMap(tasks, projects, habits, recentSessions),
       isLoading,
     }),
     [tasks, projects, habits, recentSessions, isLoading]
@@ -74,6 +75,33 @@ function createItemsMap(
       type: 'session',
       data: session,
     });
+  });
+
+  return map;
+}
+
+function createItemsByIdMap(
+  tasks: Task[],
+  projects: Project[],
+  habits: Habit[],
+  sessions: FocusSession[]
+) {
+  const map = new Map<string, CommandMenuItem>();
+
+  tasks.slice(0, ITEM_LIMIT).forEach((task) => {
+    map.set(`todo:${task.id}`, { type: 'todo', data: task });
+  });
+
+  projects.slice(0, ITEM_LIMIT).forEach((project) => {
+    map.set(`project:${project.id}`, { type: 'project', data: project });
+  });
+
+  habits.slice(0, ITEM_LIMIT).forEach((habit) => {
+    map.set(`habit:${habit.id}`, { type: 'habit', data: habit });
+  });
+
+  sessions.slice(0, ITEM_LIMIT).forEach((session) => {
+    map.set(`session:${session.id}`, { type: 'session', data: session });
   });
 
   return map;

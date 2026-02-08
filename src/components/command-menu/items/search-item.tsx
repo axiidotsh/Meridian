@@ -22,16 +22,18 @@ interface CommandItemBaseProps {
 
 interface CommandDefinitionItemProps extends CommandItemBaseProps {
   command: CommandDefinition;
+  valuePrefix?: string;
 }
 
 export const CommandDefinitionItem = ({
   command,
   onSelect,
   className,
+  valuePrefix = '',
 }: CommandDefinitionItemProps) => {
   return (
     <CommandItem
-      value={[command.id, command.name, ...(command.keywords ?? [])].join(' ')}
+      value={`${valuePrefix}${[command.id, command.name, ...(command.keywords ?? [])].join(' ')}`}
       onSelect={onSelect}
       className={cn(command.destructive && 'text-destructive!', className)}
     >
@@ -46,6 +48,7 @@ export const CommandDefinitionItem = ({
 interface TodoItemProps extends CommandItemBaseProps {
   item: Extract<CommandMenuItem, { type: 'todo' }>;
   showActions?: boolean;
+  valuePrefix?: string;
 }
 
 export const TodoItem = ({
@@ -53,10 +56,11 @@ export const TodoItem = ({
   onSelect,
   showActions = true,
   className,
+  valuePrefix = '',
 }: TodoItemProps) => {
   return (
     <CommandItem
-      value={`todo:${item.data.id}:${item.data.title}`}
+      value={`${valuePrefix}todo:${item.data.id}:${item.data.title}`}
       onSelect={onSelect}
       className={className}
     >
@@ -86,6 +90,7 @@ export const TodoItem = ({
 interface ProjectItemProps extends CommandItemBaseProps {
   item: Extract<CommandMenuItem, { type: 'project' }>;
   showActions?: boolean;
+  valuePrefix?: string;
 }
 
 export const ProjectItem = ({
@@ -93,10 +98,11 @@ export const ProjectItem = ({
   onSelect,
   showActions = true,
   className,
+  valuePrefix = '',
 }: ProjectItemProps) => {
   return (
     <CommandItem
-      value={`project:${item.data.id}:${item.data.name}`}
+      value={`${valuePrefix}project:${item.data.id}:${item.data.name}`}
       onSelect={onSelect}
       className={className}
     >
@@ -115,6 +121,7 @@ export const ProjectItem = ({
 interface HabitItemProps extends CommandItemBaseProps {
   item: Extract<CommandMenuItem, { type: 'habit' }>;
   showActions?: boolean;
+  valuePrefix?: string;
 }
 
 export const HabitItem = ({
@@ -122,10 +129,11 @@ export const HabitItem = ({
   onSelect,
   showActions = true,
   className,
+  valuePrefix = '',
 }: HabitItemProps) => {
   return (
     <CommandItem
-      value={`habit:${item.data.id}:${item.data.title}`}
+      value={`${valuePrefix}habit:${item.data.id}:${item.data.title}`}
       onSelect={onSelect}
       className={className}
     >
@@ -144,6 +152,7 @@ export const HabitItem = ({
 interface SessionItemProps extends CommandItemBaseProps {
   item: Extract<CommandMenuItem, { type: 'session' }>;
   showActions?: boolean;
+  valuePrefix?: string;
 }
 
 export const SessionItem = ({
@@ -151,10 +160,11 @@ export const SessionItem = ({
   onSelect,
   showActions = true,
   className,
+  valuePrefix = '',
 }: SessionItemProps) => {
   return (
     <CommandItem
-      value={`session:${item.data.id}:${item.data.task || 'Focus session'}`}
+      value={`${valuePrefix}session:${item.data.id}:${item.data.task || 'Focus session'}`}
       onSelect={onSelect}
       className={className}
     >
@@ -173,15 +183,18 @@ export const SessionItem = ({
   );
 };
 
-type FocusStartItemProps = CommandItemBaseProps;
+interface FocusStartItemProps extends CommandItemBaseProps {
+  valuePrefix?: string;
+}
 
 export const FocusStartItem = ({
   onSelect,
   className,
+  valuePrefix = '',
 }: FocusStartItemProps) => {
   return (
     <CommandItem
-      value="start focus session begin timer pomodoro work"
+      value={`${valuePrefix}start focus session begin timer pomodoro work`}
       onSelect={onSelect}
       className={className}
     >
@@ -195,15 +208,18 @@ export const FocusStartItem = ({
   );
 };
 
-type FocusDurationItemProps = CommandItemBaseProps;
+interface FocusDurationItemProps extends CommandItemBaseProps {
+  valuePrefix?: string;
+}
 
 export const FocusDurationItem = ({
   onSelect,
   className,
+  valuePrefix = '',
 }: FocusDurationItemProps) => {
   return (
     <CommandItem
-      value="set default focus duration timer minutes session pomodoro"
+      value={`${valuePrefix}set default focus duration timer minutes session pomodoro`}
       onSelect={onSelect}
       className={className}
     >
@@ -217,15 +233,18 @@ export const FocusDurationItem = ({
   );
 };
 
-type TaskPriorityItemProps = CommandItemBaseProps;
+interface TaskPriorityItemProps extends CommandItemBaseProps {
+  valuePrefix?: string;
+}
 
 export const TaskPriorityItem = ({
   onSelect,
   className,
+  valuePrefix = '',
 }: TaskPriorityItemProps) => {
   return (
     <CommandItem
-      value="set default task priority low medium high"
+      value={`${valuePrefix}set default task priority low medium high`}
       onSelect={onSelect}
       className={className}
     >
@@ -242,6 +261,7 @@ export const TaskPriorityItem = ({
 interface SearchItemProps extends CommandItemBaseProps {
   item: CommandMenuItem;
   showActions?: boolean;
+  valuePrefix?: string;
 }
 
 export const SearchItem = ({
@@ -249,6 +269,7 @@ export const SearchItem = ({
   onSelect,
   showActions = true,
   className,
+  valuePrefix,
 }: SearchItemProps) => {
   switch (item.type) {
     case 'todo':
@@ -258,6 +279,7 @@ export const SearchItem = ({
           onSelect={onSelect}
           showActions={showActions}
           className={className}
+          valuePrefix={valuePrefix}
         />
       );
     case 'project':
@@ -267,6 +289,7 @@ export const SearchItem = ({
           onSelect={onSelect}
           showActions={showActions}
           className={className}
+          valuePrefix={valuePrefix}
         />
       );
     case 'habit':
@@ -276,6 +299,7 @@ export const SearchItem = ({
           onSelect={onSelect}
           showActions={showActions}
           className={className}
+          valuePrefix={valuePrefix}
         />
       );
     case 'session':
@@ -285,14 +309,33 @@ export const SearchItem = ({
           onSelect={onSelect}
           showActions={showActions}
           className={className}
+          valuePrefix={valuePrefix}
         />
       );
     case 'focus-start':
-      return <FocusStartItem onSelect={onSelect} className={className} />;
+      return (
+        <FocusStartItem
+          onSelect={onSelect}
+          className={className}
+          valuePrefix={valuePrefix}
+        />
+      );
     case 'focus-duration':
-      return <FocusDurationItem onSelect={onSelect} className={className} />;
+      return (
+        <FocusDurationItem
+          onSelect={onSelect}
+          className={className}
+          valuePrefix={valuePrefix}
+        />
+      );
     case 'task-priority':
-      return <TaskPriorityItem onSelect={onSelect} className={className} />;
+      return (
+        <TaskPriorityItem
+          onSelect={onSelect}
+          className={className}
+          valuePrefix={valuePrefix}
+        />
+      );
     default:
       return null;
   }

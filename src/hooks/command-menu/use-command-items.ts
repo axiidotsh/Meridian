@@ -11,12 +11,21 @@ import { useMemo } from 'react';
 const ITEM_LIMIT = 10;
 
 export function useCommandItems() {
-  const { tasks } = useInfiniteTasks({ limit: ITEM_LIMIT });
-  const { data: projects = [] } = useProjects();
-  const { habits } = useInfiniteHabits({ limit: ITEM_LIMIT, days: 7 });
-  const { sessions: recentSessions } = useInfiniteRecentSessions({
+  const { tasks, isLoading: isLoadingTasks } = useInfiniteTasks({
     limit: ITEM_LIMIT,
   });
+  const { data: projects = [], isLoading: isLoadingProjects } = useProjects();
+  const { habits, isLoading: isLoadingHabits } = useInfiniteHabits({
+    limit: ITEM_LIMIT,
+    days: 7,
+  });
+  const { sessions: recentSessions, isLoading: isLoadingSessions } =
+    useInfiniteRecentSessions({
+      limit: ITEM_LIMIT,
+    });
+
+  const isLoading =
+    isLoadingTasks || isLoadingProjects || isLoadingHabits || isLoadingSessions;
 
   return useMemo(
     () => ({
@@ -34,8 +43,9 @@ export function useCommandItems() {
         data: session,
       })),
       itemsMap: createItemsMap(tasks, projects, habits, recentSessions),
+      isLoading,
     }),
-    [tasks, projects, habits, recentSessions]
+    [tasks, projects, habits, recentSessions, isLoading]
   );
 }
 

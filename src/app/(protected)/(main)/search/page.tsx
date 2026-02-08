@@ -95,7 +95,7 @@ export default function SearchPage() {
   const accountCommands = commands.filter((cmd) => cmd.category === 'account');
 
   return (
-    <div className="bg-background fixed inset-0 z-50 flex h-[100dvh] flex-col pb-16.5 md:hidden">
+    <div className="bg-background fixed inset-0 z-50 flex h-[100dvh] flex-col md:hidden">
       <Command
         className="bg-background flex h-full flex-1 flex-col"
         shouldFilter={true}
@@ -111,9 +111,11 @@ export default function SearchPage() {
         <CommandList className="max-h-none flex-1 overflow-y-auto pb-[env(safe-area-inset-bottom)]">
           {!selectedItem ? (
             <>
-              <CommandEmpty className="border-0 py-6 text-center text-sm">
-                No results found.
-              </CommandEmpty>
+              {!items.isLoading && (
+                <CommandEmpty className="border-0 py-6 text-center text-sm">
+                  No results found.
+                </CommandEmpty>
+              )}
               <CommandGroup heading="Pages">
                 {pageCommands.map((command) => (
                   <CommandDefinitionItem
@@ -258,9 +260,11 @@ export default function SearchPage() {
             </>
           ) : (
             <>
-              <CommandEmpty className="border-0 py-6 text-center text-sm">
-                No results found.
-              </CommandEmpty>
+              {!items.isLoading && (
+                <CommandEmpty className="border-0 py-6 text-center text-sm">
+                  No results found.
+                </CommandEmpty>
+              )}
               <CommandGroup heading={getItemTitle(selectedItem)}>
                 <SearchActions
                   item={selectedItem}
@@ -275,6 +279,7 @@ export default function SearchPage() {
               )}
             </>
           )}
+          <div className="h-16" />
         </CommandList>
       </Command>
     </div>

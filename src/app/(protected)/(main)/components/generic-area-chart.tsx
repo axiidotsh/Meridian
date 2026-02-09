@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartConfig,
   ChartContainer,
@@ -75,22 +74,6 @@ export const GenericAreaChart = <TData,>({
     onPeriodChange?.(Number(value));
   };
 
-  if (isLoading) {
-    return (
-      <Card className="bg-dashboard-card gap-0 rounded-sm shadow-none">
-        <CardHeader className="flex flex-row items-center justify-between gap-2">
-          <CardTitle className="text-muted-foreground font-mono text-sm font-normal">
-            <Skeleton className="h-4 w-48" />
-          </CardTitle>
-          <Skeleton className="h-8 w-20" />
-        </CardHeader>
-        <CardContent className="mt-6">
-          <Skeleton className={cn(chartHeight, 'w-full')} />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <ContentCard
       title={title}
@@ -112,71 +95,75 @@ export const GenericAreaChart = <TData,>({
       }
       contentClassName="mt-6 pl-3"
     >
-      <ChartContainer
-        config={chartConfig}
-        className={cn(chartHeight, 'w-full min-w-0 pr-3')}
-      >
-        <AreaChart data={data} margin={{ left: 0, right: 0, top: 10 }}>
-          <defs>
-            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop
-                offset="5%"
-                stopColor={`var(--color-${yKey})`}
-                stopOpacity={0.8}
-              />
-              <stop
-                offset="95%"
-                stopColor={`var(--color-${yKey})`}
-                stopOpacity={0.1}
-              />
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis
-            dataKey={xKey}
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={xAxisFormatter}
-            angle={Number(period) > 7 ? -45 : 0}
-            textAnchor={Number(period) > 7 ? 'end' : 'middle'}
-            height={Number(period) > 7 ? 60 : 30}
-          />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            tickMargin={8}
-            tickFormatter={yAxisFormatter}
-            domain={yAxisDomain}
-          />
-          <ChartTooltip
-            cursor={false}
-            content={
-              <ChartTooltipContent
-                indicator="line"
-                labelFormatter={tooltipLabelFormatter}
-                formatter={
-                  tooltipFormatter
-                    ? (value) => {
-                        const numValue =
-                          typeof value === 'number' ? value : Number(value);
-                        return tooltipFormatter(numValue);
-                      }
-                    : undefined
-                }
-              />
-            }
-          />
-          <Area
-            dataKey={yKey}
-            type="monotone"
-            fill={`url(#${gradientId})`}
-            fillOpacity={0.4}
-            stroke={`var(--color-${yKey})`}
-            strokeWidth={2}
-          />
-        </AreaChart>
-      </ChartContainer>
+      {isLoading ? (
+        <Skeleton className={cn(chartHeight, 'w-full pr-3')} />
+      ) : (
+        <ChartContainer
+          config={chartConfig}
+          className={cn(chartHeight, 'w-full min-w-0 pr-3')}
+        >
+          <AreaChart data={data} margin={{ left: 0, right: 0, top: 10 }}>
+            <defs>
+              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor={`var(--color-${yKey})`}
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor={`var(--color-${yKey})`}
+                  stopOpacity={0.1}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis
+              dataKey={xKey}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={xAxisFormatter}
+              angle={Number(period) > 7 ? -45 : 0}
+              textAnchor={Number(period) > 7 ? 'end' : 'middle'}
+              height={Number(period) > 7 ? 60 : 30}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={yAxisFormatter}
+              domain={yAxisDomain}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  indicator="line"
+                  labelFormatter={tooltipLabelFormatter}
+                  formatter={
+                    tooltipFormatter
+                      ? (value) => {
+                          const numValue =
+                            typeof value === 'number' ? value : Number(value);
+                          return tooltipFormatter(numValue);
+                        }
+                      : undefined
+                  }
+                />
+              }
+            />
+            <Area
+              dataKey={yKey}
+              type="monotone"
+              fill={`url(#${gradientId})`}
+              fillOpacity={0.4}
+              stroke={`var(--color-${yKey})`}
+              strokeWidth={2}
+            />
+          </AreaChart>
+        </ChartContainer>
+      )}
     </ContentCard>
   );
 };

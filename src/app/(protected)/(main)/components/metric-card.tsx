@@ -1,9 +1,3 @@
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -19,18 +13,15 @@ interface MetricCardProps {
 
 export const MetricCardSkeleton = () => {
   return (
-    <Card className="bg-dashboard-card gap-0 rounded-sm shadow-none">
-      <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="size-4" />
-      </CardHeader>
-      <CardContent className="mt-3">
-        <Skeleton className="h-8 w-16" />
-      </CardContent>
-      <CardFooter className="mt-1.5">
-        <Skeleton className="h-3 w-32" />
-      </CardFooter>
-    </Card>
+    <ContentCard
+      title={<Skeleton className="h-4 w-24" />}
+      action={<Skeleton className="size-4" />}
+      contentClassName="mt-3"
+      footerClassName="mt-1.5"
+      footer={<Skeleton className="h-3 w-32" />}
+    >
+      <Skeleton className="h-8 w-16" />
+    </ContentCard>
   );
 };
 
@@ -51,9 +42,9 @@ export const MetricCard = ({
       icon={icon}
       contentClassName="mt-3"
       footer={
-        footer ? (
-          <div className="text-muted-foreground text-xs">{footer}</div>
-        ) : null
+        <div className="text-muted-foreground text-xs">
+          {footer ?? '\u00A0'}
+        </div>
       }
     >
       <div className="text-2xl font-semibold">{content}</div>

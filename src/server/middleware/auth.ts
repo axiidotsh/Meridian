@@ -1,3 +1,4 @@
+import { sleep } from '@/utils/utils';
 import { createMiddleware } from 'hono/factory';
 import { auth } from '../auth';
 import { Role, Session, User } from '../db/generated/client';
@@ -10,6 +11,8 @@ export type AuthVariables = {
 export const authMiddleware = createMiddleware<{
   Variables: AuthVariables;
 }>(async (c, next) => {
+  await sleep(2000);
+
   const sessionResponse = await auth.api.getSession({
     headers: c.req.raw.headers,
   });

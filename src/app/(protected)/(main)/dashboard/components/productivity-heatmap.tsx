@@ -36,8 +36,8 @@ export const ProductivityHeatmap = () => {
 
   if (isLoading) {
     return (
-      <ContentCard title="Productivity" contentClassName="mt-6">
-        <Skeleton className="h-[200px] w-full" />
+      <ContentCard title="Productivity" contentClassName="mt-6 !px-0">
+        <Skeleton className="mx-6 h-[200px]" />
       </ContentCard>
     );
   }

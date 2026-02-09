@@ -30,7 +30,7 @@ export const DashboardTaskList = () => {
 
     if (isLoading) {
       return (
-        <div className="my-4 space-y-3">
+        <div className="mt-6 h-80 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} className="flex items-start gap-3 pb-3">
               <Skeleton className="mt-0.5 size-4 rounded-sm" />
@@ -47,7 +47,7 @@ export const DashboardTaskList = () => {
 
     if (tasks.length === 0) {
       return (
-        <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-16 text-center">
+        <div className="text-muted-foreground flex h-80 flex-col items-center justify-center gap-2 text-center">
           <PartyPopperIcon className="mb-2 size-12 stroke-1 opacity-50" />
           <p className="text-sm font-medium">All caught up!</p>
           <p className="text-xs">No pending tasks</p>

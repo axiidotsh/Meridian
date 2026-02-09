@@ -10,6 +10,7 @@ const updateSettingsSchema = z.object({
   defaultFocusDuration: z.number().int().min(1).max(480).optional(),
   defaultTaskPriority: z.nativeEnum(TaskPriority).optional(),
   showFocusTimerInTab: z.boolean().optional(),
+  reduceMotion: z.boolean().optional(),
 });
 
 export const settingsRouter = new Hono()
@@ -24,6 +25,7 @@ export const settingsRouter = new Hono()
         defaultFocusDuration: true,
         defaultTaskPriority: true,
         showFocusTimerInTab: true,
+        reduceMotion: true,
       },
     });
 
@@ -32,6 +34,7 @@ export const settingsRouter = new Hono()
       defaultFocusDuration: settings?.defaultFocusDuration,
       defaultTaskPriority: settings?.defaultTaskPriority,
       showFocusTimerInTab: settings?.showFocusTimerInTab,
+      reduceMotion: settings?.reduceMotion,
     });
   })
   .patch('/', zValidator('json', updateSettingsSchema), async (c) => {
@@ -46,6 +49,7 @@ export const settingsRouter = new Hono()
         defaultFocusDuration: true,
         defaultTaskPriority: true,
         showFocusTimerInTab: true,
+        reduceMotion: true,
       },
     });
 
@@ -54,6 +58,7 @@ export const settingsRouter = new Hono()
       defaultFocusDuration: updatedUser.defaultFocusDuration,
       defaultTaskPriority: updatedUser.defaultTaskPriority,
       showFocusTimerInTab: updatedUser.showFocusTimerInTab,
+      reduceMotion: updatedUser.reduceMotion,
     });
   });
 

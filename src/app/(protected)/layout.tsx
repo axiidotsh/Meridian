@@ -18,6 +18,7 @@ import { AppHeader } from '@/components/app-header';
 import { AppSidebar } from '@/components/app-sidebar';
 import { LogoutDialog } from '@/components/logout-dialog';
 import { MobileDock } from '@/components/mobile-dock';
+import { ReduceMotionProvider } from '@/components/reduce-motion-provider';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { authFailureRedirect } from '@/lib/config/redirects.config';
 import { auth } from '@/server/auth';
@@ -38,7 +39,7 @@ export default async function ProtectedLayout({
   }
 
   return (
-    <>
+    <ReduceMotionProvider>
       <SidebarProvider defaultOpen={false} open={false}>
         <AppSidebar />
         <SidebarInset className="flex flex-col">
@@ -76,6 +77,6 @@ export default async function ProtectedLayout({
       <EmptyTrashCommandDialog />
 
       <FocusSessionTabTitle />
-    </>
+    </ReduceMotionProvider>
   );
 }

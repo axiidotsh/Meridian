@@ -63,6 +63,12 @@ export const auth = betterAuth({
         defaultValue: false,
         input: true,
       },
+      reduceMotion: {
+        type: 'boolean',
+        required: true,
+        defaultValue: false,
+        input: true,
+      },
     },
   },
   emailAndPassword: {

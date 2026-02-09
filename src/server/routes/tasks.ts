@@ -125,8 +125,6 @@ export const tasksRouter = new Hono()
     const user = c.get('user');
     const { days } = c.req.valid('query');
 
-    const now = new Date();
-
     const chartData = await Promise.all(
       Array.from({ length: days }, (_, i) => {
         const daysAgo = days - 1 - i;

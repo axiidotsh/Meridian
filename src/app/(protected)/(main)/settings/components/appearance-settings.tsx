@@ -1,9 +1,12 @@
 'use client';
 
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { cn } from '@/utils/utils';
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useState } from 'react';
 import { useUpdateSettings } from '../hooks/mutations/use-update-settings';
 import { useSettings } from '../hooks/queries/use-settings';
 import { SettingSection } from './setting-section';
@@ -80,10 +83,27 @@ const THEME_OPTIONS = [
 export const AppearanceSettings = () => {
   const { theme, setTheme } = useTheme();
   const { data: settings } = useSettings();
-  const { mutate: updateSettings } = useUpdateSettings();
+  const { mutate: updateSettings, isPending } = useUpdateSettings();
+  const [optimisticReduceMotion, setOptimisticReduceMotion] = useState<
+    boolean | null
+  >(null);
+
+  const reduceMotion = optimisticReduceMotion ?? settings?.reduceMotion;
 
   function handlePositionChange(position: CommandMenuPosition) {
     updateSettings({ json: { commandMenuPosition: position } });
+  }
+
+  function handleReduceMotionChange(value: boolean) {
+    const prev = optimisticReduceMotion;
+    setOptimisticReduceMotion(value);
+    updateSettings(
+      { json: { reduceMotion: value } },
+      {
+        onError: () => setOptimisticReduceMotion(prev),
+        onSuccess: (data) => setOptimisticReduceMotion(data.reduceMotion),
+      }
+    );
   }
 
   if (!settings) return null;
@@ -111,6 +131,23 @@ export const AppearanceSettings = () => {
               <span className="text-sm font-medium">{option.label}</span>
             </button>
           ))}
+        </div>
+      </SettingSection>
+      <Separator />
+      <SettingSection
+        title="Reduce Motion"
+        description="Disable animations across the app for reduced visual motion"
+      >
+        <div className="flex items-center justify-between">
+          <Label htmlFor="reduce-motion" className="cursor-pointer">
+            Reduce all animations
+          </Label>
+          <Switch
+            id="reduce-motion"
+            checked={reduceMotion ?? false}
+            onCheckedChange={handleReduceMotionChange}
+            disabled={isPending}
+          />
         </div>
       </SettingSection>
       <Separator />

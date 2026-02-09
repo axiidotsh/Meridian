@@ -47,9 +47,12 @@ export const dashboardRouter = new Hono()
           },
         },
       },
-      orderBy: {
-        dueDate: 'asc',
-      },
+      orderBy: [
+        { dueDate: { sort: 'asc', nulls: 'last' } },
+        { priority: 'desc' },
+        { createdAt: 'desc' },
+        { id: 'desc' },
+      ],
     });
 
     return c.json({ tasks });
@@ -171,9 +174,12 @@ export const dashboardRouter = new Hono()
             },
           },
         },
-        orderBy: {
-          dueDate: 'asc',
-        },
+        orderBy: [
+          { dueDate: { sort: 'asc', nulls: 'last' } },
+          { priority: 'desc' },
+          { createdAt: 'desc' },
+          { id: 'desc' },
+        ],
       }),
       db.$queryRaw<
         [

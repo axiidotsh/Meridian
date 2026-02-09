@@ -1,4 +1,5 @@
 import { Providers } from '@/components/providers';
+import { env } from '@/lib/config/env/server';
 import '@/styles/globals.css';
 import { cn } from '@/utils/utils';
 import type { Metadata, Viewport } from 'next';
@@ -21,7 +22,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Horizon',
+  title:
+    env.NODE_ENV === 'development'
+      ? 'Horizon Dev'
+      : env.NODE_ENV === 'test'
+        ? 'Horizon Test'
+        : 'Horizon',
   description: 'A productivity app.',
 };
 

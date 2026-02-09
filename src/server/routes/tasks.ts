@@ -251,6 +251,7 @@ export const tasksRouter = new Hono()
               WHEN 'LOW' THEN 2
               WHEN 'NO_PRIORITY' THEN 3
             END ${orderDirection},
+            t."dueDate" ASC NULLS LAST,
             t."createdAt" DESC,
             t.id DESC
           LIMIT ${limit}
@@ -270,9 +271,27 @@ export const tasksRouter = new Hono()
       return c.json({ tasks, nextOffset });
     }
 
-    const orderBy: Record<string, 'asc' | 'desc'>[] = sortBy
-      ? [{ [sortBy]: sortOrder }, { createdAt: 'desc' }, { id: 'desc' }]
-      : [{ createdAt: 'desc' }, { id: 'desc' }];
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [];
+
+    if (sortBy) {
+      orderBy.push(
+        sortBy === 'dueDate'
+          ? { dueDate: { sort: sortOrder, nulls: 'last' } }
+          : { [sortBy]: sortOrder }
+      );
+    }
+
+    if (sortBy !== 'dueDate') {
+      orderBy.push({ dueDate: { sort: 'asc', nulls: 'last' } });
+    }
+
+    orderBy.push({ priority: 'desc' });
+
+    if (sortBy !== 'createdAt') {
+      orderBy.push({ createdAt: 'desc' });
+    }
+
+    orderBy.push({ id: 'desc' });
 
     const [tasks, totalCount] = await Promise.all([
       db.task.findMany({

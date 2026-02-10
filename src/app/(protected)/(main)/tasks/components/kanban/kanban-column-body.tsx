@@ -80,7 +80,10 @@ export const KanbanColumnSentinel = ({
 export const KanbanColumnLoading = () => (
   <div className="space-y-2">
     {Array.from({ length: 3 }).map((_, i) => (
-      <Skeleton key={i} className="h-20 w-full rounded-lg" />
+      <Skeleton
+        key={i}
+        className="bg-foreground/5 dark:bg-accent h-20 w-full rounded-lg"
+      />
     ))}
   </div>
 );

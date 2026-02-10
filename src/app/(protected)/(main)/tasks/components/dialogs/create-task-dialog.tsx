@@ -94,11 +94,22 @@ export const CreateTaskDialog = () => {
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>Due Date</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Due Date</Label>
+                  {form.dueDate && (
+                    <span className="text-muted-foreground text-xs">
+                      {form.dueDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  )}
+                </div>
                 <DatePicker
+                  mode="natural-language"
                   date={form.dueDate}
                   setDate={form.setDueDate}
-                  triggerClassName="w-full"
                 />
               </div>
               <div className="space-y-2">

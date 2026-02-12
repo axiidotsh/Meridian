@@ -113,6 +113,9 @@ importers:
       dotenv:
         specifier: ^16.5.0
         version: 16.6.1
+      facehash:
+        specifier: ^0.0.7
+        version: 0.0.7(@types/react@19.2.6)(next@15.5.7(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       hono:
         specifier: ^4.10.7
         version: 4.10.7
@@ -2834,6 +2837,19 @@ packages:
 
   exsolve@1.0.8:
     resolution: {integrity: sha512-LmDxfWXwcTArk8fUEnOfSZpHOJ6zOMUJKOtFLFqJLoKJetuQG874Uc7/Kki7zFLzYybmZhp1M7+98pfMqeX8yA==}
+
+  facehash@0.0.7:
+    resolution: {integrity: sha512-P4fw6z5DIGMbjtqEaOw7fYvYpQetSOSJOfqy3xuET7cDUI6f9CKlSX0UZIYNrtsPpCoz3LoPP5E8bNbpZBP30A==}
+    peerDependencies:
+      '@types/react': ''
+      next: '>=15'
+      react: '>=18 <20'
+      react-dom: '>=18 <20'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      next:
+        optional: true
 
   fast-check@3.23.2:
     resolution: {integrity: sha512-h5+1OzzfCC3Ef7VbtKdcv7zsstUQwUDlYpUTvjeUsJAssPgLn7QzbboPtL5ro04Mq0rPOsMzl7q5hIbRs2wD1A==}
@@ -7123,6 +7139,14 @@ snapshots:
   eventemitter3@5.0.1: {}
 
   exsolve@1.0.8: {}
+
+  facehash@0.0.7(@types/react@19.2.6)(next@15.5.7(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+    optionalDependencies:
+      '@types/react': 19.2.6
+      next: 15.5.7(@opentelemetry/api@1.9.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   fast-check@3.23.2:
     dependencies:

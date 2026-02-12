@@ -24,7 +24,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { useUser } from '@/hooks/use-user';
-import { getInitials } from '@/utils/utils';
+import { Facehash } from 'facehash';
 import { useSetAtom } from 'jotai';
 import {
   CheckIcon,
@@ -135,7 +135,15 @@ export function AppSidebar() {
                     alt={user?.name || 'User'}
                   />
                   <AvatarFallback className="rounded-md">
-                    {getInitials(user?.name || '')}
+                    <Facehash
+                      name={user?.email || ''}
+                      colorClasses={['bg-pink-500 dark:bg-pink-800']}
+                      enableBlink
+                      onRenderMouth={() => (
+                        <span className="text-[6px]">L</span>
+                      )}
+                      className="rounded-md"
+                    />
                   </AvatarFallback>
                 </Avatar>
               )}

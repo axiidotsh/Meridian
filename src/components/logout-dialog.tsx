@@ -33,7 +33,7 @@ export function LogoutDialog() {
       await signOut({
         fetchOptions: {
           onSuccess: () => {
-            router.push('/sign-in');
+            router.push('/');
             setOpen(false);
             setSessionKey((k) => k + 1);
             queryClient.clear();

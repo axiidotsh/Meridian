@@ -92,7 +92,7 @@ export default function SignUpPage() {
     <Card className="w-full max-w-md rounded-lg">
       <CardHeader>
         <CardTitle className="text-xl">Create an account</CardTitle>
-        <CardDescription>Get started with Horizon today</CardDescription>
+        <CardDescription>Get started with Meridian today</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         <GoogleSignInButton disabled={isPending} />

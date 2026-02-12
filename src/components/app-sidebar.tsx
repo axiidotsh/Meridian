@@ -1,7 +1,7 @@
 'use client';
 
 import { logoutDialogOpenAtom } from '@/atoms/ui-atoms';
-import { PlaceholderLogo } from '@/components/icons';
+import { Logo } from '@/components/icons';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -76,7 +76,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="h-16 gap-0 border-b p-0">
-        <PlaceholderLogo className="m-auto size-6" />
+        <Logo className="m-auto size-6" />
       </SidebarHeader>
       <SidebarContent className="mx-auto mt-2">
         <SidebarGroup>

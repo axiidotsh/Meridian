@@ -5,9 +5,9 @@ export default defineConfig({
   openApi: {
     openapi: '3.0.0',
     info: {
-      title: 'Horizon API',
+      title: 'Meridian API',
       version: '1.0.0',
-      description: 'API documentation for Horizon productivity application',
+      description: 'API documentation for Meridian productivity application',
     },
     servers: [
       {

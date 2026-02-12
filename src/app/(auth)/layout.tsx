@@ -1,4 +1,4 @@
-import { PlaceholderLogo } from '@/components/icons';
+import { Logo } from '@/components/icons';
 import { authSuccessRedirect } from '@/lib/config/redirects.config';
 import { auth } from '@/server/auth';
 import { headers } from 'next/headers';
@@ -21,7 +21,7 @@ export default async function AuthLayout({
   return (
     <div className="bg-background flex min-h-svh flex-col items-center justify-center px-4 py-12">
       <Link href="/" className="mb-8">
-        <PlaceholderLogo className="size-12" />
+        <Logo className="size-10" />
       </Link>
       {children}
     </div>

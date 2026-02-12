@@ -3,7 +3,7 @@ import { env } from '@/lib/config/env/server';
 import '@/styles/globals.css';
 import { cn } from '@/utils/utils';
 import type { Metadata, Viewport } from 'next';
-import { Geist_Mono, Inter } from 'next/font/google';
+import { Dancing_Script, Geist_Mono, Inter } from 'next/font/google';
 
 const fontSans = Inter({
   variable: '--font-sans',
@@ -12,6 +12,11 @@ const fontSans = Inter({
 
 const fontMono = Geist_Mono({
   variable: '--font-mono',
+  subsets: ['latin'],
+});
+
+const fontCursive = Dancing_Script({
+  variable: '--font-cursive',
   subsets: ['latin'],
 });
 
@@ -24,10 +29,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title:
     env.NODE_ENV === 'development'
-      ? 'Horizon Dev'
+      ? 'Meridian Dev'
       : env.NODE_ENV === 'test'
-        ? 'Horizon Test'
-        : 'Horizon',
+        ? 'Meridian Test'
+        : 'Meridian',
   description: 'A productivity app.',
 };
 
@@ -42,6 +47,7 @@ export default function RootLayout({
         className={cn(
           fontSans.variable,
           fontMono.variable,
+          fontCursive.variable,
           process.env.NODE_ENV === 'development' && 'debug-screens',
           'antialiased'
         )}

@@ -1,7 +1,7 @@
 import { formatTime } from '@/utils/timer';
 import { useEffect, useRef, useState } from 'react';
 
-const DEFAULT_TITLE = 'Horizon';
+const DEFAULT_TITLE = 'Meridian';
 
 export function useTabTitle(
   remainingSeconds: number,

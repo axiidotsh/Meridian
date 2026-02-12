@@ -11,3 +11,4 @@ export const authFailureRedirect = REDIRECTS.SIGN_IN;
 export const signInRedirect = REDIRECTS.DASHBOARD;
 export const passwordResetRedirect = REDIRECTS.SIGN_IN;
 export const passwordResetPageRedirect = REDIRECTS.RESET_PASSWORD;
+export const notFoundRedirect = REDIRECTS.DASHBOARD;

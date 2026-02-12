@@ -27,7 +27,6 @@ import { useUser } from '@/hooks/use-user';
 import { getInitials } from '@/utils/utils';
 import { useSetAtom } from 'jotai';
 import {
-  BrainIcon,
   CheckIcon,
   ClockPlusIcon,
   GoalIcon,
@@ -50,11 +49,6 @@ const navItems = [
     title: 'Dashboard',
     url: '/dashboard',
     icon: LayoutDashboardIcon,
-  },
-  {
-    title: 'Chat',
-    url: '/chat',
-    icon: BrainIcon,
   },
   {
     title: 'Focus',

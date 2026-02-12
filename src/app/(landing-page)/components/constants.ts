@@ -22,7 +22,7 @@ export const SHOWCASES: ShowcaseItem[] = [
   {
     title: 'Focus Timer',
     description:
-      'Stay in the zone with Pomodoro sessions, break reminders, session history, and productivity metrics.',
+      'Stay in the zone with Pomodoro sessions, session history, and productivity metrics.',
     imageSrc: '/focus',
   },
   {
